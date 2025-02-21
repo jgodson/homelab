@@ -1,0 +1,35 @@
+server:
+  disable: true
+  http_listen_port: 9080
+
+clients:
+  - url: http://192.168.1.4:8090/loki/api/v1/push
+    tenant_id: home
+
+positions:
+  filename: /tmp/positions.yaml
+
+scrape_configs:
+  - job_name: systemd-journal
+    journal:
+      max_age: 12h
+      labels:
+        job: systemd
+    relabel_configs:
+      - source_labels: ["__journal__systemd_unit"]
+        target_label: unit
+      - source_labels: ["__journal__hostname"]
+        target_label: host
+      - source_labels: ["__journal_priority_keyword"]
+        target_label: level
+      - source_labels: ["__journal_syslog_identifier"]
+        target_label: syslog_identifier
+
+  - job_name: syslog
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: syslog
+          __path__: "/var/log/*.log"
+          host: "unset"

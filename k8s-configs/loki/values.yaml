@@ -35,6 +35,7 @@
   gateway:
     service:
       type: LoadBalancer
+      port: 8090
 
   resultsCache:
     connectionLimit: 1024
