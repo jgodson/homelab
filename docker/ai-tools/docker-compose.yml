@@ -1,0 +1,19 @@
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:ollama
+    container_name: open-webui
+    ports:
+      - "3000:8080"
+    volumes:
+      - ./ollama:/root/.ollama
+      - ./open-webui:/app/backend/data
+    restart: unless-stopped
+    logging: 
+      driver: loki
+      options:
+        loki-url: "http://logs.home.jasongodson.com/loki/api/v1/push"
+        loki-retries: 2
+        loki-max-backoff: 800ms
+        loki-timeout: 1s
+        keep-file: "true"
+        mode: "non-blocking"

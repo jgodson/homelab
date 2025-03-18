@@ -1,0 +1,21 @@
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    restart: unless-stopped
+    privileged: true
+    environment:
+      - TZ=America/Edmonton
+    volumes:
+      - ./home-assistant:/config
+      - /run/dbus:/run/dbus:ro
+    network_mode: host
+    logging: 
+      driver: loki
+      options:
+        loki-url: "http://logs.home.jasongodson.com/loki/api/v1/push"
+        loki-retries: 2
+        loki-max-backoff: 800ms
+        loki-timeout: 1s
+        keep-file: "true"
+        mode: "non-blocking"

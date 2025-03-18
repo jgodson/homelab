@@ -1,0 +1,71 @@
+{
+  admin 0.0.0.0:2019
+
+  metrics {
+    per_host
+  }
+}
+
+*.{$DOMAIN} {
+  tls internal
+
+  # Global protection for all subdomains
+  @external {
+    not remote_ip 192.168.1.0/24
+  }
+  handle @external {
+    respond "Forbidden" 403
+  }
+  
+  @static host static.{$DOMAIN}
+  handle @static {
+    root * /srv
+    file_server
+  }
+
+  @adguard host adguard.{$DOMAIN}
+  handle @adguard {
+    reverse_proxy adguardhome:80
+  }
+
+  @ai host ai.{$DOMAIN}
+  handle @ai {
+    reverse_proxy 192.168.1.248:3000
+  }
+
+  @proxmox1 host pve1.{$DOMAIN}
+  handle @proxmox1 {
+    reverse_proxy 192.168.1.244:8006 {
+      transport http {
+        tls_insecure_skip_verify
+      }
+    }
+  }
+
+  @proxmox2 host pve2.{$DOMAIN}
+  handle @proxmox2 {
+    reverse_proxy 192.168.1.245:8006 {
+      transport http {
+        tls_insecure_skip_verify
+      }
+    }
+  }
+
+  @proxmox3 host pve3.{$DOMAIN}
+  handle @proxmox3 {
+    reverse_proxy 192.168.1.246:8006 {
+      transport http {
+        tls_insecure_skip_verify
+      }
+    }
+  }
+
+  @proxmox4 host pve4.{$DOMAIN}
+  handle @proxmox4 {
+    reverse_proxy 192.168.1.247:8006 {
+      transport http {
+        tls_insecure_skip_verify
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+csiConfig:
+  - clusterID: "b5919126-6c7e-48b2-a32a-25fb7c2b3e86" 
+    monitors:
+      - "192.168.1.244:6789"
+      - "192.168.1.245:6789"
+      - "192.168.1.246:6789"
+      - "192.168.1.247:6789"
+secret:
+  create: false
+  name: csi-rbd-secret
+storageClass:
+  create: true
+  name: ceph-rbd
+  clusterID: "b5919126-6c7e-48b2-a32a-25fb7c2b3e86"
+  pool: "ceph"
+  imageFeatures: "layering"
+  mounter: "krbd"
+  fstype: ext4
+  reclaimPolicy: Delete
+  allowVolumeExpansion: true
+nodeplugin:
+  priorityClassName: system-node-critical
+# Reduce log verbosity for production
+logLevel: 2

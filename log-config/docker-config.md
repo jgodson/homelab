@@ -1,14 +1,14 @@
 ### Compose file
 ```yaml
 logging: 
-    drive: loki
+    driver: loki
     options:
-        loki-url: "http://192.168.1.4:8090/loki/api/v1/push"
-        loki-retries: 2
-        loki-max-backoff: 800ms
-        loki-timeout: 1s
-        keep-file: "true"
-        mode: "non-blocking"
+      loki-url: "http://192.168.1.4:8090/loki/api/v1/push"
+      loki-retries: 2
+      loki-max-backoff: 800ms
+      loki-timeout: 1s
+      keep-file: "true"
+      mode: "non-blocking"
 ```
 
 ### Command line

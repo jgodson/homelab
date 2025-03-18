@@ -119,16 +119,31 @@ systemctl restart docker
 
 ### Configure the plugin in your docker-compose file (can also pass to the command line)
 ```yaml
-...
-image: xxxx
-logging: 
-    drive: loki
-    options:
-        loki-url: "https://loki.srv-test-1.home.clcreative.de/loki/api/v1/push"
+services:
+  name:
+    container_name: xxx
+    image: xxxx
+    logging:
+      driver: loki
+      options:
+        loki-url: http://192.168.1.4:8090/loki/api/v1/push/loki/api/v1/push
         loki-retries: 2
-        loki-max-backoff: 800ms loki-timeout: 1s keep-file: "true" mode: "non-blocking"
+        loki-max-backoff: 800ms
         loki-timeout: 1s
         keep-file: "true"
-        mode: "non-blocking"
-...
+        mode: non-blocking
+        loki-external-labels: "container_name={{.ID}}.{{.Name}},host=${HOSTNAME}"
 ```
+
+Command line options to add if you prefer to do it this way:
+```bash
+--log-driver=loki \
+  --log-opt loki-url="http://192.168.1.4:8090/loki/api/v1/push" \
+  --log-opt loki-tenant-id=home \
+  --log-opt loki-retries=2 \
+  --log-opt loki-max-backoff=800ms
+  --log-opt loki-timeout=1s
+  --log-opt keep-file="true"
+  --log-opt mode=non-blocking
+  --log-opt loki-external-labels=container_name={{.ID}}.{{.Name}}
+  ```

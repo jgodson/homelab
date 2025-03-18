@@ -1,0 +1,76 @@
+
+mqtt:
+  enabled: False
+
+cameras:
+  camera1:
+    enabled: True
+    ffmpeg:
+      inputs:
+        - path: rtsp://<username>:<password>@<ip>:<port>/live
+          roles:
+            - audio
+            - detect
+            - record
+  camera2:
+    enabled: True
+    ffmpeg:
+      inputs:
+        - path: rtsp://username>:<password>@<ip>:<port>/live
+          roles:
+            - audio
+            - detect
+            - record
+record:
+  enabled: True
+review:
+  alerts:
+    labels:
+      - person
+      - dog
+notifications:
+  enabled: True
+  email: "jason_c_g@hotmail.com"
+
+detectors:
+  ov1:
+    type: openvino
+    device: CPU
+  ov2:
+    type: openvino
+    device: CPU
+  ov3:
+    type: openvino
+    device: CPU
+  ov4:
+    type: openvino
+    device: CPU
+  ov5:
+    type: openvino
+    device: CPU
+  ov6:
+    type: openvino
+    device: CPU
+  ov7:
+    type: openvino
+    device: CPU
+  ov8:
+    type: openvino
+    device: CPU
+  ov9:
+    type: openvino
+    device: CPU
+  ov10:
+    type: openvino
+    device: CPU
+  ov11:
+    type: openvino
+    device: CPU
+
+model:
+  width: 300
+  height: 300
+  input_tensor: nhwc
+  input_pixel_format: bgr
+  path: /openvino-model/ssdlite_mobilenet_v2.xml
+  labelmap_path: /openvino-model/coco_91cl_bkgr.txt
