@@ -1,0 +1,31 @@
+ingressRoute:
+  dashboard:
+    enabled: true
+
+metrics:
+  prometheus:
+    serviceMonitor:
+      enabled: false
+
+ports:
+  metrics:
+    expose: 
+      default: true
+
+# Enable persistence for Let's Encrypt certificates
+persistence:
+  enabled: true
+  size: 128Mi
+  storageClass: "ceph-rbd"
+
+service:
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 192.168.1.35
+
+securityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
+# Remove anonymous usage reporting
+globalArguments:
+- "--global.checknewversion"

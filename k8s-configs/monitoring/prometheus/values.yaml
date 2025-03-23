@@ -1,0 +1,52 @@
+server:
+  persistentVolume:
+    enabled: true
+    storageClass: "ceph-rbd"
+    size: 40Gi
+  
+  resources:
+    limits:
+      cpu: 1
+      memory: 2Gi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
+      
+configmapReload:
+  prometheus:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+
+prometheus-node-exporter:
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
+      add: ["SYS_TIME"]
+
+extraScrapeConfigs: |
+  - job_name: caddy
+    static_configs:
+      - targets: ['192.168.1.253:2019']
+    metrics_path: /metrics
+
+prometheus-pushgateway:
+  enabled: false
+
+alertmanager:
+  enabled: false

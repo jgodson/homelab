@@ -17,22 +17,50 @@
     respond "Forbidden" 403
   }
   
+  # Static content
   @static host static.{$DOMAIN}
   handle @static {
     root * /srv
     file_server
   }
 
+  # AdGuard Home
   @adguard host adguard.{$DOMAIN}
   handle @adguard {
     reverse_proxy adguardhome:80
   }
 
+  # Home Assistant
+  @homeassistant host ha.{$DOMAIN} homeassistant.{$DOMAIN}
+  handle @homeassistant {
+    reverse_proxy 192.168.1.2:8123 {
+      header_up Host {host}
+      header_up X-Real-IP {remote}
+
+      @ws: {
+        header Connection "Upgrade"
+        header Upgrade websocket
+      }
+    }
+  }
+
+  # Frigate
+  @frigate host frigate.{$DOMAIN}
+  handle @frigate {
+    reverse_proxy 192.168.1.3:8971 {
+      transport http {
+        tls_insecure_skip_verify
+      }
+    }
+  }
+
+  # AI Service
   @ai host ai.{$DOMAIN}
   handle @ai {
     reverse_proxy 192.168.1.248:3000
   }
 
+  # Proxmox servers 
   @proxmox1 host pve1.{$DOMAIN}
   handle @proxmox1 {
     reverse_proxy 192.168.1.244:8006 {
@@ -66,6 +94,13 @@
       transport http {
         tls_insecure_skip_verify
       }
+    }
+  }
+
+  # Fallback - send to Kubernetes (Traefik)
+  handle {
+    reverse_proxy 192.168.1.35:80 {
+      header_up Host {host}
     }
   }
 }

@@ -9,13 +9,22 @@ automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 192.168.1.253 
+    - 127.0.0.1
+    - ::1
+  ip_ban_enabled: true
+  login_attempts_threshold: 5
+
 # Metrics export
 influxdb:
   api_version: 2
-  ssl: true
-  host: <REPLACE_ME>
-  port: 8086
+  host: influxdb.home.jasongodson.com
+  port: 443
   token: <REPLACE_ME>
   organization: <REPLACE_ME>
   bucket: homeassistant
   max_retries: 1
+  verify_ssl: false 

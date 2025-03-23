@@ -1,0 +1,11 @@
+prometheus:
+  scrapeAnnotations: true
+  
+speaker:
+  ignoreExcludeLB: true
+  podAnnotations:
+    prometheus.io/port: "7472"
+
+controller:
+  podAnnotations:
+    prometheus.io/port: "7472"

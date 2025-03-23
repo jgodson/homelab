@@ -1,0 +1,45 @@
+## Create default user through docker entrypoint
+## Defaults indicated below
+##
+adminUser:
+  organization: "influxdata"
+  bucket: "default"
+  user: "admin"
+  retention_policy: "0s"
+  existingSecret: influxdb-auth
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 2
+    memory: 2Gi
+
+livenessProbe:
+  path: "/health"
+  initialDelaySeconds: 30
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  path: "/health"
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 3
+
+persistence:
+  enabled: true
+  storageClass: "ceph-rbd"
+  accessMode: ReadWriteOnce
+  size: 50Gi
+  mountPath: /var/lib/influxdb2
+
+service:
+  port: 8086
+
+serviceAccount:
+  create: true
+  name: influxdb-service-account
+
