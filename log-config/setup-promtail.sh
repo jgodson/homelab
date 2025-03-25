@@ -29,7 +29,7 @@ server:
   http_listen_port: 9080
 
 clients:
-  - url: http://192.168.1.4:8090/loki/api/v1/push
+  - url: http://loki.home.jasongodson.com/loki/api/v1/push
     tenant_id: home
 
 positions:

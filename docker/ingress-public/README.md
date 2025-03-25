@@ -5,13 +5,13 @@
 - OS: Ubuntu server
 
 ### To get running
-Create the required directories to store data for ollama and openwebui.
+Create the required directories to store data for Traefik.
 
-`mkdir adguard adguard/work adguard/conf caddy caddy/data caddy/config caddy/site caddy/Caddyfile`
+`mkdir -p traefik`
 
 This assumes you have ssh access. Otherwise you can also copy & paste the docker compose file in a text editor, etc.
 
-`scp -r ./docker-compose.yml ./caddy ./Caddy-Dockerfile ./caddy.env $USER@$IP_ADDR:~/`
+`scp -r ./docker-compose.yml $USER@$IP_ADDR:~/`
 
 Start the services.
 

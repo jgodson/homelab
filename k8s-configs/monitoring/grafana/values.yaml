@@ -1,0 +1,71 @@
+adminPassword: "changeme"  # Change this to a secure password
+
+persistence:
+  enabled: true
+  storageClassName: ceph-rbd
+  size: 10Gi
+
+securityContext:
+  seccompProfile:
+    type: RuntimeDefault
+    
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+
+# Ingress configuration
+ingress:
+  enabled: true
+  hosts:
+    - grafana.home.jasongodson.com
+  # If you're using Traefik:
+  annotations:
+    kubernetes.io/ingress.class: traefik
+
+# Configure data sources automatically
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      url: http://prometheus-server.monitoring.svc.cluster.local
+      access: proxy
+      isDefault: true
+    - name: Loki
+      type: loki
+      url: http://loki.monitoring.svc.cluster.local:3100
+      access: proxy
+
+# Pre-install some useful dashboards
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      editable: true
+      options:
+        path: /var/lib/grafana/dashboards/default
+
+dashboards:
+  default:
+    # Node Exporter dashboard
+    node-exporter:
+      gnetId: 1860
+      revision: 27
+      datasource: Prometheus
+    # Kubernetes monitoring
+    kubernetes-monitoring:
+      gnetId: 15661
+      revision: 2
+      datasource: Prometheus
+    # Traefik dashboard
+    traefik:
+      gnetId: 4475
+      revision: 5
+      datasource: Prometheus

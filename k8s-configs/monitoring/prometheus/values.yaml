@@ -41,9 +41,59 @@ prometheus-node-exporter:
 
 extraScrapeConfigs: |
   - job_name: caddy
+    scheme: http
     static_configs:
       - targets: ['192.168.1.253:2019']
     metrics_path: /metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '.*'
+        replacement: 'caddy'
+
+  - job_name: minio-cluster
+    scheme: http
+    static_configs:
+      - targets: ['192.168.1.252:9000']
+    metrics_path: /minio/v2/metrics/cluster
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '.*'
+        replacement: 'minio'
+  
+  - job_name: minio-node
+    scheme: http
+    static_configs:
+      - targets: ['192.168.1.252:9000']
+    metrics_path: /minio/v2/metrics/node
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '.*'
+        replacement: 'minio'
+  
+  - job_name: minio-bucket
+    scheme: http
+    static_configs:
+      - targets: ['192.168.1.252:9000']
+    metrics_path: /minio/v2/metrics/bucket
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '.*'
+        replacement: 'minio'
+  
+  - job_name: minio-resource
+    scheme: http
+    static_configs:
+      - targets: ['192.168.1.252:9000']
+    metrics_path: /minio/v2/metrics/resource
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '.*'
+        replacement: 'minio'
 
 prometheus-pushgateway:
   enabled: false

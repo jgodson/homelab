@@ -43,3 +43,6 @@ serviceAccount:
   create: true
   name: influxdb-service-account
 
+pdb:
+  minAvailable: null
+  maxUnavailable: 1

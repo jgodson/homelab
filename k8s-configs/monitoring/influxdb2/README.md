@@ -3,7 +3,7 @@
 2. Install helm chart
     ```bash
     helm install influxdb influxdata/influxdb2 \
-    -f ./influxdb2/values.yaml \
+    -f values.yaml \
     -n monitoring
     ```
 3. Apply the ingress file `kubectl apply -f ingress.yaml`

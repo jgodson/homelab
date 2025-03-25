@@ -7,7 +7,7 @@
 ### To get running
 Create the required directories to store data for ollama and openwebui.
 
-`mkdir adguard adguard/work adguard/conf caddy caddy/data caddy/config`
+`mkdir -p adguard/work adguard/conf caddy/data caddy/config`
 
 This assumes you have ssh access. Otherwise you can also copy & paste the docker compose file in a text editor, etc.
 

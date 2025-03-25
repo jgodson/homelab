@@ -43,7 +43,7 @@ sudo apt-get install nano
 
 Create the config file:
 ```bash
-sudo nano /usr/local/etc/promtail.yml
+sudo nano /usr/local/etc/promtail-config.yml
 ```
 
 To get logs off the machine itself, paste the contents of [promtail.yml](./promtail.yml). Save and exit (`Ctrl+O`, `Enter`, `Ctrl+X`).
@@ -73,7 +73,7 @@ Here is an explaination of what's in that file.
 
 `Description`: A brief description of what the service runs
 `After`: When the serice should start. In this case, we want it to start after the network is available, since it needs that.
-`ExecStart`: The command to start Promtail with the specified configuration file (/etc/promtail.yaml). `-config.expand-env=true` is added to expand the environment variables we use like `${HOSTNAME}`. You can give a variable a default value like so `${VAR:-default_value}`.
+`ExecStart`: The command to start Promtail with the specified configuration file (/etc/promtail-config.yml). `-config.expand-env=true` is added to expand the environment variables we use like `${HOSTNAME}`. You can give a variable a default value like so `${VAR:-default_value}`.
 `Restart`: Promtail will restart automatically if it crashes.
 `User` and `Group`: Runs Promtail under the promtail user and group (you can adjust this if needed).
 `LimitNOFILE`: Sets a file descriptor limit for Promtail.
@@ -126,7 +126,7 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: http://192.168.1.4:8090/loki/api/v1/push/loki/api/v1/push
+        loki-url: http://loki.home.jasongodson.com/loki/api/v1/push/loki/api/v1/push
         loki-retries: 2
         loki-max-backoff: 800ms
         loki-timeout: 1s
@@ -138,7 +138,7 @@ services:
 Command line options to add if you prefer to do it this way:
 ```bash
 --log-driver=loki \
-  --log-opt loki-url="http://192.168.1.4:8090/loki/api/v1/push" \
+  --log-opt loki-url="http://loki.home.jasongodson.com/loki/api/v1/push" \
   --log-opt loki-tenant-id=home \
   --log-opt loki-retries=2 \
   --log-opt loki-max-backoff=800ms
