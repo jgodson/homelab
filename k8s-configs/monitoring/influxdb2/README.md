@@ -11,7 +11,7 @@
 5. Create buckets (retenton `Forever`):
    - `homeassistant` - For Home Assistant metrics
    - `proxmox` - For Proxmox metrics
-6. Generate API tokens with write access to one bucket each
+6. Generate API Tokens with write access to one bucket each
 6. Configure data sources to use `https://influxdb.home.jasongodson.com:443`
    - The org id can be obtained from the url `https://influxdb.home.jasongodson.com/orgs/<org_id>`
    - For Home Assistant: Use the homeassistant bucket and token
