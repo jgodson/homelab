@@ -39,3 +39,7 @@
         ```
     - This is easily done with the following command `sed -i '' 's/<old>/<new>/g' <file>.json`
     - After doing the above, import the file using the Grafana UI and check that everything is working as expected.
+7. You can add more dashboards now by id. You can find them on `https://grafana.com/grafana/dashboards/<id>`. Some good ones are:
+    - node-exporter: 1860
+    - kubernetes-monitoring: 12740
+    - traefik: 5851
