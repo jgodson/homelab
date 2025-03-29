@@ -1,19 +1,121 @@
+x-logging: &default-logging
+  logging: 
+    driver: loki
+    options:
+      loki-url: "https://loki.home.jasongodson.com/loki/api/v1/push"
+      loki-retries: 2
+      loki-max-backoff: 800ms
+      loki-timeout: 1s
+      loki-tls-insecure-skip-verify: "true"
+      keep-file: "true"
+      mode: "non-blocking"
+
+x-n8n: &service-n8n
+  image: n8nio/n8n:latest
+  <<: *default-logging
+  environment:
+    - DB_TYPE=postgresdb
+    - DB_POSTGRESDB_HOST=postgres
+    - DB_POSTGRESDB_USER_FILE=/run/secrets/postgres_user
+    - DB_POSTGRESDB_PASSWORD_FILE=/run/secrets/postgres_password
+    - N8N_DIAGNOSTICS_ENABLED=false
+    - N8N_PERSONALIZATION_ENABLED=false
+    - N8N_ENCRYPTION_KEY_FILE=/run/secrets/n8n_encryption_key
+    - N8N_USER_MANAGEMENT_JWT_SECRET_FILE=/run/secrets/n8n_jwt_secret
+    - OLLAMA_HOST=open-webui:11434
+    - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+    - N8N_RUNNERS_ENABLED=true
+    - N8N_HOST=n8n.home.jasongodson.com
+    - N8N_EDITOR_BASE_URL=https://n8n.home.jasongodson.com
+  secrets:
+    - postgres_user
+    - postgres_password
+    - n8n_encryption_key
+    - n8n_jwt_secret
+
 services:
   open-webui:
     image: ghcr.io/open-webui/open-webui:ollama
     container_name: open-webui
+    <<: *default-logging
+    restart: unless-stopped
     ports:
       - "3000:8080"
     volumes:
       - ./ollama:/root/.ollama
       - ./open-webui:/app/backend/data
+
+  postgres:
+    image: postgres:16-alpine
+    hostname: postgres
+    <<: *default-logging
     restart: unless-stopped
-    logging: 
-      driver: loki
-      options:
-        loki-url: "http://logs.home.jasongodson.com/loki/api/v1/push"
-        loki-retries: 2
-        loki-max-backoff: 800ms
-        loki-timeout: 1s
-        keep-file: "true"
-        mode: "non-blocking"
+    environment:
+      - POSTGRES_USER_FILE=/run/secrets/postgres_user
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+      - POSTGRES_DB_FILE=/run/secrets/postgres_db
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+    secrets:
+      - postgres_user
+      - postgres_password
+      - postgres_db
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h localhost -U $(cat /run/secrets/postgres_user) -d $(cat /run/secrets/postgres_db)']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  n8n-import:
+    <<: *service-n8n
+    hostname: n8n-import
+    container_name: n8n-import
+    entrypoint: /bin/sh
+    command:
+      - "-c"
+      - "n8n import:credentials --separate --input=/backup/credentials && n8n import:workflow --separate --input=/backup/workflows"
+    volumes:
+      - ./n8n/backup:/backup
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  n8n:
+    <<: *service-n8n
+    hostname: n8n
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - 5678:5678
+    volumes:
+      - ./n8n/data:/home/node/.n8n
+      - ./n8n/backup:/backup
+      - ./n8n/shared:/data/shared
+    depends_on:
+      postgres:
+        condition: service_healthy
+      n8n-import:
+        condition: service_completed_successfully
+
+  qdrant:
+    image: qdrant/qdrant
+    hostname: qdrant
+    container_name: qdrant
+    restart: unless-stopped
+    <<: *default-logging
+    ports:
+      - 6333:6333
+    volumes:
+      - ./qdrant/data:/qdrant/storage
+
+secrets:
+  postgres_user:
+    file: ./secrets/postgres_user.txt
+  postgres_password:
+    file: ./secrets/postgres_password.txt
+  postgres_db:
+    file: ./secrets/postgres_db.txt
+  n8n_encryption_key:
+    file: ./secrets/n8n_encryption_key.txt
+  n8n_jwt_secret:
+    file: ./secrets/n8n_jwt_secret.txt

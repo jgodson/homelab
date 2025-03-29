@@ -10,4 +10,4 @@
 
 ### Accessing the dashboard
 1. Port forward to traefik to access the dashboard `kubectl port-forward -n traefik $(kubectl get pods -n traefik -l app.kubernetes.io/name=traefik -o name) 8080:8080`
-1. Go to http://localhost:8080/dashboard
+1. Go to http://localhost:8080/dashboard/

@@ -126,10 +126,11 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: http://loki.home.jasongodson.com/loki/api/v1/push/loki/api/v1/push
+        loki-url: https://loki.home.jasongodson.com/loki/api/v1/push
         loki-retries: 2
         loki-max-backoff: 800ms
         loki-timeout: 1s
+        loki-tls-insecure-skip-verify: "true"
         keep-file: "true"
         mode: non-blocking
         loki-external-labels: "container_name={{.ID}}.{{.Name}},host=${HOSTNAME}"
@@ -138,11 +139,12 @@ services:
 Command line options to add if you prefer to do it this way:
 ```bash
 --log-driver=loki \
-  --log-opt loki-url="http://loki.home.jasongodson.com/loki/api/v1/push" \
+  --log-opt loki-url="https://loki.home.jasongodson.com/loki/api/v1/push" \
   --log-opt loki-tenant-id=home \
   --log-opt loki-retries=2 \
   --log-opt loki-max-backoff=800ms
   --log-opt loki-timeout=1s
+  --log-opt loki-tls-insecure-skip-verify=true
   --log-opt keep-file="true"
   --log-opt mode=non-blocking
   --log-opt loki-external-labels=container_name={{.ID}}.{{.Name}}

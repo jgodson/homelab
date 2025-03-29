@@ -13,9 +13,10 @@ services:
     logging: 
       driver: loki
       options:
-        loki-url: "http://logs.home.jasongodson.com/loki/api/v1/push"
+        loki-url: "https://loki.home.jasongodson.com/loki/api/v1/push"
         loki-retries: 2
         loki-max-backoff: 800ms
         loki-timeout: 1s
+        loki-tls-insecure-skip-verify: "true"
         keep-file: "true"
         mode: "non-blocking"

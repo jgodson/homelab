@@ -16,20 +16,20 @@ This assumes you have ssh access. Otherwise you can also copy & paste the docker
 
 Create the secret files. This is in `Minio` in 1Password.
 ```bash
-echo "manager" > minio/secrets/root_user.txt
-echo "<password_from_1password>" > minio/secrets/root_password.txt
+echo -n "manager" > minio/secrets/root_user.txt
+echo -n "<password_from_1password>" > minio/secrets/root_password.txt
 
 chmod 600 minio/secrets/minio_root_user.txt minio/secrets/minio_root_password.txt
 ```
 
 **DNS Configuration**
 - Configure system DNS to use 192.168.1.253 in `/etc/systemd/resolved.conf`:
-    ```
-    [Resolve]
-    DNS=192.168.1.253
-    Domains=~home.jasongodson.com
-    FallbackDNS=1.1.1.1
-    ```
+```bash
+[Resolve]
+DNS=192.168.1.253
+Domains=~home.jasongodson.com
+FallbackDNS=1.1.1.1
+```
 - Restart systemd-resolved: `sudo systemctl restart systemd-resolved`
 
 Start the service

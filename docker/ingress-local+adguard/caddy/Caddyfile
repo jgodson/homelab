@@ -54,10 +54,20 @@
     }
   }
 
-  # AI Service
+  # AI Services
   @ai host ai.{$DOMAIN}
   handle @ai {
     reverse_proxy 192.168.1.248:3000
+  }
+
+  @n8n host n8n.{$DOMAIN}
+  handle @n8n {
+    reverse_proxy 192.168.1.248:5678 {
+      @ws: {
+        header Connection "Upgrade"
+        header Upgrade websocket
+      }
+    }
   }
 
   # Proxmox servers 

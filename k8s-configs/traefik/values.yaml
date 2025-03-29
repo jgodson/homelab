@@ -1,11 +1,11 @@
-ingressRoute:
-  dashboard:
-    enabled: true
-
 metrics:
   prometheus:
     serviceMonitor:
       enabled: false
+
+ingressRoute:
+  dashboard:
+    enabled: true
 
 ports:
   metrics:
