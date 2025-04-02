@@ -25,8 +25,11 @@ services:
       - "2019:2019"
       - "80:80"
       - "443:443"
+    env_file: 
+      - ./caddy/.env
     environment:
       - DOMAIN=home.jasongodson.com
+      - ACME_AGREE=true
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
       - ./caddy/site:/srv
