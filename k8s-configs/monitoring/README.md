@@ -1,3 +1,4 @@
+1. Apply metrics-server.yaml `kubectl apply -f metrics-server.yaml`
 1. Make sure Caddy & Adguard are running with Docker. [See readme](../../docker/ingress-local+adguard/README.md)
 1. Make sure metallb is already deployed since Traefik needs a LoadBalancer. [See readme](../metallb/README.md)
 1. Make sure Traefik is already deployed as the rest rely on it. [See readme](../traefik/README.md)

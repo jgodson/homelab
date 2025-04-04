@@ -31,8 +31,6 @@ server:
 clients:
   - url: https://loki.home.jasongodson.com/loki/api/v1/push
     tenant_id: home
-    tls_config:
-      insecure_skip_verify: true
 
 positions:
   filename: /tmp/positions.yaml

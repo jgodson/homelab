@@ -130,7 +130,6 @@ services:
         loki-retries: 2
         loki-max-backoff: 800ms
         loki-timeout: 1s
-        loki-tls-insecure-skip-verify: "true"
         keep-file: "true"
         mode: non-blocking
         loki-external-labels: "container_name={{.ID}}.{{.Name}},host=${HOSTNAME}"
@@ -144,7 +143,6 @@ Command line options to add, should you prefer to do it that way:
 --log-opt loki-retries=2 \
 --log-opt loki-max-backoff=800ms \
 --log-opt loki-timeout=1s \
---log-opt loki-tls-insecure-skip-verify=true \
 --log-opt keep-file="true" \
 --log-opt mode=non-blocking \
 --log-opt loki-external-labels=container_name={{.ID}}.{{.Name}}
