@@ -4,6 +4,7 @@
 - Disk: 32 GB (Shared for HA)
 - OS: Ubuntu server
 - Use static IP
+- Install docker with OS (snap)
 
 ### To get running
 

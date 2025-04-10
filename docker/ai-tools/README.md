@@ -4,6 +4,7 @@
 - Disk: 128 GB
 - OS: Ubuntu server
 - Use static IP
+- Install docker with OS (snap)
 
 ### To get running
 

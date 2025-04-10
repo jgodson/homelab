@@ -3,6 +3,7 @@
 - RAM: 8 GB
 - Disk: 256 GB
 - OS: Ubuntu server
+- Install docker with OS (snap)
 
 ### To get running
 
