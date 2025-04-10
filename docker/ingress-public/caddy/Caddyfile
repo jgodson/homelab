@@ -1,0 +1,117 @@
+{
+  admin 0.0.0.0:2019
+
+  log accessfile {
+    output file /var/log/caddy/access.log {
+      roll_size 10MB
+      roll_keep 10
+    }
+    format json
+    level INFO
+    include http.log.access
+  }
+
+  log allstdout {
+    output stdout
+    format json
+    level INFO
+  }
+
+  crowdsec {
+		api_url http://crowdsec:8080
+		api_key {env.CROWDSEC_API_KEY}
+		ticker_interval 3s
+	}
+
+  metrics {
+    per_host
+  }
+
+  http_port 80
+  # Disable HTTPS on the public ingress since Cloudflare handles it
+  https_port 0
+
+  servers :80 {
+    name public_gateway
+    trusted_proxies cloudflare {
+        interval 12h
+        timeout 15s
+    }
+    client_ip_headers CF-Connecting-IP
+  }
+
+  # No need for auto HTTPS since Cloudflare handles this
+  auto_https off
+}
+
+# Main domain
+{$DOMAIN}:80 {
+  rate_limit {
+    zone main_site {
+      # Allow 30 requests per 5 seconds per IP
+      events 30
+      window 5s
+    }
+  }
+
+  handle {
+    root * /srv
+    file_server
+    
+    # Security headers
+    header {
+      # Prevent clickjacking
+      X-Frame-Options "SAMEORIGIN"
+      # Help prevent XSS attacks
+      X-Content-Type-Options "nosniff"
+      # Prevent MIME type sniffing
+      X-XSS-Protection "1; mode=block"
+      # Enable strict HTTPS
+      Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+      # Control allowed sources for content
+      Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'"
+      # Control referrer information
+      Referrer-Policy "strict-origin-when-cross-origin"
+      # Disable FLoC tracking (Federated Learning of Cohorts, not really a thing anymore)
+      Permissions-Policy "interest-cohort=()"
+    }
+  }
+}
+
+### www redirection
+www.{$DOMAIN}:80 {
+  redir https://{$DOMAIN}{uri} permanent
+}
+
+# Subdomains
+*.{$DOMAIN}:80 {
+  # Rate limiting for subdomains - stricter than main site
+  rate_limit {
+    zone subdomains {
+      # More restrictive than main site since legitimate traffic is less expected
+      events 15
+      window 5s
+    }
+  }
+
+  # Common security headers for all subdomains
+  header {
+    # Prevent clickjacking
+    X-Frame-Options "SAMEORIGIN"
+    # Help prevent XSS attacks
+    X-Content-Type-Options "nosniff"
+    # Prevent MIME type sniffing
+    X-XSS-Protection "1; mode=block"
+    # Enable strict HTTPS
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    # Control referrer information
+    Referrer-Policy "strict-origin-when-cross-origin"
+    # Disable FLoC tracking
+    Permissions-Policy "interest-cohort=()"
+  }
+
+  # Default response for undefined subdomains
+  handle {
+    respond "Not Found" 404
+  }
+}

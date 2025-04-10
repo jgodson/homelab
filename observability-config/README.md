@@ -97,20 +97,20 @@ sudo systemctl status promtail
 You should see output that says `Loaded: loaded` and `Active: active (running)`.
 
 There should now be logs flowing to loki from the host.
-
+ 
 ### Docker logs
 
 ### Install the plugin
 Install the docker plugin (current version at time of writing, check for a newer one)
 ```bash
-sudo docker plugin install grafana/loki-docker-driver:3.3.2-amd64 --alias loki --grant-all-permissions
+sudo docker plugin install grafana/loki-docker-driver:3.4.3-amd64 --alias loki --grant-all-permissions
 ```
 
 #### Updating the plugin
 ```bash
 docker plugin disable loki --force
 
-docker plugin upgrade loki grafana/loki-docker-driver:3.3.2-arm64 --grant-all-permissions
+docker plugin upgrade loki grafana/loki-docker-driver:3.4.3-amd64 --grant-all-permissions
 
 docker plugin enable loki
 

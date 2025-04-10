@@ -26,5 +26,4 @@ influxdb:
   token: <REPLACE_ME>
   organization: <REPLACE_ME>
   bucket: homeassistant
-  max_retries: 1
-  verify_ssl: false 
+  max_retries: 1AZÍÍ

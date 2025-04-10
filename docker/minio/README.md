@@ -3,6 +3,7 @@
 - RAM: 8 GB
 - Disk: 512 GB
 - OS: Ubuntu server
+- Use static IP
 
 ### To get running
 

@@ -1,0 +1,6 @@
+ingress:
+  - hostname: jasongodson.com
+    service: http://caddy:80
+  - hostname: "*.jasongodson.com"
+    service: http://caddy:80
+  - service: http_status:404

@@ -3,6 +3,7 @@
 - RAM: 4 GB
 - Disk: 32 GB (Shared for HA)
 - OS: Ubuntu server
+- Use static IP
 
 ### To get running
 

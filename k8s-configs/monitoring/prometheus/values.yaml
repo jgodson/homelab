@@ -51,6 +51,50 @@ extraScrapeConfigs: |
         regex: '.*'
         replacement: 'caddy'
 
+  - job_name: caddy_public
+    scheme: http
+    static_configs:
+      - targets: ['192.168.1.20:2019']
+    metrics_path: /metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '.*'
+        replacement: 'caddy_public'
+
+  - job_name: cloudflared_public
+    scheme: http
+    static_configs:
+      - targets: ['192.168.1.20:2000']
+    metrics_path: /metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '.*'
+        replacement: 'cloudflared_public'
+
+  - job_name: 'crowdsec'
+    scheme: http
+    static_configs:
+      - targets: ['192.168.1.20:6060']
+    metrics_path: /metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '.*'
+        replacement: 'crowdsec'
+
+  - job_name: 'cloudflared'
+    scheme: http
+    static_configs:
+      - targets: ['192.168.1.19:2000']
+    metrics_path: /metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '.*'
+        replacement: 'cloudflared'
+
   - job_name: minio-cluster
     scheme: http
     static_configs:

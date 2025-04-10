@@ -1,0 +1,83 @@
+x-logging: &default-logging
+  logging: 
+    driver: loki
+    options:
+      loki-url: "https://loki.home.jasongodson.com/loki/api/v1/push"
+      loki-retries: 2
+      loki-max-backoff: 800ms
+      loki-timeout: 1s
+      keep-file: "true"
+      mode: "non-blocking"
+
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    <<: *default-logging
+    container_name: cloudflared
+    command: tunnel run
+    restart: unless-stopped
+    env_file:
+      - ./cloudflared/.env
+    environment:
+      - TUNNEL_METRICS=0.0.0.0:2000
+      - NO_AUTOUPDATE=true
+    volumes:
+      - ./cloudflared:/etc/cloudflared
+    ports:
+      - "2000:2000"
+    healthcheck:
+      test: ["CMD", "cloudflared", "tunnel", "info"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - proxy-network
+
+  caddy:
+    build:
+      context: .
+      dockerfile: Caddy-Dockerfile
+    <<: *default-logging
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "2019:2019"
+    env_file: 
+      - ./caddy/.env
+    environment:
+      - DOMAIN=jasongodson.com
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy/site:/srv
+      - ./caddy/data:/data
+      - ./caddy/config:/config
+      - ./caddy/logs:/var/log/caddy
+    depends_on:
+      - cloudflared
+      - crowdsec
+    networks:
+      - proxy-network
+
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    <<: *default-logging
+    container_name: crowdsec
+    restart: unless-stopped
+    environment:
+      - COLLECTIONS=crowdsecurity/caddy
+      - GID=1000
+      - TZ=America/Edmonton
+    ports:
+      - "6060:6060"
+    volumes:
+      - ./crowdsec/config:/etc/crowdsec
+      - ./crowdsec/data:/var/lib/crowdsec/data
+      - ./crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml
+      - ./caddy/logs:/var/log/caddy:ro
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    driver: bridge
