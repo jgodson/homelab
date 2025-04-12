@@ -5,6 +5,7 @@ npm run build
 
 # Remote server details
 SERVER="192.168.1.20" # Replace with your server hostname/IP
+DOMAIN="jasongodson.com" # Replace with your domain
 REMOTE_USER="manager"   # Replace with your SSH username
 REMOTE_PATH="~/caddy/site" # Replace with the path on your server
 
@@ -13,3 +14,4 @@ echo "🚢 Deploying to $SERVER..."
 rsync -avz --delete dist/ $REMOTE_USER@$SERVER:$REMOTE_PATH
 
 echo "🚀 Deployment complete!"
+echo "🔍 View site at https://$DOMAIN"

@@ -111,7 +111,6 @@ function escapeRegExp(string) {
 
 function printDirectoryTree(dir, indent = '') {
   if (!fs.existsSync(dir)) return;
-
   const items = fs.readdirSync(dir);
   items.forEach((item, index) => {
     const fullPath = path.join(dir, item);
@@ -141,7 +140,8 @@ function formatBytes(bytes) {
 function run() {
   processAllAssets(assetDirectories);
   console.log('Build complete 🎉');
-  console.log('\nDirectory structure:\n');
+  console.log(`Location: ${distDir}`);
+  console.log('/');
   printDirectoryTree(distDir);
 }
 
