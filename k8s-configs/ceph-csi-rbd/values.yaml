@@ -22,3 +22,17 @@ nodeplugin:
   priorityClassName: system-node-critical
 # Reduce log verbosity for production
 logLevel: 2
+
+nodeplugin:
+  httpMetrics:
+    service:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+
+provisioner:
+  httpMetrics:
+    service:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"

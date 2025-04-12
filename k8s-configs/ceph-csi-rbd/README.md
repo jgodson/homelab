@@ -68,6 +68,25 @@ spec:
 EOF
 ```
 
+### Export metrics for prometheus
+
+Ceph provides a built-in Prometheus metrics endpoint through the active MGR daemon.
+
+- Enable and configure the Prometheus module
+  1. Enable the Prometheus module
+
+      `ceph mgr module enable prometheus`
+  1. Configure RBD stats collection for the ceph pool
+  
+      `ceph config set mgr mgr/prometheus/rbd_stats_pools "ceph"`
+  1. Enable detailed OSD metrics (disabled by default in newer Ceph versions)
+  
+      `ceph config set mgr mgr/prometheus/exclude_perf_counters false`
+- Check what ip it is using with `ceph mgr services`.
+- Verify funcationality `curl <result from above>`.
+
+      Note: The other ceph managers will respond to this endpoint, but with a blank page. We add all targets to Prometheus just in case the active manager changes.
+
 ## Troubleshooting
 
 ### Testing connection to ceph pool

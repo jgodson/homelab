@@ -1,0 +1,127 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f9;
+  color: #333;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background-color: #1a202c;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2.5em;
+}
+
+header p {
+  font-size: 1.1em;
+}
+
+.section {
+  padding: 25px 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Add a decorative separator under section headers */
+.section h2 {
+  text-align: center;
+  color: #1a202c;
+  margin-bottom: 0.8em;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+/* Create the separator using pseudo-element */
+.section h2::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #3498db, transparent);
+  border-radius: 2px;
+}
+
+/* Improve text readability */
+.section p {
+  line-height: 1.6;
+  margin-top: 1.2em;
+  margin-bottom: 1.2em;
+  font-size: 1.05em;
+  letter-spacing: 0.01em;
+}
+
+main {
+  flex: 1;
+}
+
+.social-icons {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.social-icons a {
+  margin: 0 10px;
+  font-size: 1.5em;
+  color: #333;
+  text-decoration: none;
+}
+
+.social-icons a:hover {
+  color: #0077b5;
+}
+
+#footer {
+  background-color: #1a202c;
+  color: white;
+  text-align: center;
+  padding: 20px 0;
+}
+
+#footer p {
+  margin: 5px 0;
+}
+
+#footer .social-icons {
+  margin-bottom: 10px;
+}
+
+#footer .social-icons a {
+  color: #e6e6e6;
+  transition: color 0.3s ease, transform 0.3s ease;
+  display: inline-block;
+}
+
+#footer .social-icons a:hover {
+  color: #3498db;
+  transform: scale(1.1);
+}
+
+/* Didn't have an font awesome icon for X, so needed to use the svg + custom styles */
+#footer .social-icons a .custom-icon {
+  filter: invert(100%);
+}
+
+#footer .social-icons a:hover .custom-icon {
+  filter: invert(45%) sepia(57%) saturate(2231%) hue-rotate(189deg) brightness(97%) contrast(91%);
+  transform: scale(1.1);
+}
+
+.custom-icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  filter: invert(100%);
+  display: inline-block;
+  transition: none;
+}

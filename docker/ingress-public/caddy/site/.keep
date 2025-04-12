@@ -1,0 +1,2 @@
+# This file exists to ensure the caddy/site directory is tracked by git
+# The actual website content will be deployed here independantly

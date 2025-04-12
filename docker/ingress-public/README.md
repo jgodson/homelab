@@ -6,8 +6,8 @@
 - Use static IP
 - Install docker with OS (snap)
 
-### Setup
-### Optimizing Network Performance
+## Initial Setup
+#### Optimizing Network Performance
 
 For better HTTP/3 performance with Caddy, increase the UDP buffer sizes:
 
@@ -26,7 +26,6 @@ Then apply the settings
 `sudo sysctl -p`
 
 ### Security Hardening
-
 #### Disable IPv6 (Recommended)
 Since Cloudflared and Caddy don't require IPv6, disable it to reduce attack surface:
 
@@ -66,7 +65,7 @@ net.ipv6.conf.lo.disable_ipv6 = 1
 sudo sysctl -p
 ```
 
-### To get running
+### Set up services
 This assumes you have ssh access.
 
 Setup logging. Use the [promtail script](../../observability-config/README.md#use-the-setup-script)
@@ -98,7 +97,7 @@ Start the services.
 
 `docker compose up -d`
 
-### Security Setup with CrowdSec
+#### Setup CrowdSec
 
 This setup includes CrowdSec for advanced security protection:
 
@@ -126,8 +125,9 @@ docker exec -it crowdsec cscli decisions list
 docker exec -it crowdsec cscli alerts list
 ```
 
-### Reload caddyfile without restart
-If you make changes to the Caddyfile you can load the new configuration without restarting the container by running `docker exec caddy caddy reload --config /etc/caddy/Caddyfile`
+#### Deploy website
+
+When first setting up the repository, the `caddy/site` directory contains only a `.keep` file to ensure the directory is tracked by git. Follow the [steps below](#deploying-the-website-to-caddysite) to populate it with the website.
 
 ### Cloudflare DNS Configuration
 After setting up everything, you need to configure DNS records in Cloudflare:
@@ -165,3 +165,11 @@ curl -I https://jasongodson.com
 ```
 
 The "*" wildcard record routes all subdomains to your tunnel, where they will be processed according to your ingress rules in the config.yaml file.
+
+### Other information
+
+##### Deploying the website to `caddy/site`.
+Follow the readme in the [website README](/website/README.md#deploy-to-remote-server).
+
+#### Reload caddyfile without restart
+If you make changes to the Caddyfile you can load the new configuration without restarting the container by running `docker exec caddy caddy reload --config /etc/caddy/Caddyfile`

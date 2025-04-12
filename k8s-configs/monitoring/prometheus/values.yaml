@@ -15,6 +15,9 @@ server:
   securityContext:
     seccompProfile:
       type: RuntimeDefault
+  
+  retention: "365d"
+  retentionSize: "35GB"
 
   containerSecurityContext:
     allowPrivilegeEscalation: false
@@ -138,6 +141,23 @@ extraScrapeConfigs: |
         target_label: instance
         regex: '.*'
         replacement: 'minio'
+
+  - job_name: ceph-cluster
+    honor_labels: true
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets:
+        - '192.168.1.244:9283'
+        - '192.168.1.245:9283'
+        - '192.168.1.246:9283'
+        - '192.168.1.247:9283'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - source_labels: [__address__]
+        target_label: ceph_cluster
+        replacement: ceph
 
 prometheus-pushgateway:
   enabled: false
