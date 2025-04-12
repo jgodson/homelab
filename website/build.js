@@ -4,48 +4,51 @@ const crypto = require('crypto');
 
 const distDir = path.join(__dirname, 'dist');
 
-// Clean and create dist directory
 fs.emptyDirSync(distDir);
 
-// Copy all files from src
 fs.copySync(path.join(__dirname, 'src'), distDir);
 
-// Directories to check for assets
-const cssDir = path.join(distDir, 'assets', 'css');
-const jsDir = path.join(distDir, 'assets', 'js');
-const imgDir = path.join(distDir, 'assets', 'images');
+const assetDirectories = [
+  {
+    dir: path.join(distDir, 'assets', 'css'),
+    extensions: ['.css']
+  },
+  {
+    dir: path.join(distDir, 'assets', 'js'),
+    extensions: ['.js']
+  },
+  {
+    dir: path.join(distDir, 'assets', 'images'),
+    extensions: ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp']
+  }
+];
 
-// Process all assets with content hashing
-processAssets(cssDir, '.css');
-processAssets(jsDir, '.js');
-processAssets(imgDir, ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp']);
-
-function processAssets(directory, extensions) {
-  if (!fs.existsSync(directory)) return;
-  
-  const extensionArray = Array.isArray(extensions) ? extensions : [extensions];
-  
-  fs.readdirSync(directory).forEach(file => {
-    // Skip if the file doesn't match any of our extensions
-    if (!extensionArray.some(ext => file.toLowerCase().endsWith(ext))) return;
+function processAllAssets(assetDirs) {
+  assetDirs.forEach(({ dir, extensions }) => {
+    if (!fs.existsSync(dir)) return;
     
-    const filePath = path.join(directory, file);
-    if (fs.statSync(filePath).isFile()) {
-      // Calculate hash based on file content
-      const fileContent = fs.readFileSync(filePath);
-      const hash = crypto.createHash('md5').update(fileContent).digest('hex').substring(0, 8);
+    fs.readdirSync(dir).forEach(file => {
+      // Skip if the file doesn't match any of our extensions
+      if (!extensions.some(ext => file.toLowerCase().endsWith(ext))) return;
       
-      // Create new filename with hash
-      const extension = path.extname(file);
-      const basename = path.basename(file, extension);
-      const newFilename = `${basename}.${hash}${extension}`;
-      
-      // Rename the file
-      fs.renameSync(filePath, path.join(directory, newFilename));
-      
-      // Update references in HTML and CSS files
-      updateReferences(file, newFilename);
-    }
+      const filePath = path.join(dir, file);
+      if (fs.statSync(filePath).isFile()) {
+        // Calculate hash based on file content
+        const fileContent = fs.readFileSync(filePath);
+        const hash = crypto.createHash('md5').update(fileContent).digest('hex').substring(0, 8);
+        
+        // Create new filename with hash
+        const extension = path.extname(file);
+        const basename = path.basename(file, extension);
+        const newFilename = `${basename}.${hash}${extension}`;
+        
+        // Rename the file
+        fs.renameSync(filePath, path.join(dir, newFilename));
+        
+        // Update references in HTML and CSS files
+        updateReferences(file, newFilename);
+      }
+    });
   });
 }
 
@@ -106,4 +109,40 @@ function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-console.log('Build complete with content-based hashing');
+function printDirectoryTree(dir, indent = '') {
+  if (!fs.existsSync(dir)) return;
+
+  const items = fs.readdirSync(dir);
+  items.forEach((item, index) => {
+    const fullPath = path.join(dir, item);
+    const stats = fs.statSync(fullPath);
+    const isLast = index === items.length - 1;
+    const prefix = isLast ? '└── ' : '├── ';
+    const childIndent = indent + (isLast ? '    ' : '│   ');
+
+    if (stats.isDirectory()) {
+      console.log(`${indent}${prefix}${item}/`);
+      printDirectoryTree(fullPath, childIndent);
+    } else {
+      console.log(`${indent}${prefix}${item} (${formatBytes(stats.size)})`);
+    }
+  });
+}
+
+function formatBytes(bytes) {
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes === 0) return '0 B';
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
+}
+
+
+// Process all asset directories
+function run() {
+  processAllAssets(assetDirectories);
+  console.log('Build complete 🎉');
+  console.log('\nDirectory structure:\n');
+  printDirectoryTree(distDir);
+}
+
+run();
