@@ -12,9 +12,8 @@
    - `homeassistant` - For Home Assistant metrics
    - `proxmox` - For Proxmox metrics
 6. Generate API Tokens with write access to one bucket each
-6. Configure data sources to use `https://influxdb.home.jasongodson.com:443`
+6. Configure data sources to use `https://influxdb.home.jasongodson.com`
    - The org id can be obtained from the url `https://influxdb.home.jasongodson.com/orgs/<org_id>`
    - For Home Assistant: Use the homeassistant bucket and token
    - For Proxmox: Use the proxmox bucket and token.
-       - Check `Advanced` and then uncheck `Verify Certificate`
    - No path needed

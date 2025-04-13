@@ -164,3 +164,35 @@ main {
   display: inline-block;
   transition: none;
 }
+
+.not-found {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.not-found-image {
+  margin: 2em auto;
+  max-width: 400px;
+}
+
+.not-found-image img {
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.home-button {
+  display: inline-block;
+  margin-top: 1em;
+  padding: 0.75em 1.5em;
+  background-color: #0078d4;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.home-button:hover {
+  background-color: #005ea2;
+}

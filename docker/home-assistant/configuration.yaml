@@ -21,8 +21,8 @@ http:
 # Metrics export
 influxdb:
   api_version: 2
+  ssl: true
   host: influxdb.home.jasongodson.com
-  port: 443
   token: <REPLACE_ME>
   organization: <REPLACE_ME>
   bucket: homeassistant

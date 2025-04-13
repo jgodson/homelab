@@ -33,25 +33,50 @@
 
   servers :80 {
     name public_gateway
-    trusted_proxies cloudflare {
-        interval 12h
-        timeout 15s
-    }
-    client_ip_headers CF-Connecting-IP
+    trusted_proxies static private_ranges
+    client_ip_headers Cf-Connecting-Ip
   }
 
   # No need for auto HTTPS since Cloudflare handles this
   auto_https off
 }
 
+# Custom error handling snippet
+(error_handler) {
+  @404 expression {http.error.status_code} == 404
+  @rate_limited expression {http.error.status_code} == 429
+  @server_error expression {http.error.status_code} >= 500
+  
+  handle @404 {
+    rewrite * /404.html
+    root * /srv
+    file_server
+  }
+
+  handle @rate_limited {
+    respond "Rate limit exceeded. Please try again later." 429
+  }
+
+  handle @server_error {
+    respond "Server error occurred. I have been notified." {http.error.status_code}
+  }
+
+  handle {
+    respond "Error {http.error.status_code}: {http.error.status_text}" {http.error.status_code}
+  }
+}
+
 # Main domain
 {$DOMAIN}:80 {
+  log
+
   rate_limit {
     zone main_site {
-      # Allow 30 requests per 5 seconds per IP
-      events 30
+      key {client_ip}
+      events 60
       window 5s
     }
+    log_key
   }
 
   handle {
@@ -76,22 +101,40 @@
       Permissions-Policy "interest-cohort=()"
     }
   }
+
+  handle_errors {
+    import error_handler
+  }
 }
 
 ### www redirection
 www.{$DOMAIN}:80 {
+  log
+
+  rate_limit {
+    zone www_site {
+      key {client_ip}
+      events 30
+      window 5s
+    }
+    log_key
+  }
+
   redir https://{$DOMAIN}{uri} permanent
 }
 
 # Subdomains
 *.{$DOMAIN}:80 {
+  log
+
   # Rate limiting for subdomains - stricter than main site
   rate_limit {
     zone subdomains {
-      # More restrictive than main site since legitimate traffic is less expected
+      key {client_ip}
       events 15
       window 5s
     }
+    log_key
   }
 
   # Common security headers for all subdomains
@@ -110,8 +153,12 @@ www.{$DOMAIN}:80 {
     Permissions-Policy "interest-cohort=()"
   }
 
-  # Default response for undefined subdomains
   handle {
+    root * /srv
     respond "Not Found" 404
+  }
+
+  handle_errors {
+    import error_handler
   }
 }
