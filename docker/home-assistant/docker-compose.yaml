@@ -7,7 +7,7 @@ services:
     environment:
       - TZ=America/Edmonton
     volumes:
-      - ./docker/ha:/config
+      - ./homeassistant:/config
       - /run/dbus:/run/dbus:ro
     network_mode: host
     logging: 

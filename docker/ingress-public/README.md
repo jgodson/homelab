@@ -1,13 +1,25 @@
-### VM Config
-- CPU: 4 Cores
-- RAM: 4 GB
-- Disk: 32 GB (Shared for HA)
-- OS: Ubuntu server
-- Use static IP
-- Install docker with OS (snap)
+# Public Ingress with Cloudflare Tunnel
 
-## Initial Setup
-#### Optimizing Network Performance
+## Overview
+This setup provides secure public access to homelab services through Cloudflare Tunnels, eliminating the need to open ports on your router. It combines Caddy as a reverse proxy with Cloudflared for secure tunneling and CrowdSec for advanced security protection.
+
+## System Requirements
+
+### Hardware Recommendations
+- **CPU**: 4 Cores
+- **RAM**: 4 GB
+- **Disk**: 32 GB (Shared for high availability)
+- **Network**: Static IP address
+
+### Prerequisites
+- Ubuntu Server (or similar Linux distribution)
+- Docker and Docker Compose (Can be installed with Ubuntu via snap)
+- Cloudflare account with a registered domain
+- SSH access to the server
+
+## Installation
+
+### 1. Network Optimization
 
 For better HTTP/3 performance with Caddy, increase the UDP buffer sizes:
 
@@ -20,12 +32,13 @@ net.core.wmem_max=8388608
 net.core.rmem_default=1048576
 net.core.wmem_default=1048576
 EOF
+
+# Apply the settings
+sudo sysctl -p
 ```
 
-Then apply the settings
-`sudo sysctl -p`
+### 2. Security Hardening
 
-### Security Hardening
 #### Disable IPv6 (Recommended)
 Since Cloudflared and Caddy don't require IPv6, disable it to reduce attack surface:
 
@@ -65,22 +78,37 @@ net.ipv6.conf.lo.disable_ipv6 = 1
 sudo sysctl -p
 ```
 
-### Set up services
-This assumes you have ssh access.
+### 3. Prepare Environment
 
-Setup logging. Use the [promtail script](../../observability-config/README.md#use-the-setup-script)
+#### Set up logging
+Use the [promtail script](../../observability-config/README.md#use-the-setup-script) to configure centralized logging.
 
-Create the required directories to store data for Caddy and cloudflared.
+#### Create directories
+```bash
+mkdir -p cloudflared caddy/site caddy/data caddy/config caddy/logs crowdsec/config crowdsec/data
+```
 
-`mkdir -p cloudflared caddy/site caddy/data caddy/config caddy/logs crowdsec/config crowdsec/data`
+#### Configure environment files
+1. Create an env file for Cloudflared (I store these in 1Password):
+```bash
+# Create .env file in cloudflared directory
+# Format is TUNNEL_TOKEN=xxxx
+nano cloudflared/.env
+```
 
-Create an env file for cloudflared. This is in `Cloudflared .env` in 1Password. Create the `.env` file inside the `cloudflared` folder (ie: `cloudflared/.env`). Then paste the contents in there.
+2. Create a temporary env file for Caddy:
+```bash
+echo "CROWDSEC_API_KEY=changeme" > caddy/.env
+```
 
-Create an env file for caddy. This is temporary until you can generate an api key. Create the `.env` file inside the `crowdsec` folder (ie: `crowdsec/.env`). Then add `CROWDSEC_API_KEY=changeme`.
+### 4. Deploy Application Files
 
-`scp -r ./caddy ./cloudflared ./crowdsec ./docker-compose.yaml Caddy-Dockerfile $USER@$IP_ADDR:~/`
+Copy the necessary files to your server:
+```bash
+scp -r ./caddy ./cloudflared ./crowdsec ./docker-compose.yaml Caddy-Dockerfile user@your-server-ip:~/
+```
 
-Afterwards, set the proper permissions on the files:
+Set proper permissions on the configuration files:
 ```bash
 # Secrets files
 sudo chown root:root cloudflared/.env
@@ -93,83 +121,98 @@ sudo chmod 644 cloudflared/config.yaml
 sudo chmod 644 caddy/Caddyfile
 ```
 
-Start the services.
+### 5. Start Services
 
-`docker compose up -d`
+Launch the containers:
+```bash
+docker compose up -d
+```
 
-#### Setup CrowdSec
+## Post-Installation Setup
 
-This setup includes CrowdSec for advanced security protection:
+### Configure CrowdSec
 
 1. Generate a bouncer API key:
 ```bash
 docker exec crowdsec cscli bouncers add caddy-bouncer
 ```
 
-2. Replace 'changeme' with the generated key in caddy/.env
+2. Replace `changeme` with the generated key in the environment file:
 ```bash
+# Update CROWDSEC_API_KEY with the generated key
 sudo nano caddy/.env
 ```
 
-3. Restart the stack:
+3. Restart the stack to apply changes:
 ```bash
 docker compose up -d --force-recreate
 ```
 
-4. View security metrics:
-```bash
-# See blocked IPs
-docker exec -it crowdsec cscli decisions list
-
-# See detected scenarios
-docker exec -it crowdsec cscli alerts list
-```
-
-#### Deploy website
-
-When first setting up the repository, the `caddy/site` directory contains only a `.keep` file to ensure the directory is tracked by git. Follow the [steps below](#deploying-the-website-to-caddysite) to populate it with the website.
-
 ### Cloudflare DNS Configuration
-After setting up everything, you need to configure DNS records in Cloudflare:
 
-1. Get your tunnel ID (use one of these methods):
+After setting up the tunnel, configure DNS records in Cloudflare:
 
-   **Recommended: From Cloudflare Dashboard**
-   - Go to cloudflare.com → Log in → Go to Zero Trust → Network → Tunnels
-   - Find your tunnel (can use the connector ID from `docker logs cloudflared` to identify it, if needed) and copy its ID (make sure this is the Tunnel ID not the Connector ID)
-
-   **Alternative: Using command line**
-   ```bash
-   # If you've properly set up the origin certificate:
-   docker exec cloudflared cloudflared tunnel list
+1. Get your tunnel ID (via Cloudflare Dashboard or command line):
    
-   # Or check directly in the credentials file:
-   cat cloudflared/credentials.json | grep -o '"TunnelID":"[^"]*' | cut -d'"' -f4
-   ```
+   **From Cloudflare Dashboard:**
+   - Go to cloudflare.com → Zero Trust → Network → Tunnels
+   - Find your tunnel and copy its ID
 
-2. In the Cloudflare dashboard navigate to the domain
-3. Go to the DNS tab
-4. **Important**: Remove any existing A or AAAA records for the root domain (@) and subdomains you want to route through the tunnel
-5. Add these CNAME records:
+2. In the Cloudflare dashboard:
+   - Navigate to your domain
+   - Go to the DNS tab
+   - Remove any existing A or AAAA records for domains you want to route through the tunnel
+   - Add these CNAME records:
 
 | Type  | Name | Target                         | Proxy status |
 |-------|------|--------------------------------|--------------|
 | CNAME | @    | {TUNNEL_ID}.cfargotunnel.com   | Proxied ☁️   |
 | CNAME | *    | {TUNNEL_ID}.cfargotunnel.com   | Proxied ☁️   |
 
-Replace `{TUNNEL_ID}` with your actual tunnel ID from step 1.
-
-6. Verify the tunnel is working:
+3. Verify the tunnel is working:
 ```bash
-curl -I https://jasongodson.com
+curl -I https://example.com
 ```
 
-The "*" wildcard record routes all subdomains to your tunnel, where they will be processed according to your ingress rules in the config.yaml file.
+## Maintenance
 
-### Other information
+### Website Deployment
 
-##### Deploying the website to `caddy/site`.
-Follow the readme in the [website README](/website/README.md#deploy-to-remote-server).
+To deploy the website to the Caddy server:
+- Follow the instructions in the [website README](/website/README.md#deploy-to-remote-server)
 
-#### Reload caddyfile without restart
-If you make changes to the Caddyfile you can load the new configuration without restarting the container by running `docker exec caddy caddy reload --config /etc/caddy/Caddyfile`
+### Security Monitoring
+
+Monitor CrowdSec for security events:
+```bash
+# View blocked IPs
+docker exec -it crowdsec cscli decisions list
+
+# View detected security events
+docker exec -it crowdsec cscli alerts list
+```
+
+### Updates
+
+To update the services:
+```bash
+docker compose pull
+docker compose up -d
+```
+
+## Troubleshooting
+
+- **Tunnel Connection Issues**: Check cloudflared logs with `docker compose logs -f cloudflared`
+- **Reverse Proxy Issues**: Check Caddy logs with `docker compose logs -f caddy`
+- **Security Events**: Examine CrowdSec logs with `docker compose logs -f crowdsec`
+
+> [!TIP]
+> To reload the Caddyfile without restarting the container, use the following command:
+> ```bash
+> docker exec caddy caddy reload --config /etc/caddy/Caddyfile
+> ```
+
+## References
+- [Cloudflare Tunnels Documentation](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
+- [Caddy Documentation](https://caddyserver.com/docs/)
+- [CrowdSec Documentation](https://docs.crowdsec.net/)

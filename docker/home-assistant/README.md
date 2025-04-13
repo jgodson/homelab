@@ -1,35 +1,105 @@
-### VM Config
-- CPU: 4 Cores
-- RAM: 4 GB
-- Disk: 32 GB (Shared for HA)
-- OS: Ubuntu server
-- Use static IP
-- Install docker with OS (snap)
+# Home Assistant
 
-### To get running
+## Overview
+Home Assistant is a home automation platform that puts local control and privacy first. It integrates with various smart home devices and services, providing a central hub for home automation.
 
-Create the required directories to store data for homeassistant.
+## System Requirements
 
-`mkdir homeassistant`
+### Hardware Recommendations
+- **CPU**: 4 Cores
+- **RAM**: 4 GB
+- **Disk**: 32 GB
+- **Network**: Static IP address
 
-Change the influxdb config in the [configuration file](./configuration.yaml) to point to the correct host (if it's changed), then add the org id and the token where it says `<REPLACE_ME>` in the docker compose file.
+### Prerequisites
+- Ubuntu Server (or similar Linux distribution)
+- Docker and Docker Compose (Can be installed with Ubuntu via snap)
+- Local DNS setup (recommended)
+- InfluxDB for metrics (optional)
 
-This assumes you have ssh access. Otherwise you can also copy & paste the docker compose file in a text editor, etc.
+## Installation
 
-`scp -r ./docker-compose.yml configuration.yaml $USER@$IP_ADDR:~/homeassistant`
+### 1. Prepare the Environment
 
-**DNS Configuration**
-- Configure system DNS to use 192.168.1.253 in `/etc/systemd/resolved.conf`:
-    ```
-    [Resolve]
-    DNS=192.168.1.253
-    Domains=~home.jasongodson.com
-    FallbackDNS=1.1.1.1
-    ```
-- Restart systemd-resolved: `sudo systemctl restart systemd-resolved`
+Create the required directories for Home Assistant:
+```bash
+mkdir -p homeassistant
+```
 
-Start the services.
+### 2. Configuration
 
-`docker compose up -d`
+Copy the necessary files to your server:
+```bash
+scp -r ./docker-compose.yml configuration.yaml user@your-server-ip:~/homeassistant
+```
 
-You should now be able to login at https://ha.home.jasongodson.com
+Update the InfluxDB configuration in the configuration file:
+- Open `configuration.yaml`
+- Locate the InfluxDB integration section
+- Update the host address if needed
+- Replace `<REPLACE_ME>` with your InfluxDB organization ID and token
+
+### 3. DNS Configuration
+
+Configure system DNS to use your local DNS server:
+```bash
+# Edit /etc/systemd/resolved.conf
+[Resolve]
+DNS=192.168.1.253
+Domains=~home.example.com
+FallbackDNS=1.1.1.1
+```
+
+Restart systemd-resolved:
+```bash
+sudo systemctl restart systemd-resolved
+```
+
+### 4. Deployment
+
+Start the Home Assistant services:
+```bash
+cd homeassistant && docker compose up -d
+```
+
+## Post-Installation Setup
+
+1. Access the Home Assistant interface at https://ha.home.example.com or http://your-server-ip:8123
+2. Complete the initial onboarding process
+3. Add integrations for your smart home devices
+4. Set up automations and scenes as needed
+
+## Maintenance
+
+### Backups
+Home Assistant data is stored in the `./homeassistant` directory. Consider setting up regular backups of this directory.
+
+### Updates
+To update Home Assistant:
+```bash
+cd homeassistant
+docker compose pull
+docker compose up -d
+```
+
+## Integrations
+
+Home Assistant can integrate with numerous smart home platforms and services, some of the ones I use are (most things are auto-discovered):
+- Google Home
+- Media players
+- Weather services
+- TP-Link Kasa power strip
+- Ecobee Theromstat
+- HP Printer
+
+## Troubleshooting
+
+- If Home Assistant becomes unresponsive:
+  - Check container logs: `docker logs homeassistant`
+  - Restart the container: `docker compose restart homeassistant`
+- For integration issues, check the Home Assistant logs and verify device connectivity
+
+## References
+- [Home Assistant Documentation](https://www.home-assistant.io/docs/)
+- [Community Forum](https://community.home-assistant.io/)
+- [Integrations List](https://www.home-assistant.io/integrations/)

@@ -29,8 +29,8 @@ review:
       - person
       - dog
 notifications:
-  enabled: True
-  email: "jason_c_g@hotmail.com"
+  enabled: False
+  email: "email@example.com"
 
 detectors:
   ov1:

@@ -1,33 +1,108 @@
- ### VM Config
-- CPU: 2 Cores
-- RAM: 4 GB
-- Disk: 32 GB (Shared for HA)
-- OS: Ubuntu server
-- Use static IP
-- Install docker with OS (snap)
+# Local Ingress + AdGuard
 
-### To get running
-Create the required directories to store data for caddy and adguard.
+## Overview
+This setup provides local DNS resolution, ad blocking, and reverse proxy services for the homelab environment. It combines AdGuard Home for DNS filtering and ad blocking with Caddy as a reverse proxy for internal services.
 
-`mkdir -p adguard/work adguard/conf caddy/data caddy/config caddy/secrets`
+## System Requirements
 
-Create the env file. This is in `Caddy .env` in 1Password. Create the `.env` file inside the `caddy` folder (ie: `caddy/.env`). Then paste the contents in there.
+### Hardware Recommendations
+- **CPU**: 2 Cores
+- **RAM**: 4 GB
+- **Disk**: 32 GB (Shared for high availability)
+- **Network**: Static IP address
 
-Afterwards, set the permissions on it
+### Prerequisites
+- Ubuntu Server (or similar Linux distribution)
+- Docker and Docker Compose (Can be installed with Ubuntu via snap)
+- Cloudflare account with a registered domain
+- SSH access to the server
+
+## Installation
+
+### 1. Prepare the Environment
+
+Create the required directories for AdGuard and Caddy:
 ```bash
+mkdir -p adguard/work adguard/conf caddy/data caddy/config caddy/secrets
+```
+
+### 2. Configure Environment Variables
+
+Create the environment file for Caddy:
+```bash
+# This file needs an API Token for Cloudflare to set DNS records
+# It should have All zones - Zone:Read, DNS:Edit permissions
+# Format is CF_API_TOKEN=<token>
+nano caddy/.env
+
+# Secure the environment file
 chmod 600 caddy/.env
 ```
 
-This assumes you have ssh access. Otherwise you can also copy & paste the docker compose file in a text editor, etc.
+### 3. Deploy Application Files
 
-`scp -r ./docker-compose.yml ./Caddy-Dockerfile ./caddy $USER@$IP_ADDR:~/`
+Copy the necessary files to your server:
+```bash
+scp -r ./docker-compose.yml ./Caddy-Dockerfile ./caddy user@your-server-ip:~/
+```
 
-Start the services.
+### 4. Deployment
 
-`docker compose up -d`
+Start the services:
+```bash
+docker compose up -d
+```
 
-### Next steps
+## Post-Installation Setup
 
-- Setup Adguard at <ip>:3000
-- After that Adguard is available at adguard.home.jasongodson.com or <ip>:8080
-- Metrics from Caddy are available at <ip>:2019/metrics
+### AdGuard Home
+1. **Initial Setup**: Access the AdGuard setup wizard at http://your-server-ip:3000
+2. Follow the setup wizard to:
+   - Configure DNS settings. Specifically you should point your $DOMAIN that is set in Caddy to this server's ip address.
+   - Set up admin credentials
+   - Configure filtering preferences
+3. **After setup**: AdGuard will be available at http://adguard.home.example.com or http://your-server-ip:8080
+
+### Caddy Reverse Proxy
+- Configure using the Caddyfile located in `./caddy/Caddyfile`
+- Metrics are available at http://your-server-ip:2019/metrics
+
+## Service Integration
+
+### DNS Resolution
+1. Point your network devices to use the AdGuard server (your-server-ip) as the primary DNS
+2. For automatic domain resolution, configure your network DHCP to assign this DNS server
+
+### Local Service Access
+- All configured local services will be accessible through their designated subdomains
+- SSL certificates are automatically managed by Caddy
+
+## Maintenance
+
+### Backups
+Important data to back up includes:
+- AdGuard configuration (`adguard/conf`)
+- Caddy data and configuration (`caddy/data` and `caddy/config`)
+
+### Updates
+To update the services:
+```bash
+docker compose pull
+docker compose up -d
+```
+
+## Troubleshooting
+
+- **DNS Issues**: Check AdGuard logs with `docker compose logs -f adguard`
+- **Reverse Proxy Issues**: Check Caddy logs with `docker compose logs -f caddy`
+- **Configuration Problems**: Verify the Caddyfile syntax with `docker exec caddy caddy validate --config /etc/caddy/Caddyfile`
+
+> [!TIP]
+> To reload the Caddyfile without restarting the container, use the following command:
+> ```bash
+> docker exec caddy caddy reload --config /etc/caddy/Caddyfile
+> ```
+
+## References
+- [AdGuard Home Documentation](https://github.com/AdguardTeam/AdGuardHome/wiki)
+- [Caddy Documentation](https://caddyserver.com/docs/)

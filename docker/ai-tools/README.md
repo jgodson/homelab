@@ -1,19 +1,33 @@
-### VM Config
-- CPU: 28 Cores (No GPU)
-- RAM: 32 GB
-- Disk: 128 GB
-- OS: Ubuntu server
-- Use static IP
-- Install docker with OS (snap)
+# AI Tools Suite
 
-### To get running
+## Overview
+This setup provides a comprehensive suite of AI tools for personal use, including Ollama for model hosting, Open WebUI for interaction, N8N for workflow automation and some supporting services.
 
-On the Docker host, create the required directories to store data for services.
+## System Requirements
 
-`mkdir -p ollama open-webui postgres/data n8n/data n8n/shared n8n/backup qdrant/data secrets`
+### Hardware Recommendations
+- **CPU**: 28 Cores (I don't have GPU acceleration on my server 😭)
+- **RAM**: 32 GB
+- **Disk**: 128 GB
+- **Network**: Static IP address
 
-Create required secret files. (These are in 1Password under `AI Tools Secrets`)
+### Prerequisites
+- Ubuntu Server (or similar Linux distribution)
+- Docker and Docker Compose
+- Local DNS setup (recommended)
 
+## Installation
+
+### 1. Prepare the Environment
+
+Create the required directories for all services:
+```bash
+mkdir -p ollama open-webui postgres/data n8n/data n8n/shared n8n/backup qdrant/data secrets
+```
+
+### 2. Configure Secrets
+
+Create the necessary secret files (I store these in 1Password):
 ```bash
 echo -n "your_db_user" > secrets/postgres_user.txt
 echo -n "your_secure_password" > secrets/postgres_password.txt
@@ -22,65 +36,87 @@ echo -n "your_encryption_key" > secrets/n8n_encryption_key.txt
 echo -n "your_jwt_secret" > secrets/n8n_jwt_secret.txt
 
 # Secure the secret files
-chmod 600 secrets
+chmod 600 secrets/*
 ```
 
-**DNS Configuration**
-- Configure system DNS to use 192.168.1.253 in `/etc/systemd/resolved.conf`:
+### 3. DNS Configuration
+
+Configure system DNS for local domain resolution:
 ```bash
+# Edit /etc/systemd/resolved.conf
 [Resolve]
 DNS=192.168.1.253
-Domains=~home.jasongodson.com
+Domains=~home.example.com
 FallbackDNS=1.1.1.1
 ```
-- Restart systemd-resolved: `sudo systemctl restart systemd-resolved`
 
-This assumes you have ssh access. Otherwise you can also copy & paste the docker compose file in a text editor, etc.
+Restart systemd-resolved:
+```bash
+sudo systemctl restart systemd-resolved
+```
 
-`scp -r ./docker-compose.yml $USER@$IP_ADDR:~/`
+### 4. Deployment
 
-Start the services.
+Copy the Docker Compose file to your server:
+```bash
+scp -r ./docker-compose.yml user@your-server-ip:~/
+```
 
-`docker compose up -d`
+Start all services:
+```bash
+docker compose up -d
+```
 
-### Next Steps
+## Post-Installation Setup
 
-#### Open WebUI
+### Open WebUI
+- **Access**: http://your-server-ip:3000
+- Create an account and configure settings
+- Add models through the admin interface
 
-- URL: http://$IP_ADDR:3000
-- Setup: Create an account and add models in the admin settings
+### N8N Workflow Automation
+- **Access**: http://your-server-ip:5678
+- Create workflows for automation tasks
+- Pre-configured workflows will be automatically imported if placed in the `n8n/backup` directory
 
-#### N8N Workflow Automation
+### Qdrant Vector Database
+- **API Port**: 6333
+- Metrics available at `/metrics` for Prometheus integration
 
-- URL: http://$IP_ADDR:5678
-- Note: Pre-configured workflows will be automatically imported if you place them in the `n8n/backup` directory
-- Setup: Create an account and add models in the admin settings
+### Ollama
+- Accessible through Open WebUI at http://your-server-ip:3000/ollama/v1 (requires api token to be created in Open WebUI)
 
-#### Qdrant Vector Database
+## Directory Structure
 
-- API Port: 6333
-- Note: Metrics are available at `/metrics` for Prometheus.
+- `./ollama` - Stores Ollama models and configurations
+- `./open-webui` - Stores Open WebUI data and settings
+- `./postgres/data` - PostgreSQL database files
+- `./n8n/data` - N8N configuration and runtime data
+- `./n8n/backup` - Workflow and credential backups for automatic import
+- `./n8n/shared` - Shared data directory accessible by N8N
+- `./qdrant/data` - Qdrant vector database storage
 
-#### Directory Structure
+## Maintenance
 
-`./ollama` - Stores Ollama models and configurations
-`./open-webui` - Stores Open WebUI data and settings
-`./postgres/data` - PostgreSQL database files
-`./n8n/data` - N8N configuration and runtime data
-`./n8n/backup` - Place your workflow and credential backups here for automatic import
-`./n8n/backup/workflows` - N8N workflow files
-`./n8n/backup/credentials` - N8N credential files
-`./qdrant/data` - Qdrant vector database storage
-`./n8n/shared` - Shared data directory accessible by N8N
+### Backups
+Backing all of the above directories up is recommended (though you could skip ollama).
 
-### Tips
-- Ensure all environment variables are set before starting the services
-- For n8n automated imports, place each workflow and credential in separate files
-- Ollama is embedded within Open WebUI and accessible on port `11434` externally.
+### Updates
+To update the services:
+```bash
+docker compose pull
+docker compose up -d
+```
 
-### Troubleshooting
+## Troubleshooting
 
-- Check container logs: `docker compose logs -f <service_name>`
-- Ensure directories have proper permissions
-- Verify PostgreSQL is healthy before using n8n: `docker compose ps postgres`
-- If secrets are not being read properly, verify file permissions are set to `600`
+- **Container issues**: Check logs with `docker compose logs -f <service_name>`
+- **Database connection problems**: Verify PostgreSQL is healthy before using N8N: `docker compose ps postgres`
+- **Secret files not being read**: Check file permissions are set to `600`
+- **Service unavailable**: Ensure all required ports are accessible on your network
+
+## References
+- [Ollama Documentation](https://github.com/ollama/ollama)
+- [Open WebUI Documentation](https://github.com/open-webui/open-webui)
+- [N8N Documentation](https://docs.n8n.io/)
+- [Qdrant Documentation](https://qdrant.tech/documentation/)
