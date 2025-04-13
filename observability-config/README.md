@@ -4,7 +4,7 @@
 
 #### Use the setup script
 If you have ssh access, you can create the file locally, then copy it to the remote computer user's home folder (replace inputs as needed, this assumes it is in the directory you are currently in).
-`scp ./setup-promtail.sh <username>>@<host_or_ip>:~/setup-promtail.sh`
+`scp ./setup-promtail.sh $USER@$IP:~/`
 
 Alternatively, if you have a text editor you can copy the content from [setup-promtail.sh](setup-promtail.sh) into it and save the file.
 
@@ -34,7 +34,7 @@ chmod +x promtail-linux-amd64
 sudo mv promtail-linux-amd64 /usr/local/bin/promtail
 ```
 
-### Create the config
+#### Create the config
 
 Install a text editor if you do not have one:
 ```bash
@@ -48,7 +48,7 @@ sudo nano /usr/local/etc/promtail-config.yml
 
 To get logs off the machine itself, paste the contents of [promtail.yml](./promtail.yml). Save and exit (`Ctrl+O`, `Enter`, `Ctrl+X`).
 
-### Start the service
+#### Start the service
 
 For secruity reasons we should create a new user and add Promtail to the adm group so it can read logs, let's do that first.
 ```bash
@@ -72,16 +72,23 @@ Here is an explaination of what's in that file.
 
 
 `Description`: A brief description of what the service runs
+
 `After`: When the serice should start. In this case, we want it to start after the network is available, since it needs that.
+
 `ExecStart`: The command to start Promtail with the specified configuration file (/etc/promtail-config.yml). `-config.expand-env=true` is added to expand the environment variables we use like `${HOSTNAME}`. You can give a variable a default value like so `${VAR:-default_value}`.
+
 `Restart`: Promtail will restart automatically if it crashes.
+
 `User` and `Group`: Runs Promtail under the promtail user and group (you can adjust this if needed).
+
 `LimitNOFILE`: Sets a file descriptor limit for Promtail.
+
 `WantedBy`: Determines when the service will run. See this [document](./../docs/system-service-wantedby.md) for more information.
 
 Since we added a new service first we have to run:
 ```bash
 sudo systemctl daemon-reload
+```
 
 Now we can enable and start it:
 ```bash
@@ -98,7 +105,7 @@ You should see output that says `Loaded: loaded` and `Active: active (running)`.
 
 There should now be logs flowing to loki from the host.
  
-### Docker logs
+## Docker logs
 
 ### Install the plugin
 Install the docker plugin (current version at time of writing, check for a newer one)
@@ -106,18 +113,7 @@ Install the docker plugin (current version at time of writing, check for a newer
 sudo docker plugin install grafana/loki-docker-driver:3.4.3-amd64 --alias loki --grant-all-permissions
 ```
 
-#### Updating the plugin
-```bash
-docker plugin disable loki --force
-
-docker plugin upgrade loki grafana/loki-docker-driver:3.4.3-amd64 --grant-all-permissions
-
-docker plugin enable loki
-
-systemctl restart docker
-```
-
-### Configure the plugin in your docker-compose file (can also pass to the command line)
+### Configure the plugin in your docker-compose file
 ```yaml
 services:
   name:
@@ -146,4 +142,15 @@ Command line options to add, should you prefer to do it that way:
 --log-opt keep-file="true" \
 --log-opt mode=non-blocking \
 --log-opt loki-external-labels=container_name={{.ID}}.{{.Name}}
+```
+
+#### Updating the plugin
+```bash
+docker plugin disable loki --force
+
+docker plugin upgrade loki grafana/loki-docker-driver:3.4.3-amd64 --grant-all-permissions
+
+docker plugin enable loki
+
+systemctl restart docker
 ```

@@ -12,14 +12,14 @@ In the phase when the guest (VM) is resumed after pause (for example after shaps
 
 1. Install the agent on the guest
 
-`apt-get install qemu-guest-agent`
+    `apt-get install qemu-guest-agent`
 
 1. Check that the service is running
 
-`systemctl status qemu-guest-agent.service`
+    `systemctl status qemu-guest-agent.service`
 
-You should see `running` and likely that it is a `static` service. (So no need to enable it on boot)
+    You should see `running` and likely that it is a `static` service. (So no need to enable it on boot)
 
 1. Enable in Proxmox
 
-Check `Use QEMU Guest Agent` either when creating the VM or by going to the `Option` tab and enabling it there.
+    Check `Use QEMU Guest Agent` either when creating the VM or by going to the `Option` tab and enabling it there.
