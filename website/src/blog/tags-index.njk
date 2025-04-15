@@ -1,0 +1,30 @@
+---
+layout: base.njk
+title: Blog Tags | Jason Godson
+description: Browse blog posts by topic and interest
+permalink: /blog/tags/
+---
+
+<div class="section">
+  <h2>Browse Posts by Tag</h2>
+  <p>Find blog posts by topic and interest</p>
+</div>
+
+<div class="tags-page">
+  {% if collections.tagList.length %}
+    <div class="tags-cloud">
+      {% for tag in collections.tagList %}
+        <a href="/blog/tags/{{ tag | slug }}/" class="tag-cloud-item">
+          <span class="tag">{{ tag }}</span>
+          <span class="tag-count">{{ collections.blog | getPostsByTag(tag) | length }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No tags found.</p>
+  {% endif %}
+  
+  <p class="back-link">
+    <a href="/blog/">← Back to all posts</a>
+  </p>
+</div>

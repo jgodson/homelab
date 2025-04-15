@@ -41,19 +41,7 @@ Update the InfluxDB configuration in the configuration file:
 
 ### 3. DNS Configuration
 
-Configure system DNS to use your local DNS server:
-```bash
-# Edit /etc/systemd/resolved.conf
-[Resolve]
-DNS=192.168.1.253
-Domains=~home.example.com
-FallbackDNS=1.1.1.1
-```
-
-Restart systemd-resolved:
-```bash
-sudo systemctl restart systemd-resolved
-```
+In order to send logs or metrics to local hostnames, we need to use the internal DNS server. Follow [these instructions](docs/dns-config-ubuntu.md) to configure DNS for Ubuntu if it has not already been set to use the DNS server.
 
 ### 4. Deployment
 

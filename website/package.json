@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "description": "Jason Godson's personal website",
   "scripts": {
-    "dev": "http-server src -p 3000 -c-1",
-    "build": "node build.js",
+    "dev": "eleventy --serve",
+    "build:eleventy": "eleventy",
+    "build": "npm run build:eleventy && node build.js",
     "deploy": "bash deploy.sh"
   },
   "devDependencies": {
-    "http-server": "^14.1.1",
-    "fs-extra": "^11.1.1"
+    "@11ty/eleventy": "^2.0.1",
+    "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.0",
+    "fs-extra": "^11.1.1",
+    "http-server": "^14.1.1"
   }
 }

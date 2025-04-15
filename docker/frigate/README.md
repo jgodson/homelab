@@ -80,5 +80,6 @@ Frigate can be integrated with Home Assistant using:
 
 ## References
 - [Frigate Documentation](https://docs.frigate.video/)
+- [Reference Config](https://docs.frigate.video/configuration/reference)
 - [Hardware Acceleration Guide](https://docs.frigate.video/configuration/hardware_acceleration)
 - [Camera Compatibility](https://docs.frigate.video/configuration/camera_specific)

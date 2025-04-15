@@ -1,9 +1,9 @@
 x-logging: &default-logging
-  logging: 
+  logging:
     driver: loki
     options:
       loki-url: "https://loki.home.jasongodson.com/loki/api/v1/push"
-      loki-retries: 2
+      loki-retries: 4
       loki-max-backoff: 800ms
       loki-timeout: 1s
       keep-file: "true"

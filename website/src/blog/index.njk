@@ -1,0 +1,78 @@
+---
+layout: base.njk
+title: Blog | Jason Godson
+description: Blog posts about technology, software development, and homelab projects by Jason Godson
+pagination:
+  data: collections.blog
+  size: 10
+  alias: posts
+---
+
+<div class="section">
+  <h2>📝 Blog Posts</h2>
+  <p>Thoughts, tutorials, and explorations in tech, development, and homelab projects.</p>
+  {% if collections.blog.length > 10 %}
+    <p class="browse-tags-link"><a href="/blog/tags/">Browse posts by tag →</a></p>
+  {% endif %}
+</div>
+
+<div class="blog-list">
+  {% for post in pagination.items %}
+    <article class="blog-preview">
+      <h3><a href="{{ post.url }}">{{ post.data.title }}</a></h3>
+      <div class="post-meta">
+        <time datetime="{{ post.date | dateToISO }}">{{ post.date | dateToFormat('MMMM d, yyyy') }}</time>
+        
+        {% if post.data.tags %}
+        <div class="post-tags">
+          {% for tag in post.data.tags %}
+            {% if tag != "blog" %}
+            <a href="/blog/tags/{{ tag | slug }}/" class="tag">{{ tag }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      
+      {% if post.data.description %}
+        <p>{{ post.data.description }}</p>
+      {% endif %}
+      <a href="{{ post.url }}" class="read-more">Read more →</a>
+    </article>
+  {% endfor %}
+
+  {% if collections.blog.length === 0 %}
+    <p>No blog posts yet. Check back soon!</p>
+  {% endif %}
+  
+  {# Pagination controls #}
+  {% if pagination.pages.length > 1 %}
+    <div class="pagination">
+        <div class="pagination-previous">
+        {% if pagination.href.previous %}
+            <a href="{{ pagination.href.previous }}">← Previous</a>
+        {% else %}
+            <span class="disabled">← Previous</span>
+        {% endif %}
+        </div>
+        
+        <div class="pagination-numbers">
+        {% for pageNumber in pagination.pages %}
+            {% if loop.index == pagination.pageNumber + 1 %}
+            <span class="current-page">{{ loop.index }}</span>
+            {% else %}
+            <a href="{{ pagination.hrefs[loop.index0] }}">{{ loop.index }}</a>
+            {% endif %}
+        {% endfor %}
+        </div>
+        
+        <div class="pagination-next">
+        {% if pagination.href.next %}
+            <a href="{{ pagination.href.next }}">Next →</a>
+        {% else %}
+            <span class="disabled">Next →</span>
+        {% endif %}
+        </div>
+    </div>
+  {% endif %}
+</div>

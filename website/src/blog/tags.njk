@@ -1,0 +1,36 @@
+---
+pagination:
+  data: collections.tagList
+  size: 1
+  alias: tag
+permalink: /blog/tags/{{ tag | slug }}/
+layout: base.njk
+eleventyComputed:
+  title: "Tag: {{ tag }} | Jason Godson"
+  description: "Blog posts tagged with '{{ tag }}'"
+---
+
+<div class="section">
+  <h2>Posts tagged with "{{ tag }}"</h2>
+  <p>All blog posts related to {{ tag }}</p>
+</div>
+
+<div class="blog-list">
+  {% set tagList = collections[tag] %}
+  {% for post in collections.blog %}
+    {% if tag in post.data.tags %}
+      <article class="blog-preview">
+        <h3><a href="{{ post.url }}">{{ post.data.title }}</a></h3>
+        <time datetime="{{ post.date | dateToISO }}">{{ post.date | dateToFormat }}</time>
+        {% if post.data.description %}
+          <p>{{ post.data.description }}</p>
+        {% endif %}
+        <a href="{{ post.url }}" class="read-more">Read more →</a>
+      </article>
+    {% endif %}
+  {% endfor %}
+
+  <p class="back-link">
+    <a href="/blog/">← Back to all posts</a>
+  </p>
+</div>

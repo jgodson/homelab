@@ -9,35 +9,68 @@ body {
   flex-direction: column;
 }
 
-header {
+body > header {
   background-color: #1a202c;
   color: white;
   padding: 20px;
   text-align: center;
+  margin-bottom: 2.5em;
 }
 
-header h1 {
+body > header h1 {
   margin: 0;
   font-size: 2.5em;
 }
 
-header p {
+body > header p {
   font-size: 1.1em;
 }
 
+body > header nav {
+  margin-top: 1em;
+}
+
+body > header nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+
+body > header nav ul li {
+  margin: 0 15px;
+}
+
+body > header nav ul li a {
+  color: white;
+  text-decoration: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+body > header nav ul li a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+body > header h1 a {
+  color: white;
+  text-decoration: none;
+}
+
 .section {
-  padding: 25px 20px;
   max-width: 800px;
   margin: 0 auto;
 }
 
-/* Add a decorative separator under section headers */
 .section h2 {
   text-align: center;
   color: #1a202c;
   margin-bottom: 0.8em;
   position: relative;
   padding-bottom: 12px;
+  margin-block-start: 0;
 }
 
 /* Create the separator using pseudo-element */
@@ -52,13 +85,13 @@ header p {
   border-radius: 2px;
 }
 
-/* Improve text readability */
 .section p {
   line-height: 1.6;
   margin-top: 1.2em;
   margin-bottom: 1.2em;
   font-size: 1.05em;
   letter-spacing: 0.01em;
+  text-align: center;
 }
 
 main {
@@ -78,7 +111,7 @@ main {
   position: relative;
 }
 
-.social-icons a:hover {
+social-icons a:hover {
   color: #0077b5;
 }
 
@@ -91,7 +124,7 @@ main {
   padding: 5px 8px;
   position: absolute;
   z-index: 1;
-  bottom: 125%; /* move it above the icon */
+  bottom: 125%;
   left: 50%;
   transform: translateX(-50%) translateY(10px);
   opacity: 0;
@@ -104,7 +137,7 @@ main {
 .tooltip-text::after {
   content: "";
   position: absolute;
-  top: 100%; /* bottom of tooltip */
+  top: 100%;
   left: 50%;
   margin-left: -5px;
   border-width: 5px;
@@ -124,6 +157,7 @@ main {
   color: white;
   text-align: center;
   padding: 20px 0;
+  margin-top: 1.5em;
 }
 
 #footer p {
@@ -195,4 +229,370 @@ main {
 
 .home-button:hover {
   background-color: #005ea2;
+}
+
+.blog-list {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.blog-preview {
+  padding-bottom: 1.5em;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.pagination ~ .blog-preview:last-child,
+.blog-preview:last-of-type {
+  border-bottom: none;
+}
+
+.blog-preview h3 {
+  margin-bottom: 0.3em;
+}
+
+.blog-preview h3 a {
+  color: #1a202c;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.blog-preview h3 a:hover {
+  color: #3498db;
+}
+
+.blog-preview time {
+  display: block;
+  color: #666;
+  font-size: 0.9em;
+  margin-bottom: 0.8em;
+}
+
+.blog-preview p {
+  margin: 0.8em 0;
+}
+
+.read-more {
+  display: inline-block;
+  margin-top: 0.5em;
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.read-more:hover {
+  color: #1a202c;
+}
+
+.post-meta {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.6em;
+  margin-bottom: 0.8em;
+  flex-wrap: wrap;
+}
+
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em;
+  align-items: baseline;
+  position: relative;
+}
+
+.blog-post {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.blog-header {
+  margin-bottom: 2.5em;
+  padding-bottom: 1em;
+  background-color: transparent;
+  color: #333;
+  text-align: center;
+  padding: 0;
+  position: relative;
+}
+
+.blog-header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #3498db, transparent);
+  border-radius: 2px;
+}
+
+.blog-header .meta {
+  color: #666;
+  font-size: 0.95em;
+  margin-bottom: 2em;
+  display: flex;
+  flex-direction: column; /* Stack date and tags vertically */
+  align-items: center;
+  justify-content: center;
+  gap: 0.8em;
+}
+
+.blog-header .meta::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 1em;
+}
+
+blog-header time {
+  display: inline-block;
+  color: #555;
+  font-weight: 500;
+  font-size: 1.15em;
+}
+
+.blog-header .tags,
+.blog-preview .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em;
+  justify-content: center;
+}
+
+.blog-header .tag {
+  display: inline-block;
+  background-color: #3498db;
+  color: white;
+  padding: 0.4em 1em;
+  border-radius: 30px; /* Pill shape */
+  font-size: 0.85em;
+  font-weight: 500;
+  border: 1px solid rgba(52, 152, 219, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.blog-header .tag:hover {
+  background-color: #2980b9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.blog-preview .tag {
+  font-size: 0.8em;
+  padding: 0.2em 1em;
+  line-height: 1.3;
+  background-color: #e7f2fd;
+  border-radius: 30px;
+  margin: 0;
+  box-shadow: none;
+  border: none;
+  text-transform: lowercase;
+  letter-spacing: -0.01em;
+  vertical-align: middle;
+  display: inline-block;
+  color: #3498db;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+.blog-preview .tag:hover {
+  background-color: #d6e9fb;
+  color: #2980b9;
+  transform: translateY(-1px);
+}
+
+.blog-header h1 {
+  margin-bottom: 0.3em;
+  color: #1a202c;
+  font-size: 2.3em;
+  font-weight: 700;
+  margin-block-start: 0;
+}
+
+.blog-content {
+  line-height: 1.7;
+  font-size: 1.05em;
+}
+
+.blog-content h2 {
+  margin-top: 1.8em;
+  color: #1a202c;
+}
+
+.blog-content p {
+  margin: 1.2em 0;
+}
+
+.blog-content img {
+  max-width: 100%;
+  margin: 1.5em auto;
+  display: block;
+  border-radius: 5px;
+}
+
+.back-link {
+  margin-top: 2em;
+  text-align: center;
+}
+
+.back-link a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.back-link a:hover {
+  color: #2980b9;
+}
+
+/* Tags cloud page styles */
+.tags-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px 40px;
+}
+
+.tags-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  margin: 2em 0;
+}
+
+.tag-cloud-item .tag {
+  margin-right: 0;
+  padding-right: 0.7em;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  background-color: #3498db;
+  transition: background-color 0.2s ease;
+  display: inline-block;
+  color: white;
+  padding: 0.4em 1em 0.4em 1em;
+  border-top-left-radius: 30px; 
+  border-bottom-left-radius: 30px;
+  font-size: 0.85em;
+  font-weight: 500;
+  border: 1px solid rgba(52, 152, 219, 0.2);
+  border-right: none;
+}
+
+.tag-cloud-item {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s ease;
+  overflow: hidden;
+  border-radius: 30px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tag-count {
+  background-color: #2980b9;
+  color: white;
+  border-top-right-radius: 30px;
+  border-bottom-right-radius: 30px;
+  padding: 0.4em 0.8em;
+  font-size: 0.85em;
+  font-weight: 500;
+  display: inline-block;
+  border: 1px solid rgba(52, 152, 219, 0.2);
+  border-left: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.tag-cloud-item:hover .tag {
+  background-color: #2980b9;
+}
+
+.tag-cloud-item:hover .tag-count {
+  background-color: #1f6aa1;
+}
+
+.browse-tags-link {
+  text-align: center;
+  margin-top: 1.5em;
+}
+
+.browse-tags-link a {
+  display: inline-block;
+  background-color: #3498db;
+  color: white;
+  padding: 0.5em 1.2em;
+  border-radius: 30px;
+  font-size: 0.9em;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid rgba(52, 152, 219, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.browse-tags-link a:hover {
+  background-color: #2980b9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+/* Pagination with adjusted spacing */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1.5em;
+  border-top: 1px solid #e0e0e0;
+}
+
+.pagination-numbers {
+  display: flex;
+  gap: 0.5em;
+}
+
+.pagination-numbers a,
+.pagination-previous a,
+.pagination-next a,
+.pagination-numbers .current-page,
+.pagination .disabled {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2em;
+  padding: 0.4em 0.7em;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.95em;
+}
+
+.pagination-numbers a,
+.pagination-previous a,
+.pagination-next a {
+  background-color: #f4f4f9;
+  color: #3498db;
+  transition: all 0.2s ease;
+}
+
+.pagination-numbers a:hover,
+.pagination-previous a:hover,
+.pagination-next a:hover {
+  background-color: #3498db;
+  color: white;
+}
+
+.pagination-numbers .current-page {
+  background-color: #3498db;
+  color: white;
+  font-weight: 500;
+}
+
+.pagination .disabled {
+  color: #bbb;
+  cursor: not-allowed;
 }

@@ -3,10 +3,13 @@ const path = require('path');
 const crypto = require('crypto');
 
 const distDir = path.join(__dirname, 'dist');
+const srcSiteDir = path.join(__dirname, 'src_site');
 
+// Empty the dist directory
 fs.emptyDirSync(distDir);
 
-fs.copySync(path.join(__dirname, 'src'), distDir);
+// Copy all files from 11ty output to dist
+fs.copySync(srcSiteDir, distDir);
 
 const assetDirectories = [
   {
@@ -134,7 +137,6 @@ function formatBytes(bytes) {
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
 }
-
 
 // Process all asset directories
 function run() {

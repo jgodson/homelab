@@ -1,0 +1,25 @@
+---
+layout: base.njk
+---
+
+<article class="blog-post">
+  <header class="blog-header">
+    <h1>{{ title }}</h1>
+    <div class="meta">
+      <time datetime="{{ page.date | dateToISO }}">{{ page.date | dateToFormat('MMMM d, yyyy') }}</time>
+      {% if tags %}
+      <div class="tags">
+        {% for tag in tags %}
+          {% if tag != "blog" %}
+          <a href="/blog/tags/{{ tag | slug }}/" class="tag">{{ tag }}</a>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </header>
+  
+  <div class="blog-content">
+    {{ content | safe }}
+  </div>
+</article>
