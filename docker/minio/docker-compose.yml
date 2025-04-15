@@ -24,6 +24,17 @@ services:
     secrets:
       - root_user
       - root_password
+    logging:
+      driver: loki
+      options:
+        loki-url: "https://loki.home.jasongodson.com/loki/api/v1/push"
+        loki-retries: 2
+        loki-max-backoff: 800ms
+        loki-timeout: 1s
+        keep-file: "true"
+        mode: "non-blocking"
+        max-size: "10m"
+        max-file: "3"
 
 secrets:
   root_user:

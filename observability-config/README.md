@@ -108,49 +108,25 @@ There should now be logs flowing to loki from the host.
 ## Docker logs
 
 ### Install the plugin
-Install the docker plugin (current version at time of writing, check for a newer one)
+Install the docker plugin. You can find the latest version [here](https://hub.docker.com/r/grafana/loki-docker-driver/tags), replacing `<latest_version>` with the proper version.
 ```bash
-sudo docker plugin install grafana/loki-docker-driver:3.4.3-amd64 --alias loki --grant-all-permissions
+sudo docker plugin install grafana/loki-docker-driver:<latest_version>-amd64 --alias loki --grant-all-permissions
 ```
 
-### Configure the plugin in your docker-compose file
-```yaml
-services:
-  name:
-    container_name: xxx
-    image: xxxx
-    logging:
-      driver: loki
-      options:
-        loki-url: https://loki.home.jasongodson.com/loki/api/v1/push
-        loki-retries: 2
-        loki-max-backoff: 800ms
-        loki-timeout: 1s
-        keep-file: "true"
-        mode: non-blocking
-        loki-external-labels: "container_name={{.ID}}.{{.Name}},host=${HOSTNAME}"
-```
-
-Command line options to add, should you prefer to do it that way:
-```bash
---log-driver=loki \
---log-opt loki-url="https://loki.home.jasongodson.com/loki/api/v1/push" \
---log-opt loki-tenant-id=home \
---log-opt loki-retries=2 \
---log-opt loki-max-backoff=800ms \
---log-opt loki-timeout=1s \
---log-opt keep-file="true" \
---log-opt mode=non-blocking \
---log-opt loki-external-labels=container_name={{.ID}}.{{.Name}}
-```
+### Configure the plugin options for docker
+See [docker-config](./docker-config.md)
 
 #### Updating the plugin
 ```bash
 docker plugin disable loki --force
 
-docker plugin upgrade loki grafana/loki-docker-driver:3.4.3-amd64 --grant-all-permissions
+docker plugin upgrade loki grafana/loki-docker-driver:<latest_version>-amd64 --grant-all-permissions
 
 docker plugin enable loki
 
-systemctl restart docker
+sudo systemctl restart docker
+
+# If you are using snap
+
+sudo snap restart docker
 ```

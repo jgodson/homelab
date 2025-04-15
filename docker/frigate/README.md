@@ -26,6 +26,10 @@ Create the required directories for Frigate:
 mkdir -p storage config
 ```
 
+#### DNS Configuration
+
+In order to send logs or metrics to local hostnames, we need to use the internal DNS server. Follow [these instructions](docs/dns-config-ubuntu.md) to configure DNS for Ubuntu if it has not already been set to use the DNS server.
+
 ### 2. Configuration
 
 Copy the Docker Compose and config file to your server:

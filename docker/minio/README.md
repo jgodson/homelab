@@ -40,20 +40,9 @@ echo -n "<password_from_1password>" > minio/secrets/root_password.txt
 chmod 600 minio/secrets/root_user.txt minio/secrets/root_password.txt
 ```
 
-### 3. DNS Configuration (Optional)
+### 3. DNS Configuration
 
-Configure local DNS resolution in `/etc/systemd/resolved.conf`:
-```bash
-[Resolve]
-DNS=192.168.1.253
-Domains=~home.example.com
-FallbackDNS=1.1.1.1
-```
-
-Restart systemd-resolved:
-```bash
-sudo systemctl restart systemd-resolved
-```
+In order to send logs or metrics to local hostnames, we need to use the internal adguard server. Follow [these instructions](docs/dns-config-ubuntu.md) to configure DNS for Ubuntu if it has not already been set to use the DNS server.
 
 ### 4. Deployment
 

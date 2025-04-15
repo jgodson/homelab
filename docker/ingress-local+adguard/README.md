@@ -67,6 +67,10 @@ docker compose up -d
 - Configure using the Caddyfile located in `./caddy/Caddyfile`
 - Metrics are available at http://your-server-ip:2019/metrics
 
+#### DNS Configuration
+
+In order to send logs or metrics to local hostnames, we need to use the internal adguard server. Follow [these instructions](docs/dns-config-ubuntu.md) to configure DNS for Ubuntu if it has not already been set to use the DNS server. Instead of a specific ip, in this case you can use `localhost`.
+
 ## Service Integration
 
 ### DNS Resolution

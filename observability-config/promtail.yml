@@ -32,4 +32,4 @@ scrape_configs:
         labels:
           job: syslog
           __path__: "/var/log/*.log"
-          host: "unset"
+          host: "SET_ME"
