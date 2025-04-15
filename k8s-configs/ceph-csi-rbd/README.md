@@ -1,5 +1,5 @@
 ### Steps
-- Create user for ceph on promox node
+- Create user for ceph on Proxmox node
 
 ```bash
 ceph auth get-or-create client.kubernetes \
@@ -104,7 +104,6 @@ echo 'Testing direct Ceph connection with CSI credentials'
 echo '[global]' > /etc/ceph/ceph.conf
 echo 'mon host = $MONIP:6789' >> /etc/ceph/ceph.conf
 
-# This is the key correction - proper keyring format
 echo '[client.kubernetes]' > /etc/ceph/keyring
 echo 'key = $userKey' >> /etc/ceph/keyring
 

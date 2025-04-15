@@ -48,7 +48,7 @@
   @server_error expression {http.error.status_code} >= 500
   
   handle @404 {
-    rewrite * /404.html
+    rewrite * /404
     root * /srv
     file_server
   }
@@ -154,7 +154,6 @@ www.{$DOMAIN}:80 {
   }
 
   handle {
-    root * /srv
     respond "Not Found" 404
   }
 

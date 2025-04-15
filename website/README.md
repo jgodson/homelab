@@ -4,7 +4,7 @@
 
 `npm run dev`
 
-### Visit local server at http://localhost:3000
+### Visit local server at http://localhost:8080
 
 # Build with versioned assets
 
