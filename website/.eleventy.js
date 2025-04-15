@@ -1,17 +1,14 @@
-module.exports = function (eleventyConfig) {
+module.exports = function(eleventyConfig) {
   const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
   eleventyConfig.addPlugin(syntaxHighlight);
 
   // Copy assets directory to the output (_site) directory
   eleventyConfig.addPassthroughCopy("src/assets");
 
-  let tagSet;
+  const tagSet = new Set();
   
   // Set up blog collection
-  eleventyConfig.addCollection("blog", function (collection) {
-    // Reset the tag set each time this runs
-    tagSet = new Set();
-    
+  eleventyConfig.addCollection("blog", function(collection) {
     // Get all blog posts, collect tags, and sort by date in a single pass
     const sortedPosts = collection.getFilteredByGlob("src/blog/*.md")
       .map(post => {
@@ -34,13 +31,13 @@ module.exports = function (eleventyConfig) {
   });
 
   // Create collections for each tag
-  eleventyConfig.addCollection("tagList", function () {
+  eleventyConfig.addCollection("tagList", function() {
     return [...tagSet].sort();
   });
 
   // Add filter to get posts by tag
-  eleventyConfig.addFilter("getPostsByTag", function (posts, tag) {
-    return posts.filter(post => {
+  eleventyConfig.addFilter("getPostsByTag", function(posts, tag) {
+    return posts.filter((post) => {
       return post.data.tags && post.data.tags.includes(tag);
     });
   });
