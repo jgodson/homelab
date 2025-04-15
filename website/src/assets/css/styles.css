@@ -59,6 +59,29 @@ body > header h1 a {
   text-decoration: none;
 }
 
+/* Navigation active link styling */
+body > header nav ul li a.active {
+  font-weight: 500;
+  position: relative;
+}
+
+
+body > header nav ul li a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  background-color: #3498db;
+  border-radius: 1px;
+  transition: transform 0.2s ease;
+}
+
+body > header nav ul li a.active:hover::after {
+  transform: scaleX(1.1);
+}
+
 .section {
   max-width: 800px;
   margin: 0 auto;
@@ -73,7 +96,7 @@ body > header h1 a {
   margin-block-start: 0;
 }
 
-/* Create the separator using pseudo-element */
+/* Separator using pseudo-element */
 .section h2::after {
   content: "";
   position: absolute;
@@ -334,7 +357,7 @@ social-icons a:hover {
   font-size: 0.95em;
   margin-bottom: 2em;
   display: flex;
-  flex-direction: column; /* Stack date and tags vertically */
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.8em;
