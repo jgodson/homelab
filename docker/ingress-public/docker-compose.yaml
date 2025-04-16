@@ -27,12 +27,6 @@ services:
       - ./cloudflared:/etc/cloudflared
     ports:
       - "2000:2000"
-    healthcheck:
-      test: ["CMD", "cloudflared", "tunnel", "info"]
-      interval: 60s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
     networks:
       - proxy-network
 
