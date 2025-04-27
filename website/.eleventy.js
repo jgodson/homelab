@@ -1,9 +1,62 @@
 module.exports = function(eleventyConfig) {
   const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
+  const Image = require("@11ty/eleventy-img");
+  const path = require("path");
+  
   eleventyConfig.addPlugin(syntaxHighlight);
 
   // Copy assets directory to the output (_site) directory
   eleventyConfig.addPassthroughCopy("src/assets");
+
+  // Simplified image shortcode focusing on WebP optimization
+  eleventyConfig.addShortcode("image", async function(src, alt, sizes = "100vw") {
+    if (!src) {
+      throw new Error(`Missing image source`);
+    }
+    
+    if (!alt) {
+      throw new Error(`Missing alt text for image: ${src}`);
+    }
+    
+    const sourceMetadata = await Image(src, {
+      widths: [null],
+      formats: ["png"],
+      dryRun: true
+    });
+    
+    // Get original width to avoid generating larger sizes
+    const originalWidth = sourceMetadata.png[0].width;
+    
+    // Define responsive widths based on original size
+    let widths = [300, 600];
+    if (originalWidth > 600) widths.push(Math.min(900, originalWidth));
+    if (originalWidth > 900) widths.push(Math.min(1200, originalWidth));
+    
+    let options = {
+      widths: widths,
+      formats: ["webp", "png"],
+      outputDir: "./src_site/assets/images/",
+      urlPath: "/assets/images/",
+      filenameFormat: function(_, src, width, format) {
+        const name = path.basename(src, path.extname(src));
+        return `${name}-${width}w.${format}`;
+      },
+      jpegOptions: false,
+      avifOptions: false
+    };
+    
+    let metadata = await Image(src, options);
+    
+    let imageAttributes = {
+      alt,
+      sizes,
+      loading: "lazy",
+      decoding: "async",
+      class: "responsive-image"
+    };
+    
+    return Image.generateHTML(metadata, imageAttributes);
+  });
 
   const tagSet = new Set();
   

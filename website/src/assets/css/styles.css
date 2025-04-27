@@ -224,7 +224,6 @@ social-icons a:hover {
 
 .not-found {
   text-align: center;
-  margin-top: 3rem;
 }
 
 .not-found-image {
@@ -232,8 +231,9 @@ social-icons a:hover {
   max-width: 400px;
 }
 
-.not-found-image img {
+.responsive-image {
   width: 100%;
+  height: auto;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }

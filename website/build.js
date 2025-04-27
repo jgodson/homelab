@@ -5,10 +5,8 @@ const crypto = require('crypto');
 const distDir = path.join(__dirname, 'dist');
 const srcSiteDir = path.join(__dirname, 'src_site');
 
-// Empty the dist directory
-fs.emptyDirSync(distDir);
 
-// Copy all files from 11ty output to dist
+fs.emptyDirSync(distDir);
 fs.copySync(srcSiteDir, distDir);
 
 const assetDirectories = [
@@ -22,16 +20,16 @@ const assetDirectories = [
   },
   {
     dir: path.join(distDir, 'assets', 'images'),
-    extensions: ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp']
+    extensions: ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'],
   }
 ];
 
 function processAllAssets(assetDirs) {
-  assetDirs.forEach(({ dir, extensions }) => {
+  assetDirs.forEach(({ dir, extensions, skipPattern }) => {
     if (!fs.existsSync(dir)) return;
     
     fs.readdirSync(dir).forEach(file => {
-      // Skip if the file doesn't match any of our extensions
+      if (skipPattern && skipPattern.test(file)) return;
       if (!extensions.some(ext => file.toLowerCase().endsWith(ext))) return;
       
       const filePath = path.join(dir, file);
@@ -40,12 +38,10 @@ function processAllAssets(assetDirs) {
         const fileContent = fs.readFileSync(filePath);
         const hash = crypto.createHash('md5').update(fileContent).digest('hex').substring(0, 8);
         
-        // Create new filename with hash
         const extension = path.extname(file);
         const basename = path.basename(file, extension);
         const newFilename = `${basename}.${hash}${extension}`;
         
-        // Rename the file
         fs.renameSync(filePath, path.join(dir, newFilename));
         
         // Update references in HTML and CSS files
