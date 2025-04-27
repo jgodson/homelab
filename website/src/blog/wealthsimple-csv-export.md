@@ -82,8 +82,12 @@ With just a little code and some digging into the page structure, I was able to 
 
 This is what I love about being a developer and the power of code:
 
-See a gap
-Build a bridge
-Keep moving
+- See a gap
+- Build a bridge
+- Keep moving
 
 Tools like this don't just save time — they create freedom as you don't have to rely on someone else deciding what's important for you.
+
+---
+
+Thanks for reading! Stay tuned for more post about things in my life related technology, my homelab, home improvement, etc!
