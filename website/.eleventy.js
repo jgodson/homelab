@@ -1,9 +1,28 @@
+const markdownIt = require("markdown-it");
+const markdownItAnchor = require("markdown-it-anchor");
+
 module.exports = function(eleventyConfig) {
   const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
   const Image = require("@11ty/eleventy-img");
   const path = require("path");
   
   eleventyConfig.addPlugin(syntaxHighlight);
+
+  // Configure Markdown with anchors
+  let markdownOptions = {
+    html: true,
+    breaks: true,
+    linkify: true
+  };
+  
+  let markdownLibrary = markdownIt(markdownOptions).use(markdownItAnchor, {
+    permalink: true,
+    permalinkClass: "direct-link",
+    permalinkSymbol: "",
+    level: [1, 2, 3, 4, 5, 6]
+  });
+  
+  eleventyConfig.setLibrary("md", markdownLibrary);
 
   // Copy assets directory to the output (_site) directory
   eleventyConfig.addPassthroughCopy("src/assets");

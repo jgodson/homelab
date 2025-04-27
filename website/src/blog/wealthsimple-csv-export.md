@@ -41,7 +41,7 @@ At first the results were messy:
 - Refunds and purchases were not distinguished.
 - Fields with commas (like `April 23, 2025`) broke the CSV parser.
 
-After a few iterations, I ended up with a cleaner, more robust script. Quoting fields correctly in CSVs is crucial when your data contains commas.
+After a few iterations, I ended up with a cleaner, more robust script. Quoting fields correctly in CSVs is crucial when your data contains commas. See the [Appendix](#wealthsimple-credit-card-transaction-download-script) for the full script.
 
 ## Hidden Problems: Unicode Minus Signs
 
@@ -82,12 +82,72 @@ With just a little code and some digging into the page structure, I was able to 
 
 This is what I love about being a developer and the power of code:
 
-- See a gap
-- Build a bridge
-- Keep moving
+See a gap
+Build a bridge
+Keep moving
 
 Tools like this don't just save time — they create freedom as you don't have to rely on someone else deciding what's important for you.
 
 ---
 
 Thanks for reading! Stay tuned for more post about things in my life related technology, my homelab, home improvement, etc!
+
+#### Appendix
+
+##### Wealthsimple Credit Card transaction download script
+```javascript
+(function() {
+  const rows = [];
+
+  const buttons = document.querySelectorAll("button");
+
+  buttons.forEach(button => {
+    let date = null;
+    let el = button;
+    while (el && !date) {
+      el = el.previousElementSibling || el.parentElement;
+      if (el && el.tagName === "H2" && /\d{4}|Today|Yesterday/i.test(el.textContent)) {
+        date = el.textContent.trim();
+      }
+    }
+
+    const ps = button.querySelectorAll("p");
+    const description = ps[0]?.textContent.trim();
+
+    let amount = null;
+    ps.forEach(p => {
+      if (/\$\d/.test(p.textContent)) {
+        amount = p.textContent.trim();
+      }
+    });
+
+    if (date && description && amount) {
+      rows.push([date, description, amount]);
+    }
+  });
+
+  const uniqueRows = Array.from(new Set(rows.map(e => e.join("|")))).map(r => r.split("|"));
+
+  function csvEscape(value) {
+    if (typeof value !== 'string') return value;
+    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+      return `"${value.replace(/"/g, '""')}"`; // Escape double quotes by doubling them
+    }
+    return value;
+  }
+
+  const csvHeader = ["Date", "Description", "Amount"];
+  const csvRows = [csvHeader, ...uniqueRows];
+
+  const csvContent = "data:text/csv;charset=utf-8,"
+    + csvRows.map(row => row.map(csvEscape).join(",")).join("\n");
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "transactions.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+})();
+```

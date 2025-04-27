@@ -619,3 +619,37 @@ blog-header time {
   color: #bbb;
   cursor: not-allowed;
 }
+
+/* Styling for heading anchor links */
+.direct-link {
+  position: relative;
+  margin-left: 0.3em;
+  text-decoration: none;
+  font-size: 0.8em;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  transform: translateY(-1px);
+  line-height: 0;
+}
+
+h1:hover .direct-link,
+h2:hover .direct-link,
+h3:hover .direct-link,
+h4:hover .direct-link,
+h5:hover .direct-link,
+h6:hover .direct-link {
+  visibility: visible;
+  opacity: 1;
+}
+
+.direct-link::after {
+  content: "#";
+  color: #3498db;
+  display: inline-block;
+  line-height: 1;
+  padding: 0 0.15em;
+  position: relative;
+}
