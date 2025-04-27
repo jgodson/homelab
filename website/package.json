@@ -4,8 +4,9 @@
   "description": "Jason Godson's personal website",
   "scripts": {
     "dev": "eleventy --serve",
+    "build:clean": "rm -rf src_site dist",
     "build:eleventy": "eleventy",
-    "build": "npm run build:eleventy && node build.js",
+    "build": "npm run build:clean && npm run build:eleventy && node build.js",
     "deploy": "bash deploy.sh"
   },
   "devDependencies": {
