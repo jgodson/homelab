@@ -175,6 +175,85 @@ module.exports = function(eleventyConfig) {
     return url;
   });
   
+  // Add a filter specifically for feed content that simplifies HTML
+  eleventyConfig.addFilter("prepareFeedContent", function(content, baseUrl) {
+    if (!content) return "";
+    if (!baseUrl) return content;
+    
+    // Normalize base URL
+    baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    
+    try {
+      // Create a simple DOM parser
+      const JSDOM = require("jsdom").JSDOM;
+      const dom = new JSDOM(content);
+      const document = dom.window.document;
+      
+      // Process all picture elements
+      const pictures = document.querySelectorAll("picture");
+      pictures.forEach(picture => {
+        // Get the img element and its attributes
+        const img = picture.querySelector("img");
+        if (!img) return;
+        
+        const src = img.getAttribute("src") || "";
+        const alt = img.getAttribute("alt") || "";
+        const className = img.getAttribute("class") || "";
+        
+        // Create new img element with absolute URL
+        const newImg = document.createElement("img");
+        newImg.setAttribute("alt", alt);
+        if (className) newImg.setAttribute("class", className);
+        
+        // Set absolute source
+        if (src.startsWith("/")) {
+          newImg.setAttribute("src", `${baseUrl}${src}`);
+        } else {
+          newImg.setAttribute("src", src);
+        }
+        
+        // Replace the picture with the img
+        picture.parentNode.replaceChild(newImg, picture);
+      });
+      
+      // Fix all URLs in the document
+      const fixUrl = (url) => {
+        if (!url) return url;
+        if (url.startsWith("/")) return `${baseUrl}${url}`;
+        return url;
+      };
+      
+      // Fix links
+      document.querySelectorAll("a[href]").forEach(link => {
+        const href = link.getAttribute("href");
+        if (href && href.startsWith("/")) {
+          link.setAttribute("href", fixUrl(href));
+        }
+      });
+      
+      // Fix images
+      document.querySelectorAll("img[src]").forEach(img => {
+        const src = img.getAttribute("src");
+        if (src && src.startsWith("/")) {
+          img.setAttribute("src", fixUrl(src));
+        }
+      });
+      
+      return document.body.innerHTML;
+    } catch (e) {
+      console.error("Error processing feed content:", e);
+      
+      // Fallback to basic regex replacement if JSDOM fails
+      return content
+        .replace(/<picture>[\s\S]*?<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>[\s\S]*?<\/picture>/g, (match, src, alt) => {
+          const absoluteSrc = src.startsWith('/') ? `${baseUrl}${src}` : src;
+          return `<img src="${absoluteSrc}" alt="${alt}" />`;
+        })
+        .replace(/href="\/([^"]*)"/g, `href="${baseUrl}/$1"`)
+        .replace(/src="\/([^"]*)"/g, `src="${baseUrl}/$1"`);
+    }
+  });
+  
   eleventyConfig.addFilter("htmlToAbsoluteUrls", function(html, base) {
     if (!html) return "";
     if (!base) return html;
