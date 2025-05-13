@@ -253,43 +253,6 @@ module.exports = function(eleventyConfig) {
         .replace(/src="\/([^"]*)"/g, `src="${baseUrl}/$1"`);
     }
   });
-  
-  eleventyConfig.addFilter("htmlToAbsoluteUrls", function(html, base) {
-    if (!html) return "";
-    if (!base) return html;
-    
-    // Normalize base URL to ensure it doesn't have a trailing slash
-    const baseUrl = base.endsWith('/') ? base.slice(0, -1) : base;
-    
-    // Handle various attributes and patterns in HTML
-    return html
-      // Fix regular href attributes
-      .replace(/href="\/([^"]*)"/g, `href="${baseUrl}/$1"`)
-      // Fix regular src attributes
-      .replace(/src="\/([^"]*)"/g, `src="${baseUrl}/$1"`)
-      // Fix srcset attributes that use relative paths
-      .replace(/srcset="(\/[^"]*\s+\d+[wx][^"]*)"/g, function(match, srcset) {
-        return 'srcset="' + srcset.replace(/\/([^\s]+)\s+/g, `${baseUrl}/$1 `) + '"';
-      })
-      // Fix paths in picture/source elements
-      .replace(/srcset="([^"]*)"([^>]*>)/g, function(match, srcset, rest) {
-        if (srcset.includes('/assets/') || srcset.includes('/images/')) {
-          // Process srcset with multiple image candidates
-          const newSrcset = srcset
-            .split(',')
-            .map(src => {
-              const parts = src.trim().split(' ');
-              if (parts[0].startsWith('/')) {
-                parts[0] = `${baseUrl}${parts[0]}`;
-              }
-              return parts.join(' ');
-            })
-            .join(', ');
-          return `srcset="${newSrcset}"${rest}`;
-        }
-        return match;
-      });
-  });
 
   return {
     dir: {

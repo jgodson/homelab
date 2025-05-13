@@ -19,7 +19,7 @@ eleventyExcludeFromCollections: true
     <link href="{{ post.url | url | absoluteUrl(metadata.url) }}"/>
     <updated>{{ post.date | dateToISO }}</updated>
     <id>{{ post.url | url | absoluteUrl(metadata.url) }}</id>
-    <content type="html">{{ post.templateContent | htmlToAbsoluteUrls(metadata.url) }}</content>
+    <content type="html">{{ post.templateContent | prepareFeedContent(metadata.url) }}</content>
   </entry>
   {%- endfor %}
 </feed>
