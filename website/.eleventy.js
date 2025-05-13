@@ -3,10 +3,12 @@ const markdownItAnchor = require("markdown-it-anchor");
 
 module.exports = function(eleventyConfig) {
   const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
+  const pluginRss = require("@11ty/eleventy-plugin-rss");
   const Image = require("@11ty/eleventy-img");
   const path = require("path");
   
   eleventyConfig.addPlugin(syntaxHighlight);
+  eleventyConfig.addPlugin(pluginRss);
 
   // Configure Markdown with anchors
   let markdownOptions = {
@@ -26,6 +28,8 @@ module.exports = function(eleventyConfig) {
 
   // Copy assets directory to the output (_site) directory
   eleventyConfig.addPassthroughCopy("src/assets");
+  // Copy robots.txt to the output (_site) directory
+  eleventyConfig.addPassthroughCopy("src/robots.txt");
 
   // Simplified image shortcode focusing on WebP optimization
   eleventyConfig.addShortcode("image", async function(src, alt, sizes = "100vw") {
@@ -132,13 +136,80 @@ module.exports = function(eleventyConfig) {
     
     // Add one day to fix the timezone offset issue
     dateObj.setDate(dateObj.getDate() + 1);
+  
+    return dateObj.toISOString();
+  });
+  
+  // Add a filter to get the most recent post date for the Atom feed
+  eleventyConfig.addFilter("getNewestCollectionItemDate", collection => {
+    if (!collection || !collection.length) return new Date();
+    return new Date(Math.max(...collection.map(item => item.date)));
+  });
+  
+  // Add filter to get file modification date
+  eleventyConfig.addFilter("getFileLastModified", inputPath => {
+    try {
+      const fs = require('fs');
+      if (!inputPath) return new Date();
+      
+      const filePath = inputPath.toString();
+      const fullPath = path.resolve(filePath);
+      
+      if (fs.existsSync(fullPath)) {
+        const stats = fs.statSync(fullPath);
+        return stats.mtime;
+      } else {
+        console.log(`File not found: ${fullPath}`);
+      }
+      return new Date();
+    } catch (e) {
+      console.log("Error getting last modified date:", e);
+      return new Date();
+    }
+  });
+  
+  // Filters for absolute URLs in the feed
+  eleventyConfig.addFilter("absoluteUrl", (url, base) => {
+    if (!url) return base;
+    if (url.startsWith("/")) return `${base}${url}`;
+    return url;
+  });
+  
+  eleventyConfig.addFilter("htmlToAbsoluteUrls", function(html, base) {
+    if (!html) return "";
+    if (!base) return html;
     
-    // Format as YYYY-MM-DD
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
+    // Normalize base URL to ensure it doesn't have a trailing slash
+    const baseUrl = base.endsWith('/') ? base.slice(0, -1) : base;
     
-    return `${year}-${month}-${day}`;
+    // Handle various attributes and patterns in HTML
+    return html
+      // Fix regular href attributes
+      .replace(/href="\/([^"]*)"/g, `href="${baseUrl}/$1"`)
+      // Fix regular src attributes
+      .replace(/src="\/([^"]*)"/g, `src="${baseUrl}/$1"`)
+      // Fix srcset attributes that use relative paths
+      .replace(/srcset="(\/[^"]*\s+\d+[wx][^"]*)"/g, function(match, srcset) {
+        return 'srcset="' + srcset.replace(/\/([^\s]+)\s+/g, `${baseUrl}/$1 `) + '"';
+      })
+      // Fix paths in picture/source elements
+      .replace(/srcset="([^"]*)"([^>]*>)/g, function(match, srcset, rest) {
+        if (srcset.includes('/assets/') || srcset.includes('/images/')) {
+          // Process srcset with multiple image candidates
+          const newSrcset = srcset
+            .split(',')
+            .map(src => {
+              const parts = src.trim().split(' ');
+              if (parts[0].startsWith('/')) {
+                parts[0] = `${baseUrl}${parts[0]}`;
+              }
+              return parts.join(' ');
+            })
+            .join(', ');
+          return `srcset="${newSrcset}"${rest}`;
+        }
+        return match;
+      });
   });
 
   return {

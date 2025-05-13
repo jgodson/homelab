@@ -65,7 +65,6 @@ body > header nav ul li a.active {
   position: relative;
 }
 
-
 body > header nav ul li a.active::after {
   content: '';
   position: absolute;

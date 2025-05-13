@@ -1,0 +1,27 @@
+---
+permalink: /sitemap.xml
+eleventyExcludeFromCollections: true
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  {%- for page in collections.all %}
+    {%- if not page.data.eleventyExcludeFromCollections and page.url and page.url !== "/404/" %}
+      <url>
+        <loc>{{ page.url | url | absoluteUrl(metadata.url) | trim }}</loc>
+        <lastmod>{{ page.date | default(page.inputPath | getFileLastModified) | dateToISO }}</lastmod>
+        <changefreq>{% if page.url === '/' %}weekly{% else %}monthly{% endif %}</changefreq>
+        <priority>{% if page.url === '/' %}1.0{% elif page.url.startsWith('/blog/') and page.url !== '/blog/' %}0.8{% else %}0.7{% endif %}</priority>
+      </url>
+    {%- endif %}
+  {%- endfor %}
+  
+  {# Add tag pages manually since they're generated via pagination #}
+  {%- for tag in collections.tagList %}
+    <url>
+      <loc>{{ ('/blog/tags/' + tag | slug + '/') | absoluteUrl(metadata.url) | trim }}</loc>
+      <lastmod>{{ collections.blog | getNewestCollectionItemDate | dateToISO }}</lastmod>
+      <changefreq>monthly</changefreq>
+      <priority>0.7</priority>
+    </url>
+  {%- endfor %}
+</urlset>
