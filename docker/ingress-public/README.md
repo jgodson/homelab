@@ -100,10 +100,36 @@ In order to send logs or metrics to local hostnames, we need to use the internal
 nano cloudflared/.env
 ```
 
-2. Create a temporary env file for Caddy:
+2. Generate a bcrypt password hash for basic authentication:
 ```bash
-echo "CROWDSEC_API_KEY=changeme" > caddy/.env
+# If Caddy is already running
+docker exec -it caddy caddy hash-password -a bcrypt
+
+# Or run a temporary Caddy container
+docker run --rm -it caddy:latest caddy hash-password -a bcrypt
 ```
+
+> [!NOTE]
+> The command will prompt you to enter and confirm your password (this is what you will send when authenticating with the server). After processing, it will output a bcrypt hash like:
+> `$2a$14$wVsaPvJnzUY.R1w6FTXI5O.QW8c5XGQv.SJMwjAFLSJ/KMveaBQYu`
+
+3. Create an env file for Caddy with required variables:
+```bash
+nano caddy/.env
+```
+
+Add the following content (replacing the values with your actual data):
+```bash
+CROWDSEC_API_KEY=changeme
+TELEMETRY_USERNAME=yourtelemetryuser
+TELEMETRY_PASSWORD_HASH='$2a$14$ExampleHashWithSpecialChars'
+```
+
+> [!IMPORTANT]
+> - When using bcrypt hashes in environment files, enclose them in single quotes to prevent special character issues
+> - Make sure there are NO spaces around the equals sign
+> - Avoid using special characters in the username
+> - Do not add any comments on the same line as the variables
 
 ### 4. Deploy Application Files
 
@@ -132,6 +158,9 @@ Launch the containers:
 docker compose up -d
 ```
 
+> [!TIP]
+> If you see errors like `The "XXX" variable is not set. Defaulting to a blank string`, check your .env file and ensure you used single quotes around variables with special characters.
+
 ## Post-Installation Setup
 
 ### Configure CrowdSec
@@ -141,7 +170,7 @@ docker compose up -d
 docker exec crowdsec cscli bouncers add caddy-bouncer
 ```
 
-2. Replace `changeme` with the generated key in the environment file:
+2. Update the environment file with the generated API key:
 ```bash
 # Update CROWDSEC_API_KEY with the generated key
 sudo nano caddy/.env

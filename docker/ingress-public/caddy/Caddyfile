@@ -123,6 +123,53 @@ www.{$DOMAIN}:80 {
   redir https://{$DOMAIN}{uri} permanent
 }
 
+# OpenTelemetry (OTLP) endpoint for both logs and traces
+telemetry.{$DOMAIN}:80 {
+  log
+
+  # Rate limiting only for failed authentication attempts
+  @failed_auth expression {http.error.status_code} == 401
+
+  rate_limit @failed_auth {
+    zone failed_auth {
+      key {client_ip}
+      events 5
+      window 60s
+    }
+    log_key
+  }
+
+  basic_auth {
+    {$TELEMETRY_USERNAME} {$TELEMETRY_PASSWORD_HASH}
+  }
+
+  # Security headers
+  header {
+    X-Frame-Options "SAMEORIGIN"
+    X-Content-Type-Options "nosniff"
+    X-XSS-Protection "1; mode=block"
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Permissions-Policy "interest-cohort=()"
+  }
+
+  # Handle all OTLP requests (HTTP and gRPC)
+  handle {
+    reverse_proxy https://alloy.home.jasongodson.com {
+      header_up X-Real-IP {client_ip}
+      transport http {
+        read_timeout 5m
+        write_timeout 5m
+        dial_timeout 10s
+      }
+    }
+  }
+
+  handle_errors {
+    import error_handler
+  }
+}
+
 # Subdomains
 *.{$DOMAIN}:80 {
   log
@@ -139,17 +186,11 @@ www.{$DOMAIN}:80 {
 
   # Common security headers for all subdomains
   header {
-    # Prevent clickjacking
     X-Frame-Options "SAMEORIGIN"
-    # Help prevent XSS attacks
     X-Content-Type-Options "nosniff"
-    # Prevent MIME type sniffing
     X-XSS-Protection "1; mode=block"
-    # Enable strict HTTPS
     Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-    # Control referrer information
     Referrer-Policy "strict-origin-when-cross-origin"
-    # Disable FLoC tracking
     Permissions-Policy "interest-cohort=()"
   }
 
