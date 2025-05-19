@@ -4,6 +4,11 @@
   metrics {
     per_host
   }
+  
+  servers {
+    trusted_proxies static private_ranges
+    client_ip_headers Cf-Connecting-Ip
+  }
 }
 
 *.{$DOMAIN} {
@@ -115,6 +120,7 @@
   handle {
     reverse_proxy 192.168.1.35:80 {
       header_up Host {host}
+      header_up X-Real-IP {client_ip}
     }
   }
 }

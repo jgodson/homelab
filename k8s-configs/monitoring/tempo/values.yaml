@@ -1,0 +1,152 @@
+# Disable reporting to Grafana
+reportingEnabled: false
+
+# Add security context configuration to fix PodSecurity violations
+tempo:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    seccompProfile:
+      type: RuntimeDefault
+
+storage:
+  trace:
+    backend: s3
+    s3:
+      bucket: tempo
+      endpoint: 192.168.1.252:9000
+      access_key: ${MINIO_ACCESS_KEY}
+      secret_key: ${MINIO_SECRET_KEY}
+      insecure: true
+      forcepathstyle: true
+
+traces:
+  otlp:
+    grpc:
+      enabled: true
+    http:
+      enabled: true
+
+# Setting for the distributor component
+distributor:
+  extraEnvFrom:
+    - secretRef:
+        name: tempo-minio-credentials
+  extraArgs:
+    - "-config.expand-env=true"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+metricsGenerator:
+  enabled: true
+  extraEnvFrom:
+    - secretRef:
+        name: tempo-minio-credentials
+  extraArgs:
+    - "-config.expand-env=true"
+  config:
+    storage:
+      path: /var/tempo/wal
+      remote_write:
+        - url: http://prometheus-server.monitoring.svc.cluster.local/api/v1/write
+          headers:
+            X-Scope-OrgID: anonymous
+    traces_storage:
+      path: /var/tempo/traces
+  walEmptyDir:
+    medium: "Memory"
+    sizeLimit: 1Gi
+  resources:
+    requests:
+      cpu: 200m
+      memory: 1.5Gi
+    limits:
+      cpu: 1
+      memory: 2Gi
+
+# Settings for the ingester component
+ingester:
+  # Configure multiple replicas since we're not using persistence
+  replicas: 3
+  persistence:
+    enabled: false
+  extraEnvFrom:
+    - secretRef:
+        name: tempo-minio-credentials
+  extraArgs:
+    - "-config.expand-env=true"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Settings for the compactor component
+compactor:
+  extraEnvFrom:
+    - secretRef:
+        name: tempo-minio-credentials
+  extraArgs:
+    - "-config.expand-env=true"
+  config:
+    compaction:
+      block_retention: 168h
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Settings for the querier component
+querier:
+  extraEnvFrom:
+    - secretRef:
+        name: tempo-minio-credentials
+  extraArgs:
+    - "-config.expand-env=true"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Settings for the query-frontend component
+queryFrontend:
+  extraEnvFrom:
+    - secretRef:
+        name: tempo-minio-credentials
+  extraArgs:
+    - "-config.expand-env=true"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Override configuration for all tenants to enable metric generators
+overrides:
+  defaults:
+    metrics_generator:
+      processors:
+        - service-graphs
+        - span-metrics
+        - local-blocks

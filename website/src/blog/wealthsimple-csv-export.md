@@ -3,7 +3,6 @@ title: Wealthsimple Won’t Let You Export Your Credit Card Transactions? Here's
 description: Wealthsimple’s new credit card is great, but there’s no CSV export yet. Here’s how I built a custom browser script to export my transactions and integrate them into my app.
 date: 2025-04-27
 tags: 
-  - blog
   - automation
   - finance
   - scripting

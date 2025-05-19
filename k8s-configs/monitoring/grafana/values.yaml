@@ -30,23 +30,25 @@ admin:
   userKey: admin-user
   passwordKey: admin-password
 
-datasources:
-  datasources.yaml:
-    apiVersion: 1
-    datasources:
-    - name: Prometheus
-      type: prometheus
-      url: http://prometheus-server.monitoring.svc.cluster.local
-      access: proxy
-      isDefault: true
-    - name: Loki
-      type: loki
-      url: http://loki-read.monitoring.svc.cluster.local:3100
-      access: proxy
-
 plugins:
   - grafana-clock-panel
   - marcusolsson-treemap-panel
+
+smtp:
+  enabled: true
+  host: smtp.gmail.com:587
+  existingSecret: grafana-smtp
+  fromName: Grafana Alerts
+
+grafana.ini:
+  reporting_enabled: false
+  smtp:
+    enabled: true
+    host: smtp.gmail.com:587
+    from_name: Grafana Alerts
+  security:
+    cookie_secure: true
+    strict_transport_security: true
 
 testFramework:
   enabled: false

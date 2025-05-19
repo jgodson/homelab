@@ -12,12 +12,6 @@ ports:
     expose: 
       default: true
 
-# Enable persistence for Let's Encrypt certificates
-persistence:
-  enabled: true
-  size: 128Mi
-  storageClass: "ceph-rbd"
-
 service:
   annotations:
     metallb.universe.tf/loadBalancerIPs: 192.168.1.35
@@ -28,4 +22,9 @@ securityContext:
 
 # Remove anonymous usage reporting
 globalArguments:
-- "--global.checknewversion"
+- "--global.checknewversion=false"
+- "--global.sendanonymoususage=false"
+
+additionalArguments:
+  - "--entrypoints.web.forwardedHeaders.trustedIPs=192.168.1.253/32"
+  - "--entryPoints.web.proxyProtocol.trustedIPs=192.168.1.253/32"

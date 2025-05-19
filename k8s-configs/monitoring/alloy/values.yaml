@@ -1,0 +1,252 @@
+global:
+  podSecurityContext:
+    fsGroup: 10001
+    runAsGroup: 10001
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+
+alloy:
+  enableReporting: false
+
+  # Add additional ports for OTLP
+  extraPorts:
+    - name: "otlp-grpc"
+      port: 4317
+      targetPort: 4317
+      protocol: "TCP"
+      appProtocol: "h2c" 
+    - name: "otlp-http"
+      port: 4318
+      targetPort: 4318
+      protocol: "TCP"
+  
+  mounts:
+    extra:
+      - name: tmp-volume
+        mountPath: /tmp
+  
+  configMap:
+    content: |
+      // Main OTLP receiver for all telemetry data
+      otelcol.receiver.otlp "default" {
+        grpc {
+          endpoint = "0.0.0.0:4317"
+        }
+        http {
+          endpoint = "0.0.0.0:4318"
+        }
+        output {
+          logs = [otelcol.processor.attributes.logs.input]
+          metrics = [otelcol.processor.batch.metrics.input]
+          traces = [otelcol.processor.batch.traces.input]
+        }
+      }
+
+      // Process logs: add attributes for Loki
+      otelcol.processor.attributes "logs" {
+        action {
+          key = "processed_by"
+          value = "alloy"
+          action = "insert"
+        }
+        
+        action {
+          key = "loki.attribute.labels"
+          action = "insert"
+          value = "hostname, level, shop_id, storefront_id, deployment_id, code, processed_by"
+        }
+
+        action {
+          key = "loki.resource.labels"
+          action = "insert"
+          value = "service.name"
+        }
+
+        action {
+          key = "loki.format"
+          value = "json"
+          action = "insert"
+        }
+        
+        output {
+          logs = [otelcol.processor.batch.logs.input]
+        }
+      }
+
+      // Batch processors for each telemetry type
+      otelcol.processor.batch "logs" {
+        timeout = "5s"
+        send_batch_size = 1024
+        output {
+          logs = [otelcol.exporter.loki.default.input]
+        }
+      }
+
+      otelcol.processor.batch "metrics" {
+        timeout = "5s"
+        send_batch_size = 1024
+        output {
+          metrics = [otelcol.processor.attributes.metrics.input]
+        }
+      }
+
+      otelcol.processor.batch "traces" {
+        timeout = "5s"
+        send_batch_size = 1024
+        output {
+          traces = [otelcol.processor.attributes.traces.input]
+        }
+      }
+
+      // Process metrics: add attributes for Prometheus
+      otelcol.processor.attributes "metrics" {
+        action {
+          key = "processed_by"
+          value = "alloy"
+          action = "insert"
+        }
+        output {
+          metrics = [otelcol.exporter.prometheus.default.input]
+        }
+      }
+      
+      // Process traces: add attributes for Tempo
+      otelcol.processor.attributes "traces" {
+        action {
+          key = "processed_by"
+          value = "alloy"
+          action = "insert"
+        }
+        
+        output {
+          traces = [otelcol.exporter.otlp.tempo.input]
+        }
+      }
+      
+      // Exporters
+
+      // Prometheus exporter for metrics
+      otelcol.exporter.prometheus "default" {
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+
+      prometheus.remote_write "default" {
+        endpoint {
+          url = "http://prometheus-server.monitoring.svc.cluster.local:9090/api/v1/write"
+        }
+      }
+
+      // Loki exporter for logs
+      otelcol.exporter.loki "default" {
+        forward_to = [loki.write.default.receiver]
+      }
+
+      loki.write "default" {
+        endpoint {
+          url = "http://loki-write.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+          tenant_id = "homelab"
+        }
+      }
+
+      // Tempo exporter for traces
+      otelcol.exporter.otlp "tempo" {
+        client {
+          endpoint = "tempo-distributor.monitoring.svc.cluster.local:4317"
+          tls {
+            insecure = true
+          }
+        }
+      }
+  
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    seccompProfile:
+      type: RuntimeDefault
+  
+  resources:
+    requests:
+      cpu: 200m
+      memory: 1.25Gi
+    limits:
+      cpu: 500m
+      memory: 1.75Gi
+
+configReloader:
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    seccompProfile:
+      type: RuntimeDefault
+
+controller:
+  type: 'deployment'
+  replicas: 2
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "12345"
+    prometheus.io/path: "/-/metrics"
+
+  volumes:
+    extra:
+      - name: tmp-volume
+        emptyDir: {}
+  
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - alloy
+          topologyKey: kubernetes.io/hostname
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+ingress:
+  enabled: true
+  ingressClassName: "traefik"
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: "web"
+    # Enable gRPC for the otlp-grpc port
+    traefik.ingress.kubernetes.io/grpc-enabled: "true"
+    # Increase timeouts for telemetry data
+    traefik.ingress.kubernetes.io/request-timeout: "300s"
+  hosts:
+    - alloy.home.jasongodson.com
+  extraPaths:
+    - path: /v1/traces
+      pathType: Prefix
+      backend:
+        service:
+          name: alloy
+          port:
+            number: 4318
+    - path: /v1/metrics
+      pathType: Prefix
+      backend:
+        service:
+          name: alloy
+          port:
+            number: 4318
+    - path: /v1/logs
+      pathType: Prefix
+      backend:
+        service:
+          name: alloy
+          port:
+            number: 4318

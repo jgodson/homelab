@@ -7,5 +7,8 @@
 1. Deploy Prometheus with Helm. [See readme](./prometheus/README.md)
 1. Ensure Minio is running with Docker (for Loki). [See readme](../../docker/minio/README.md)
 1. Deploy Loki with Helm. [See readme](./loki/README.md)
-    - See [log config readme](../../log-config/README.md) for how to start sending logs to Loki.
+    - See [observability config readme](../../observability-config/README.md) for how to start sending logs to Loki.
+1. Deploy Tempo with Helm for distributed tracing. [See readme](./tempo/README.md)
+1. Deploy Grafana Alloy with Helm for unified telemetry collection. [See readme](./alloy/README.md)
 1. Deploy Grafana with Helm. [See readme](./grafana/README.md)
+    - Remember to add Tempo as a data source in Grafana after setup

@@ -156,7 +156,7 @@ telemetry.{$DOMAIN}:80 {
   # Handle all OTLP requests (HTTP and gRPC)
   handle {
     reverse_proxy https://alloy.home.jasongodson.com {
-      header_up X-Real-IP {client_ip}
+      header_up Host alloy.home.jasongodson.com
       transport http {
         read_timeout 5m
         write_timeout 5m

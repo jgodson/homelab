@@ -4,7 +4,6 @@ description: How a simple gaming PC build for my son reminded me that desktops a
 date: 2025-05-12
 tags: 
   - hardware
-  - pc-building
   - gaming
   - tech
 layout: post.njk
@@ -20,7 +19,7 @@ Fast forward to today. I’ve been reminded in a big way why desktop computers s
 
 It started when I picked up a used gaming PC for my son. The specs were humble by modern standards: a 4th gen Intel i7, an era-matching motherboard, a GeForce GTX 1660 GPU, and a datacenter-grade Intel SSD. But with a fresh case that looked the part and an old 4K monitor I had lying around, the thing looked slick and ran surprisingly well.
 
-{% image "./src/assets/images/the-new-pc.jpg", "Orignal wifi speeds of 100Mbps", "(min-width: 768px) 600px, 100vw" %}
+{% image "./src/assets/images/the-new-pc.jpg", "New gaming PC", "(min-width: 768px) 600px, 100vw" %}
 
 Roblox? No problem.  
 Fortnite on medium settings? Smooth.  
@@ -62,9 +61,9 @@ I installed it in under 10 minutes, and the results were immediate:
 - Bluetooth audio became **rock-solid**
 - Two USB ports now free for other things
 
-{% image "./src/assets/images/wifi-pcie.jpg", "Orignal wifi speeds of 100Mbps", "(min-width: 768px) 600px, 100vw" %}
+{% image "./src/assets/images/wifi-pcie.jpg", "New wifi card installed", "(min-width: 768px) 600px, 100vw" %}
 
-{% image "./src/assets/images/wifi-upgrade.jpg", "Orignal wifi speeds of 100Mbps", "(min-width: 768px) 600px, 100vw" %}
+{% image "./src/assets/images/wifi-upgrade.jpg", "New wifi speeds nearly 3 times faster", "(min-width: 768px) 600px, 100vw" %}
 
 After testing a round of Fortnite myself (I managed to place 7th — my son was _not_ impressed), I could confidently say: the upgrade was a win.
 
