@@ -57,6 +57,7 @@ services:
       - POSTGRES_DB_FILE=/run/secrets/postgres_db
     volumes:
       - ./postgres/data:/var/lib/postgresql/data
+      - ./postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
     secrets:
       - postgres_user
       - postgres_password
@@ -109,6 +110,39 @@ services:
     volumes:
       - ./qdrant/data:/qdrant/storage
 
+  flowise:
+    image: flowiseai/flowise:latest
+    hostname: flowise
+    container_name: flowise
+    <<: *default-logging
+    restart: unless-stopped
+    ports:
+      - 3001:3000
+    environment:
+      - DATABASE_TYPE=postgresdb
+      - DATABASE_HOST=postgres
+      - DATABASE_USER_FILE=/run/secrets/postgres_user
+      - DATABASE_PASSWORD_FILE=/run/secrets/postgres_password
+      - DATABASE_NAME_FILE=/run/secrets/flowise_db
+      - CORS_ORIGINS=*
+      - DISABLE_FLOWISE_TELEMETRY=true
+      - APP_URL=https://flowise.home.jasongodson.com
+    volumes:
+      - ./flowise:/root/.flowise
+    secrets:
+      - postgres_user
+      - postgres_password
+      - flowise_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/v1/ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
 secrets:
   postgres_user:
     file: ./secrets/postgres_user.txt
@@ -116,6 +150,8 @@ secrets:
     file: ./secrets/postgres_password.txt
   postgres_db:
     file: ./secrets/postgres_db.txt
+  flowise_db:
+    file: ./secrets/flowise_db.txt
   n8n_encryption_key:
     file: ./secrets/n8n_encryption_key.txt
   n8n_jwt_secret:

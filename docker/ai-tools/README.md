@@ -1,7 +1,7 @@
 # AI Tools Suite
 
 ## Overview
-This setup provides a comprehensive suite of AI tools for personal use, including Ollama for model hosting, Open WebUI for interaction, N8N for workflow automation and some supporting services.
+This setup provides a comprehensive suite of AI tools for personal use, including Ollama for model hosting, Open WebUI for interaction, N8N for workflow automation, Flowise for visual AI workflow building, and some supporting services.
 
 ## System Requirements
 
@@ -22,7 +22,7 @@ This setup provides a comprehensive suite of AI tools for personal use, includin
 
 Create the required directories for all services:
 ```bash
-mkdir -p ollama open-webui postgres/data n8n/data n8n/shared n8n/backup qdrant/data secrets
+mkdir -p ollama open-webui postgres/data n8n/data n8n/shared n8n/backup qdrant/data flowise secrets
 ```
 
 ### 2. Configure Secrets
@@ -32,6 +32,7 @@ Create the necessary secret files (I store these in 1Password):
 echo -n "your_db_user" > secrets/postgres_user.txt
 echo -n "your_secure_password" > secrets/postgres_password.txt
 echo -n "n8n" > secrets/postgres_db.txt
+echo -n "flowise" > secrets/flowise_db.txt
 echo -n "your_encryption_key" > secrets/n8n_encryption_key.txt
 echo -n "your_jwt_secret" > secrets/n8n_jwt_secret.txt
 
@@ -39,21 +40,26 @@ echo -n "your_jwt_secret" > secrets/n8n_jwt_secret.txt
 chmod 600 secrets/*
 ```
 
+> **Note**: If you've already set permissions on the secrets directory, you can use `sudo tee secrets/flowise_db.txt <<< "flowise"` instead of the echo command.
+
 ### 3. DNS Configuration
 
 In order to send logs or metrics to local hostnames, we need to use the internal DNS server. Follow [these instructions](docs/dns-config-ubuntu.md) to configure DNS for Ubuntu if it has not already been set to use the DNS server.
 
 ### 4. Deployment
 
-Copy the Docker Compose file to your server:
+Copy the Docker Compose and init-db files to your server:
 ```bash
 scp -r ./docker-compose.yml user@your-server-ip:~/
+scp -r ./init-db.sh user@your-server-ip:~/postgres/
 ```
 
-Start all services:
+Start all services (databases will be created automatically):
 ```bash
 docker compose up -d
 ```
+
+> **Note**: The `init-db.sh` script will automatically create the `n8n` and `flowise` databases on first startup.
 
 ## Post-Installation Setup
 
@@ -61,6 +67,19 @@ docker compose up -d
 - **Access**: http://your-server-ip:3000
 - Create an account and configure settings
 - Add models through the admin interface
+
+### Flowise
+- **Access**: http://your-server-ip:3001
+- Create an account on first visit
+- Build visual AI workflows using the drag-and-drop interface
+- Connect to your Ollama models through Open WebUI or directly
+
+#### Connecting to Ollama
+To connect Flowise to your Ollama models:
+1. In Flowise, when adding a Chat Model node, select "ChatOllama"
+2. Set the Base URL to: `http://open-webui:11434` (internal Docker network)
+3. Specify your model name (e.g., `llama2`, `codellama`, etc.)
+4. You can also connect directly to Ollama at `http://open-webui:11434/api` for API access
 
 ### N8N Workflow Automation
 - **Access**: http://your-server-ip:5678
@@ -82,6 +101,7 @@ docker compose up -d
 - `./n8n/data` - N8N configuration and runtime data
 - `./n8n/backup` - Workflow and credential backups for automatic import
 - `./n8n/shared` - Shared data directory accessible by N8N
+- `./flowise` - Flowise data including flows, credentials, and storage
 - `./qdrant/data` - Qdrant vector database storage
 
 ## Maintenance
@@ -99,12 +119,40 @@ docker compose up -d
 ## Troubleshooting
 
 - **Container issues**: Check logs with `docker compose logs -f <service_name>`
-- **Database connection problems**: Verify PostgreSQL is healthy before using N8N: `docker compose ps postgres`
+- **Database connection problems**: Verify PostgreSQL is healthy before using N8N/Flowise: `docker compose ps postgres`
 - **Secret files not being read**: Check file permissions are set to `600`
 - **Service unavailable**: Ensure all required ports are accessible on your network
+- **Flowise database issues**: Make sure the `flowise` database exists in PostgreSQL
+- **Flowise can't connect to Ollama**: Verify Open WebUI is running and accessible at port 3000
+
+### Flowise Specific Troubleshooting
+
+If Flowise fails to start:
+1. Check if the databases were created: 
+   ```bash
+   docker compose exec postgres psql -U "$(cat /run/secrets/postgres_user)" -l
+   ```
+2. Manually create databases if needed:
+   ```bash
+   docker compose exec postgres psql -U "$(cat /run/secrets/postgres_user)" -c 'CREATE DATABASE flowise;'
+   docker compose exec postgres psql -U "$(cat /run/secrets/postgres_user)" -c 'CREATE DATABASE n8n;'
+   ```
+3. Check Flowise logs: `docker compose logs -f flowise`
+4. Ensure the flowise directory has proper permissions: `sudo chown -R 1000:1000 ./flowise`
+
+## Service Ports
+
+- **Open WebUI**: 3000
+- **Flowise**: 3001  
+- **N8N**: 5678
+- **Qdrant**: 6333
+- **PostgreSQL**: 5432 (internal only)
+
+> **Note**: Flowise runs on port 3001 to avoid conflicts with Open WebUI which uses port 3000.
 
 ## References
 - [Ollama Documentation](https://github.com/ollama/ollama)
 - [Open WebUI Documentation](https://github.com/open-webui/open-webui)
 - [N8N Documentation](https://docs.n8n.io/)
+- [Flowise Documentation](https://docs.flowiseai.com/)
 - [Qdrant Documentation](https://qdrant.tech/documentation/)

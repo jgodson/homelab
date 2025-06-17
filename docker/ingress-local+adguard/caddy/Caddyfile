@@ -79,6 +79,11 @@
     }
   }
 
+  @flowise host flowise.{$DOMAIN}
+  handle @flowise {
+    reverse_proxy 192.168.1.248:3001
+  }
+
   # Proxmox servers 
   @proxmox1 host pve1.{$DOMAIN}
   handle @proxmox1 {
