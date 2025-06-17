@@ -125,21 +125,6 @@ docker compose up -d
 - **Flowise database issues**: Make sure the `flowise` database exists in PostgreSQL
 - **Flowise can't connect to Ollama**: Verify Open WebUI is running and accessible at port 3000
 
-### Flowise Specific Troubleshooting
-
-If Flowise fails to start:
-1. Check if the databases were created: 
-   ```bash
-   docker compose exec postgres psql -U "$(cat /run/secrets/postgres_user)" -l
-   ```
-2. Manually create databases if needed:
-   ```bash
-   docker compose exec postgres psql -U "$(cat /run/secrets/postgres_user)" -c 'CREATE DATABASE flowise;'
-   docker compose exec postgres psql -U "$(cat /run/secrets/postgres_user)" -c 'CREATE DATABASE n8n;'
-   ```
-3. Check Flowise logs: `docker compose logs -f flowise`
-4. Ensure the flowise directory has proper permissions: `sudo chown -R 1000:1000 ./flowise`
-
 ## Service Ports
 
 - **Open WebUI**: 3000
