@@ -1,0 +1,81 @@
+# Use PostgreSQL 16.x for GitLab compatibility
+# GitLab 18.x requires PostgreSQL 16.x
+image:
+  tag: "16"
+
+# Authentication
+auth:
+  enablePostgresUser: true
+  existingSecret: "postgresql-credentials"
+  secretKeys:
+    adminPasswordKey: "postgres-password"
+
+primary:
+  persistence:
+    enabled: true
+    storageClass: ceph-rbd
+    size: 50Gi
+  
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 250m
+    limits:
+      memory: 2Gi
+      cpu: 1
+
+  initdb:
+    scripts:
+      01-create-databases.sql: |
+        -- Create databases for different applications
+        CREATE DATABASE gitlab_production;
+        CREATE DATABASE gitlab_production_ci;
+        
+        -- Note: Users are created manually after deployment
+        -- See README.md for user creation commands
+      
+
+  configuration: |
+    max_connections = 200
+    shared_buffers = 256MB
+    effective_cache_size = 1GB
+    work_mem = 4MB
+    maintenance_work_mem = 64MB
+
+  # Pod Disruption Budget - allows PostgreSQL to be migrated during node maintenance
+  # Since we're using Ceph storage, the pod can safely move to another node
+  pdb:
+    create: true
+    maxUnavailable: 1
+
+readReplicas:
+  replicaCount: 0
+
+metrics:
+  enabled: true
+  service:
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "9187"
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 50m
+    limits:
+      memory: 128Mi
+      cpu: 100m
+
+backup:
+  enabled: true
+  cronjob:
+    schedule: "0 1 * * *"  # Daily at 1 AM
+    storage:
+      storageClass: ceph-rbd
+      size: 10Gi
+    resources:
+      requests:
+        memory: 128Mi
+        cpu: 100m
+      limits:
+        memory: 256Mi
+        cpu: 200m
