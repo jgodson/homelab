@@ -1,0 +1,111 @@
+# Gitea Values - Homelab Configuration
+# External PostgreSQL, built-in Redis, Gitea Actions enabled
+
+# Global chart configuration
+global:
+  postgresql:
+    enabled: false  # Use external PostgreSQL
+  redis:
+    enabled: false  # Disable Redis for simpler setup
+
+# Gitea application configuration
+gitea:
+  # Initial admin user
+  admin:
+    username: "admin"
+    password: "changeme123!"
+    email: "admin@home.jasongodson.com"
+  
+  # Additional environment variables for database secret
+  additionalConfigFromEnvs:
+    - name: GITEA__DATABASE__PASSWD
+      valueFrom:
+        secretKeyRef:
+          name: gitea-postgresql-secret
+          key: password
+  
+  # Application configuration
+  config:
+    # External PostgreSQL database
+    database:
+      DB_TYPE: postgres
+      HOST: postgresql.postgresql.svc.cluster.local:5432
+      NAME: gitea
+      USER: gitea
+      # Password will be loaded from secret
+      # PASSWD: set via secret
+    
+    # Redis cache and sessions - disabled for simpler setup
+    cache:
+      ENABLED: false
+    
+    session:
+      PROVIDER: file
+    
+    # Server configuration
+    server:
+      DOMAIN: gitea.home.jasongodson.com
+      ROOT_URL: https://gitea.home.jasongodson.com
+      DISABLE_SSH: false
+      SSH_DOMAIN: gitea.home.jasongodson.com
+      SSH_PORT: 22
+    
+    # Security and access
+    security:
+      INSTALL_LOCK: true
+    
+    service:
+      DISABLE_REGISTRATION: true
+      REQUIRE_SIGNIN_VIEW: false
+    
+    # Enable Gitea Actions (CI/CD)
+    actions:
+      ENABLED: true
+      DEFAULT_ACTIONS_URL: github
+
+# Storage configuration
+persistence:
+  enabled: true
+  size: 10Gi
+  storageClass: ceph-rbd
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+  hosts:
+    - host: gitea.home.jasongodson.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+# Resource limits
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1
+    memory: 2Gi
+
+# Deployment strategy for RWO persistent volumes
+strategy:
+  type: Recreate
+
+# Disable built-in databases (use external PostgreSQL)
+postgresql:
+  enabled: false
+
+postgresql-ha:
+  enabled: false
+
+# Disable built-in Redis for simpler setup
+redis:
+  enabled: false
+
+# Disable Valkey cluster explicitly
+valkey-cluster:
+  enabled: false
