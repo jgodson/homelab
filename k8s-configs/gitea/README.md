@@ -52,6 +52,16 @@ Configuration files:
 - `actions-runner-values.yaml` - Helm chart values
 - `namespace.yaml` - Includes PodSecurity policy for privileged containers
 
+## 🏃 Actions Runners Information
+
+### Available Runner Labels
+
+- **`homelab-latest`**: Custom container with homelab-specific tools
+  - Use for: Standard CI tasks, testing, non-Docker builds
+
+- **`host-docker`**: Host mode with Docker access  
+  - Use for: Docker builds, container operations, registry pushes
+
 ## 🎯 Getting Started
 
 ### First Login
@@ -96,42 +106,29 @@ jobs:
           # Add deployment commands here
 ```
 
-### Perfect for Ansible Automation
-
-Example Ansible workflow:
+### Building Docker Containers
+To build Docker containers in your CI/CD pipelines, use the `host-docker` runner label for full Docker access:
 
 ```yaml
-name: Ansible Deployment
-on:
-  push:
-    branches: [main]
-    paths: ['playbooks/**', 'inventory/**']
-
 jobs:
-  lint:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: host-docker
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Install Ansible
-        run: pip install ansible ansible-lint
-      - name: Lint playbooks
-        run: ansible-lint playbooks/
-
-  deploy:
-    needs: lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run Ansible playbook
+      - name: Build Docker image
         run: |
-          ansible-playbook -i inventory/production playbooks/site.yml
+          docker build -t myapp:${{ github.sha }} .
+      - name: Push to registry
         env:
-          ANSIBLE_HOST_KEY_CHECKING: false
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+        run: |
+          echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin registry.example.com
+          docker push registry.example.com/myapp:${{ github.sha }}
 ```
+
+- Use `host-docker` for workflows that require Docker-in-Docker or direct access to the Docker socket.
+- For simple builds or tests that don't require Docker, use `homelab-latest`.
 
 ## 🔧 Configuration Details
 
@@ -140,6 +137,14 @@ jobs:
 - **Database:** External PostgreSQL cluster
 - **Sessions:** File-based (stored on persistent volume)
 - **Cache:** Memory-based (fast, no persistence needed)
+
+### Actions Runners
+- **Runner count:** 2 parallel runners (StatefulSet)
+- **Available labels:** `homelab-latest` (containerized), `host-docker` (host mode)
+- **Resource limits:** 1 CPU, 2Gi memory per runner
+- **Storage:** 20GB persistent volume per runner
+- **Container runtime:** Host Docker access for builds
+- **Deployment:** Automated via `deploy-runners.sh` script
 
 ### Networking
 - **Web interface:** Port 3000 (via Traefik ingress)
@@ -167,10 +172,7 @@ helm repo update
 helm upgrade gitea gitea-charts/gitea -n gitea -f values.yaml
 
 # Update Actions runners
-cd /tmp
-git clone https://gitea.com/gitea/helm-actions.git
-helm upgrade gitea-actions ./helm-actions -n gitea -f actions-runner-values.yaml
-rm -rf helm-actions
+./deploy-runners.sh
 ```
 
 ### Monitor Resources

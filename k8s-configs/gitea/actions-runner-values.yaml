@@ -1,14 +1,12 @@
 # Gitea Actions Runner Configuration
-# Deploy runners for CI/CD workflows
 
 # Enable the actions runner
 enabled: true
 
 # Configure the StatefulSet
 statefulset:
-  replicas: 2  # Multiple runners for parallel jobs
+  replicas: 2
   
-  # Resource limits for homelab
   resources:
     requests:
       cpu: 200m
@@ -17,45 +15,32 @@ statefulset:
       cpu: 1
       memory: 2Gi
   
-  # Act Runner container configuration
+  # Act Runner container overrides
   actRunner:
-    repository: gitea/act_runner
-    tag: 0.2.11
-    pullPolicy: IfNotPresent
+    tag: 0.2.13
     
-    # Runner configuration
+    # Custom runner configuration
     config: |
       log:
         level: info
       cache:
-        enabled: false
+        enabled: true
       runner:
         name: "homelab-k8s-runner"
-        labels: ["self-hosted", "kubernetes", "linux", "x64", "ansible"]
+        labels: 
+          - "homelab-latest:docker://gitea.home.jasongodson.com/homelab/actions-runner:latest"
+          - "host-docker:host"
         capacity: 1
-  
-  # Docker-in-Docker for building containers
-  dind:
-    repository: docker
-    tag: 25.0.2-dind
-    pullPolicy: IfNotPresent
-    
-    # Fix for potential iptables issues
-    extraEnvs:
-      - name: "DOCKER_IPTABLES_LEGACY"
-        value: "1"
-  
-  # Storage for runner data
+
+  # Storage override
   persistence:
-    size: 5Gi
+    size: 20Gi
 
-# Gitea instance URL
+# Gitea connection configuration
 giteaRootURL: "https://gitea.home.jasongodson.com"
-
-# Secret configuration (to be created manually)
 existingSecret: "gitea-runner-token"
 existingSecretKey: "token"
 
-# Global storage class
+# Global overrides
 global:
   storageClass: "ceph-rbd"
