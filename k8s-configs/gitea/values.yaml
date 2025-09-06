@@ -10,11 +10,11 @@ global:
 
 # Gitea application configuration
 gitea:
-  # Initial admin user
-  admin:
-    username: "admin"
-    password: "changeme123!"
-    email: "admin@home.jasongodson.com"
+  # Initial admin user - uncomment for first set up
+  # admin:
+  #   username: "admin"
+  #   password: "changeme123!"
+  #   email: "admin@home.jasongodson.com"
   
   # Additional environment variables for database secret
   additionalConfigFromEnvs:
@@ -32,7 +32,6 @@ gitea:
       HOST: postgresql.postgresql.svc.cluster.local:5432
       NAME: gitea
       USER: gitea
-      # Password will be loaded from secret
       # PASSWD: set via secret
     
     # Redis cache and sessions - disabled for simpler setup
@@ -66,7 +65,7 @@ gitea:
 # Storage configuration
 persistence:
   enabled: true
-  size: 10Gi
+  size: 25Gi
   storageClass: ceph-rbd
 
 # Ingress configuration

@@ -127,40 +127,10 @@ jobs:
           docker push registry.example.com/myapp:${{ github.sha }}
 ```
 
-- Use `host-docker` for workflows that require Docker-in-Docker or direct access to the Docker socket.
-- For simple builds or tests that don't require Docker, use `homelab-latest`.
-
-## 🔧 Configuration Details
-
-### Storage
-- **Gitea data:** 10GB Ceph RBD persistent volume
-- **Database:** External PostgreSQL cluster
-- **Sessions:** File-based (stored on persistent volume)
-- **Cache:** Memory-based (fast, no persistence needed)
-
-### Actions Runners
-- **Runner count:** 2 parallel runners (StatefulSet)
-- **Available labels:** `homelab-latest` (containerized), `host-docker` (host mode)
-- **Resource limits:** 1 CPU, 2Gi memory per runner
-- **Storage:** 20GB persistent volume per runner
-- **Container runtime:** Host Docker access for builds
-- **Deployment:** Automated via `deploy-runners.sh` script
-
-### Networking
-- **Web interface:** Port 3000 (via Traefik ingress)
-- **SSH access:** Port 22 (for git clone/push via SSH)
-- **Domain:** gitea.home.jasongodson.com
-
-### Security
-- **Registration:** Disabled (admin creates users)
-- **Sign-in required:** No (repositories can be public)
-- **Admin access:** Required for user management
-
 ## 🔄 Maintenance
 
 ### Backup
 ```bash
-# Database backup (handled by PostgreSQL cluster)
 # Gitea data backup
 kubectl exec -n gitea deployment/gitea -- gitea dump
 ```
