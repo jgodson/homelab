@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: telegraf-vm-hosts
+  namespace: monitoring
+data:
+  hosts: |
+    # One host per line: name:ip
+    # Example entries (replace with your actual inventory)
+    home-assistant:172.168.1.1

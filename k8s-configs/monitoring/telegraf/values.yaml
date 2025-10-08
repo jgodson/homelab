@@ -1,0 +1,156 @@
+# Telegraf values for SSH-based VM monitoring
+# Uses script that installs SSH at runtime (with elevated permissions)
+# Chart: https://artifacthub.io/packages/helm/influxdata/telegraf
+
+# Disable service since we don't need external access
+service:
+  enabled: false
+
+# Environment variables from existing Proxmox credentials secret
+env:
+  - name: INFLUX_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: telegraf-influxdb-credentials
+        key: influx-token
+  - name: INFLUX_ORG
+    valueFrom:
+      secretKeyRef:
+        name: telegraf-influxdb-credentials
+        key: influx-org
+  - name: VM_LIST_FILE
+    value: /config/vms/hosts
+
+# Mount SSH key and script
+volumes:
+  - name: ssh-key
+    secret:
+      secretName: telegraf-ssh-key
+      defaultMode: 0644
+      items:
+        - key: id_rsa
+          path: id_rsa
+  - name: scripts
+    configMap:
+      name: telegraf-scripts
+      defaultMode: 0755
+  - name: vm-hosts
+    configMap:
+      name: telegraf-vm-hosts
+      defaultMode: 0644
+
+volumeMounts:
+  - name: ssh-key
+    mountPath: /ssh
+    readOnly: true
+  - name: scripts
+    mountPath: /scripts
+    readOnly: true
+  - name: vm-hosts
+    mountPath: /config/vms
+    readOnly: true
+
+# Telegraf configuration
+config:
+  # Global tags applied to all metrics
+  global_tags:
+    location: "homelab"
+    datacenter: "proxmox"
+    deployment: "kubernetes"
+    
+  # Agent configuration
+  agent:
+    interval: "30s"
+    flush_interval: "30s"
+    metric_buffer_limit: 10000
+    collection_jitter: "0s"
+    flush_jitter: "0s"
+    precision: ""
+    hostname: ""
+    omit_hostname: false
+    debug: true
+    quiet: false
+    
+  # Output plugins
+  outputs:
+    - influxdb_v2:
+        urls: 
+          - "http://influxdb-influxdb2.monitoring.svc.cluster.local:8086"
+        token: "$INFLUX_TOKEN"
+        organization: "$INFLUX_ORG"
+        bucket: "proxmox"
+        timeout: "5s"
+        user_agent: "telegraf-ssh-disk-monitoring"
+        
+  # Input plugins
+  inputs:
+    # SSH-based disk usage collection for VMs
+    - exec:
+        commands: ["sh /scripts/collect-vm-disk-usage.sh"]
+        timeout: "60s"
+        interval: "60s"
+        data_format: "json"
+        json_name_key: "measurement"
+        tag_keys:
+          - vm_hostname
+          - vm_name
+          - vm_ip
+          - device
+          - fstype
+          - mountpoint
+          - stage
+          - error_reason
+        json_string_fields:
+          - stage
+          - vm_hostname
+          - vm_name
+          - vm_ip
+          - device
+          - fstype
+          - mountpoint
+          - error_reason
+        json_time_key: timestamp
+        json_time_format: unix_ms
+  json_use_number: true
+
+  # Processor plugins
+  processors:
+    - converter:
+        fields:
+          integer:
+            - installed
+            - success
+            - total_bytes
+            - used_bytes
+            - free_bytes
+            - used_percentage
+
+# ServiceMonitor configuration for Prometheus (disabled since service is disabled)
+serviceMonitor:
+  enabled: false
+
+# Security context (A custom image or initContainer would be better, but chart doesn't support initContainers)
+podSecurityContext:
+  runAsUser: 0
+  runAsGroup: 0
+  fsGroup: 0
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+
+# Liveness probe configuration
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Readiness probe configuration
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
