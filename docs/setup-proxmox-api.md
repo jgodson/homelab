@@ -5,12 +5,12 @@ Run these commands via SSH on any Proxmox host in the cluster.
 ## 1. Create custom role with necessary permissions
 
 ```bash
-pveum role add HomelabAutomation -privs "VM.Audit,VM.Migrate,VM.PowerMgmt,Sys.PowerMgmt"
+pveum role add HomelabAutomation -privs "VM.Audit,VM.Migrate,VM.PowerMgmt,Sys.PowerMgmt,Sys.Audit,Sys.Console"
 ```
 
 If role already exists, modify it:
 ```bash
-pveum role modify HomelabAutomation -privs "VM.Audit,VM.Migrate,VM.PowerMgmt,Sys.PowerMgmt"
+pveum role modify HomelabAutomation -privs "VM.Audit,VM.Migrate,VM.PowerMgmt,Sys.PowerMgmt,Sys.Audit,Sys.Console"
 ```
 
 ## 2. Create API user
@@ -40,10 +40,14 @@ pveum user token add homelab-automation@pve gitea-workflows --privsep 0
 
 ## Permissions Granted
 
-- **VM.Audit**: View/list VMs
+- **VM.Audit**: View/list VMs and their configurations
 - **VM.Migrate**: Migrate VMs between hosts
 - **VM.PowerMgmt**: Start/stop/shutdown VMs
 - **Sys.PowerMgmt**: Reboot Proxmox hosts
+- **Sys.Audit**: Required for cluster-wide operations (HA resources API, cluster status)
+- **Sys.Console**: Required for HA management (enabling/disabling HA resources)
+
+**Note**: The `Sys.Console` permission requirement for HA management is unusual but required by Proxmox's permission check on the `/cluster/ha/resources` POST endpoint.
 
 ## To delete and recreate token if needed
 
