@@ -61,6 +61,35 @@ check_prerequisites() {
         exit 1
     fi
     
+    # Check for required secrets
+    log_info "Checking for required secrets..."
+    
+    if ! kubectl get secret gitea-runner-token -n "$NAMESPACE" &> /dev/null; then
+        log_error "Secret 'gitea-runner-token' not found in namespace '$NAMESPACE'"
+        echo ""
+        echo "To create the runner token:"
+        echo "1. Visit https://gitea.home.jasongodson.com/user/settings/actions/runners"
+        echo "2. Generate a new registration token"
+        echo "3. Create the secret:"
+        echo "   kubectl create secret generic gitea-runner-token -n $NAMESPACE \\"
+        echo "     --from-literal=token='<REGISTRATION_TOKEN>'"
+        exit 1
+    fi
+    
+    if ! kubectl get secret gitea-docker-registry-creds -n "$NAMESPACE" &> /dev/null; then
+        log_error "Secret 'gitea-docker-registry-creds' not found in namespace '$NAMESPACE'"
+        echo ""
+        echo "This secret is required for automatic Docker registry login."
+        echo "To create it:"
+        echo "   kubectl create secret generic gitea-docker-registry-creds -n $NAMESPACE \\"
+        echo "     --from-literal=username='<GITEA_USERNAME>' \\"
+        echo "     --from-literal=password='<GITEA_TOKEN_OR_PASSWORD>'"
+        echo ""
+        echo "Tip: Use the same token value from your REGISTRY_TOKEN CI/CD secret"
+        exit 1
+    fi
+    
+    log_success "All required secrets found"
     log_success "Prerequisites check passed"
 }
 
@@ -79,58 +108,6 @@ update_helm_chart() {
     log_success "Helm chart updated"
 }
 
-# Apply custom patches to the chart
-apply_chart_patches() {
-    log_info "Applying custom patches to Helm chart..."
-    
-    STATEFULSET_TEMPLATE="$TEMP_CHART_DIR/templates/statefulset.yaml"
-    
-    # Patch 1: Add imagePullSecrets support
-    log_info "Adding imagePullSecrets support..."
-    sed -i.bak '/^    spec:$/a\
-      {{- with .Values.global.imagePullSecrets }}\
-      imagePullSecrets:\
-        {{- range . }}\
-        - name: {{ . }}\
-        {{- end }}\
-      {{- end }}' "$STATEFULSET_TEMPLATE"
-    
-    # Patch 2: Add Docker registry auto-login
-    log_info "Adding Docker registry auto-login to startup script..."
-    sed -i.bak '/echo "Docker is ready.*"/a\
-              \
-              # Login to private registry if credentials are provided\
-              if [ -n "$REGISTRY_URL" ] && [ -n "$REGISTRY_USERNAME" ] && [ -n "$REGISTRY_PASSWORD" ]; then\
-                echo "Logging into Docker registry: $REGISTRY_URL"\
-                echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY_URL" -u "$REGISTRY_USERNAME" --password-stdin\
-                echo "Successfully logged into registry"\
-              fi\
-              ' "$STATEFULSET_TEMPLATE"
-    
-    # Patch 3: Add environment variables for Docker registry credentials
-    log_info "Adding Docker registry environment variables..."
-    sed -i.bak '/name: CONFIG_FILE$/a\
-            {{- if .Values.dockerRegistry.enabled }}\
-            - name: REGISTRY_URL\
-              value: {{ .Values.dockerRegistry.url }}\
-            - name: REGISTRY_USERNAME\
-              valueFrom:\
-                secretKeyRef:\
-                  name: {{ .Values.dockerRegistry.existingSecret }}\
-                  key: {{ .Values.dockerRegistry.usernameKey | default "username" }}\
-            - name: REGISTRY_PASSWORD\
-              valueFrom:\
-                secretKeyRef:\
-                  name: {{ .Values.dockerRegistry.existingSecret }}\
-                  key: {{ .Values.dockerRegistry.passwordKey | default "password" }}\
-            {{- end }}' "$STATEFULSET_TEMPLATE"
-    
-    # Clean up backup files
-    rm -f "$TEMP_CHART_DIR/templates/"*.bak
-    
-    log_success "Chart patches applied"
-}
-
 # Check if namespace exists, create if not
 ensure_namespace() {
     log_info "Ensuring namespace '$NAMESPACE' exists..."
@@ -141,6 +118,18 @@ ensure_namespace() {
         log_success "Namespace '$NAMESPACE' created"
     else
         log_info "Namespace '$NAMESPACE' already exists"
+    fi
+}
+
+# Deploy Docker login CronJob
+deploy_docker_login_cronjob() {
+    log_info "Deploying Docker login CronJob..."
+    
+    if [ -f "$SCRIPT_DIR/docker-login-cronjob.yaml" ]; then
+        kubectl apply -f "$SCRIPT_DIR/docker-login-cronjob.yaml"
+        log_success "Docker login CronJob deployed"
+    else
+        log_warning "docker-login-cronjob.yaml not found, skipping CronJob deployment"
     fi
 }
 
@@ -197,10 +186,10 @@ main() {
     log_info "Starting Gitea Actions Runner deployment..."
     
     check_prerequisites
-    update_helm_chart
-    apply_chart_patches
     ensure_namespace
+    update_helm_chart
     deploy_release
+    deploy_docker_login_cronjob
     show_status
     cleanup
     
@@ -209,6 +198,8 @@ main() {
     log_info "Available runner labels:"
     echo "  - homelab-latest: docker://gitea.home.jasongodson.com/homelab/actions-runner:latest"
     echo "  - host-docker: host (for Docker builds)"
+    echo ""
+    log_info "Docker login CronJob runs every hour to maintain authentication"
     echo ""
     log_info "Use 'kubectl get pods -n $NAMESPACE' to monitor the runners"
 }
