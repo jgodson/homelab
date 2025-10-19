@@ -29,7 +29,7 @@ gitea:
     # External PostgreSQL database
     database:
       DB_TYPE: postgres
-      HOST: postgresql.postgresql.svc.cluster.local:5432
+      HOST: postgresql-pg-rw.postgresql.svc.cluster.local:5432
       NAME: gitea
       USER: gitea
       # PASSWD: set via secret

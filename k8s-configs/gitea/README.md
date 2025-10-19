@@ -5,7 +5,9 @@ Gitea is a lightweight, fast, and simple Git service - perfect for homelab use. 
 ## 🚀 Quick Setup
 
 ### Prerequisites
-1. **Create database secret** (stored in 1Password):
+1. **Database:** PostgreSQL cluster must be running (see `/k8s-configs/cnpg-system/`)
+
+2. **Create database secret** (stored in 1Password):
    ```bash
    kubectl create secret generic gitea-postgresql-secret -n gitea \
      --from-literal=password='<PASSWORD_FROM_1PASSWORD>'

@@ -12,9 +12,6 @@ if ! kubectl get secret gitea-postgresql-secret -n gitea >/dev/null 2>&1; then
 fi
 echo "✅ Required secrets found"
 
-echo "🗄️  Setting up database..."pt sets up Gitea with external PostgreSQL (no Redis dependency)
-# Uses file-based sessions and memory caching for simplicity
-
 set -e
 
 echo "🚀 Setting up Gitea..."
@@ -41,13 +38,20 @@ for tool in kubectl helm; do
 done
 echo "✅ Required tools found"
 
-echo "🔍 Checking PostgreSQL..."
-if ! kubectl get statefulset -n postgresql postgresql >/dev/null 2>&1; then
-    echo "❌ Error: PostgreSQL statefulset not found in postgresql namespace"
-    echo "Please ensure PostgreSQL is running first"
+echo "🔍 Checking CloudNativePG PostgreSQL cluster..."
+if ! kubectl get cluster -n postgresql postgresql-pg >/dev/null 2>&1; then
+    echo "❌ Error: CloudNativePG cluster 'postgresql-pg' not found in postgresql namespace"
+    echo "Please ensure CloudNativePG is running first (see /k8s-configs/cnpg-system/)"
     exit 1
 fi
-echo "✅ PostgreSQL found"
+
+# Check if cluster is healthy
+CLUSTER_STATUS=$(kubectl get cluster -n postgresql postgresql-pg -o jsonpath='{.status.phase}')
+if [[ "$CLUSTER_STATUS" != "Cluster in healthy state" ]]; then
+    echo "❌ Error: PostgreSQL cluster is not healthy (status: $CLUSTER_STATUS)"
+    exit 1
+fi
+echo "✅ CloudNativePG cluster found and healthy"
 
 echo "📦 Creating namespace..."
 kubectl apply -f namespace.yaml
@@ -56,8 +60,11 @@ echo "️  Setting up database..."
 # Extract password from secret
 DB_PASSWORD=$(kubectl get secret gitea-postgresql-secret -n gitea -o jsonpath='{.data.password}' | base64 -d)
 
+# Get superuser password for CloudNativePG
+PG_PASSWORD=$(kubectl get secret -n postgresql postgresql-pg-superuser -o jsonpath='{.data.password}' | base64 -d)
+
 # Create database user with password from secret
-kubectl exec -n postgresql statefulset/postgresql -- psql -U postgres -v password="$DB_PASSWORD" << 'EOF'
+kubectl exec -n postgresql postgresql-pg-1 -- env PGPASSWORD="$PG_PASSWORD" psql -h localhost -U postgres -v password="$DB_PASSWORD" << 'EOF'
 -- Create user if it doesn't exist
 DO $$
 BEGIN
@@ -85,7 +92,7 @@ helm repo add gitea-charts https://dl.gitea.com/charts/ 2>/dev/null || true
 helm repo update
 
 echo "🏗️  Installing Gitea..."
-echo "📝 Using external PostgreSQL with memory caching (no Redis dependency)"
+echo "📝 Using CloudNativePG PostgreSQL with memory caching (no Redis dependency)"
 helm upgrade --install gitea gitea-charts/gitea -n gitea -f values.yaml
 
 echo ""

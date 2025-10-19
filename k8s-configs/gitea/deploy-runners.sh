@@ -79,6 +79,58 @@ update_helm_chart() {
     log_success "Helm chart updated"
 }
 
+# Apply custom patches to the chart
+apply_chart_patches() {
+    log_info "Applying custom patches to Helm chart..."
+    
+    STATEFULSET_TEMPLATE="$TEMP_CHART_DIR/templates/statefulset.yaml"
+    
+    # Patch 1: Add imagePullSecrets support
+    log_info "Adding imagePullSecrets support..."
+    sed -i.bak '/^    spec:$/a\
+      {{- with .Values.global.imagePullSecrets }}\
+      imagePullSecrets:\
+        {{- range . }}\
+        - name: {{ . }}\
+        {{- end }}\
+      {{- end }}' "$STATEFULSET_TEMPLATE"
+    
+    # Patch 2: Add Docker registry auto-login
+    log_info "Adding Docker registry auto-login to startup script..."
+    sed -i.bak '/echo "Docker is ready.*"/a\
+              \
+              # Login to private registry if credentials are provided\
+              if [ -n "$REGISTRY_URL" ] && [ -n "$REGISTRY_USERNAME" ] && [ -n "$REGISTRY_PASSWORD" ]; then\
+                echo "Logging into Docker registry: $REGISTRY_URL"\
+                echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY_URL" -u "$REGISTRY_USERNAME" --password-stdin\
+                echo "Successfully logged into registry"\
+              fi\
+              ' "$STATEFULSET_TEMPLATE"
+    
+    # Patch 3: Add environment variables for Docker registry credentials
+    log_info "Adding Docker registry environment variables..."
+    sed -i.bak '/name: CONFIG_FILE$/a\
+            {{- if .Values.dockerRegistry.enabled }}\
+            - name: REGISTRY_URL\
+              value: {{ .Values.dockerRegistry.url }}\
+            - name: REGISTRY_USERNAME\
+              valueFrom:\
+                secretKeyRef:\
+                  name: {{ .Values.dockerRegistry.existingSecret }}\
+                  key: {{ .Values.dockerRegistry.usernameKey | default "username" }}\
+            - name: REGISTRY_PASSWORD\
+              valueFrom:\
+                secretKeyRef:\
+                  name: {{ .Values.dockerRegistry.existingSecret }}\
+                  key: {{ .Values.dockerRegistry.passwordKey | default "password" }}\
+            {{- end }}' "$STATEFULSET_TEMPLATE"
+    
+    # Clean up backup files
+    rm -f "$TEMP_CHART_DIR/templates/"*.bak
+    
+    log_success "Chart patches applied"
+}
+
 # Check if namespace exists, create if not
 ensure_namespace() {
     log_info "Ensuring namespace '$NAMESPACE' exists..."
@@ -146,6 +198,7 @@ main() {
     
     check_prerequisites
     update_helm_chart
+    apply_chart_patches
     ensure_namespace
     deploy_release
     show_status

@@ -41,6 +41,16 @@ giteaRootURL: "https://gitea.home.jasongodson.com"
 existingSecret: "gitea-runner-token"
 existingSecretKey: "token"
 
+# Docker registry auto-login configuration
+# This will make the act-runner automatically login to your private registry on startup
+# This is custom added to StatefulSet after cloning the helm-actions repo by the deploy-runners.sh script
+dockerRegistry:
+  enabled: true
+  url: "gitea.home.jasongodson.com"
+  existingSecret: "gitea-docker-registry-creds"
+  usernameKey: "username"
+  passwordKey: "password"
+
 # Global overrides
 global:
   storageClass: "ceph-rbd"

@@ -1,0 +1,48 @@
+# CloudNativePG PostgreSQL Cluster
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgresql-pg
+  namespace: postgresql
+spec:
+  instances: 2  # Primary + 1 replica for HA
+  
+  # Use CloudNativePG's PostgreSQL 16 image (UID 26, compatible with operator)
+  # Official postgres:16 uses UID 999 which causes "user does not exist" errors
+  imageName: ghcr.io/cloudnative-pg/postgresql:16-bookworm
+  
+  # Storage configuration
+  storage:
+    storageClass: ceph-rbd
+    size: 50Gi
+  
+  # Resource limits
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1"
+  
+  # Bootstrap configuration
+  bootstrap:
+    initdb:
+      database: postgres
+      owner: postgres
+  
+  # Enable superuser access
+  enableSuperuserAccess: true
+  
+  # Monitoring
+  monitoring:
+    enablePodMonitor: true
+  
+  # PostgreSQL configuration
+  postgresql:
+    parameters:
+      max_connections: "200"
+      shared_buffers: "256MB"
+      effective_cache_size: "1GB"
+      work_mem: "4MB"
+      maintenance_work_mem: "64MB"
