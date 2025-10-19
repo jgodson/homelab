@@ -89,18 +89,18 @@ kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=telegraf-ss
 
 echo "🎉 Deployment complete!"
 echo
-echo "📊 To verify it's working:"
+echo "� Testing SSH collection..."
+if kubectl exec -n "$NAMESPACE" deployment/telegraf-ssh -- sh -c 'VM_LIST_FILE=/config/vms/hosts /scripts/collect-vm-disk-usage.sh' 2>&1 | grep -q '"measurement"'; then
+    echo "✅ SSH collection test successful!"
+else
+    echo "⚠️  SSH collection test did not return expected data"
+    echo "   Check logs for details"
+fi
+echo
+echo "📊 To check logs:"
 echo "kubectl logs -n $NAMESPACE deployment/telegraf-ssh --tail=20"
 echo
 echo "📈 Check your InfluxDB for new measurements:"
 echo "- vm_disk_usage (disk usage by VM)"  
 echo "- vm_system_usage (memory and load by VM)"
 echo
-echo "🔍 Test SSH collection manually:"
-echo "kubectl exec -n $NAMESPACE deployment/telegraf-ssh -- sh -c 'VM_LIST_FILE=/config/vms/hosts /scripts/collect-vm-disk-usage.sh'"
-echo
-echo "🔧 Debug tips:"
-echo "- Check SSH connectivity: kubectl exec -n $NAMESPACE deployment/telegraf-ssh -- ssh telegraf@192.168.1.2 'whoami'"
-echo "- Check script permissions: kubectl exec -n $NAMESPACE deployment/telegraf-ssh -- ls -la /scripts/"
-echo "- View SSH key mount: kubectl exec -n $NAMESPACE deployment/telegraf-ssh -- ls -la /ssh/"
-echo "- View VM list file: kubectl exec -n $NAMESPACE deployment/telegraf-ssh -- cat /config/vms/hosts"

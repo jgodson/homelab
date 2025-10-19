@@ -129,6 +129,12 @@ config:
 serviceMonitor:
   enabled: false
 
+# Pod Disruption Budget - allow pod to be disrupted during node drains
+# Since this is a single replica monitoring pod, it's okay to have downtime
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
 # Security context (A custom image or initContainer would be better, but chart doesn't support initContainers)
 podSecurityContext:
   runAsUser: 0
