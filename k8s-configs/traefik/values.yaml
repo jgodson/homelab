@@ -3,6 +3,19 @@ metrics:
     serviceMonitor:
       enabled: false
 
+# High availability: 2 replicas with anti-affinity
+deployment:
+  replicas: 2
+  
+# Spread replicas across different nodes
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: traefik
+        topologyKey: kubernetes.io/hostname
+
 ingressRoute:
   dashboard:
     enabled: true
