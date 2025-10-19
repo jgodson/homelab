@@ -37,9 +37,16 @@ To enable CI/CD workflows:
      --from-literal=token='<REGISTRATION_TOKEN>'
    ```
 
-3. **Deploy runners:**
+3. **Create Docker registry credentials secret** (for pulling private images):
    ```bash
-   ./setup-actions-runners.sh
+   kubectl create secret generic gitea-docker-registry-creds -n gitea \
+     --from-literal=username='<USERNAME>' \
+     --from-literal=password='<PASSWORD>'
+   ```
+
+4. **Deploy runners:**
+   ```bash
+   ./deploy-runners.sh
    ```
 
 ### Actions Runner Configuration
@@ -47,12 +54,38 @@ To enable CI/CD workflows:
 The runners are deployed using the [gitea/helm-actions](https://gitea.com/gitea/helm-actions) chart, which provides:
 - **Docker-in-Docker** support for building containers
 - **2 parallel runners** for concurrent job execution
-- **Custom labels:** `self-hosted`, `kubernetes`, `linux`, `x64`, `ansible`
+- **Custom labels:** `homelab-latest`, `host-docker`
 - **Privileged containers** enabled for Docker builds
+- **Automated Docker authentication** via hourly CronJob
 
 Configuration files:
 - `actions-runner-values.yaml` - Helm chart values
 - `namespace.yaml` - Includes PodSecurity policy for privileged containers
+- `docker-login-cronjob.yaml` - Automated Docker registry authentication
+
+#### Docker Registry Authentication
+
+The runners need to authenticate with the Gitea Docker registry to pull private images. This is handled automatically by a CronJob that runs every hour.
+
+**How it works:**
+- The `act-runner` container uses a Docker client library to pull workflow images
+- This library reads credentials from `~/.docker/config.json` in the act-runner container
+- A CronJob runs every hour and creates this config file in all runner pods
+- This ensures credentials stay fresh and works across pod restarts
+
+**Manual execution** (useful for testing or immediate authentication):
+```bash
+# Create a one-time job from the CronJob
+kubectl create job -n gitea docker-login-manual --from=cronjob/gitea-runner-docker-login
+
+# Watch the logs
+kubectl logs -n gitea -l job-name=docker-login-manual -f
+
+# Verify credentials were created
+kubectl exec -n gitea gitea-actions-act-runner-0 -c act-runner -- cat /root/.docker/config.json
+```
+
+**Why not imagePullSecrets?** Kubernetes `imagePullSecrets` only help Kubernetes pull the runner pod's container image. They don't help when the act-runner uses the Docker API to pull workflow images at runtime.
 
 ## 🏃 Actions Runners Information
 
@@ -71,6 +104,52 @@ Configuration files:
 2. Login with `admin` / `changeme123!`
 3. **Important:** Change the admin password immediately
 4. Configure your profile and email settings
+
+### Setting Up the Docker Registry
+
+Gitea includes a built-in Docker registry for hosting container images. This setup uses the `homelab` organization for shared images.
+
+1. **Create the homelab organization** (if it does not already exist):
+   - Click **"+"** → **"New Organization"**
+   - Organization name: `homelab`
+   - Visibility: Private (or as desired)
+
+2. **Create a repository for your container image**:
+   - Navigate to the `homelab` organization
+   - Click **"New Repository"**
+   - Repository name: `actions-runner` (or your image name)
+   - This repository serves as the namespace for your container package
+
+3. **Create a Personal Access Token** (for Docker authentication):
+   - Go to **Settings** → **Applications** → **Manage Access Tokens**
+   - Click **Generate New Token**
+   - Give it a name (e.g., "Docker Registry")
+   - Select scopes: `write:package`, `read:package`
+   - Copy the token immediately (it won't be shown again)
+
+4. **Login to the registry from your local machine**:
+   ```bash
+   echo "<YOUR_TOKEN>" | docker login gitea.home.jasongodson.com -u <USERNAME> --password-stdin
+   ```
+
+5. **Build and push your custom runner image**:
+   ```bash
+   # Build your custom image (example)
+   docker build -t gitea.home.jasongodson.com/homelab/actions-runner:latest .
+   
+   # Push to Gitea registry
+   docker push gitea.home.jasongodson.com/homelab/actions-runner:latest
+   
+   # Push with version tag
+   docker tag gitea.home.jasongodson.com/homelab/actions-runner:latest \
+     gitea.home.jasongodson.com/homelab/actions-runner:20251017
+   docker push gitea.home.jasongodson.com/homelab/actions-runner:20251017
+   ```
+
+6. **View your packages**:
+   - Visit `https://gitea.home.jasongodson.com/homelab/-/packages`
+   - You'll see all packages under the homelab organization
+   - Example: `https://gitea.home.jasongodson.com/homelab/-/packages/container/actions-runner/latest`
 
 ### Create Your First Repository
 1. Click **"+"** → **"New Repository"**
