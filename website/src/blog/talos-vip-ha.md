@@ -12,9 +12,9 @@ layout: post.njk
 
 ## The Problem: Single Point of Failure
 
-After a busy weekend developing my Proxmox automated restart workflow (keep an eye out for that post), I discovered a critical issue: my kubectl was hardcoded to a single control plane node. When that node went down during restart of one of the Proxmox nodes, I completely lost cluster access, even though I had three control planes running!
+After a busy weekend developing my Proxmox automated restart workflow (keep an eye out for that post), I discovered a critical issue: my kubectl was hardcoded to a single control plane node. When that node went down during restart of one of the Proxmox nodes, my `kubectl` commands no longer were working, even though I had three control planes running! I was able to set the sever to another node to get it working again, but that's not how I expected or wanted it to work.
 
-While Kubernetes itself was highly available (pods running on other nodes were fine), **I couldn't manage the cluster** because my client tools pointed to a downed node.
+While Kubernetes itself was highly available (pods running on other nodes were fine), **I couldn't manage the cluster without manual intervention** because my client tools pointed to a downed node.
 
 ## The Solution: Virtual IP (VIP)
 
