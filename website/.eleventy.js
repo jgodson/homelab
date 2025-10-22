@@ -1,5 +1,6 @@
 const markdownIt = require("markdown-it");
 const markdownItAnchor = require("markdown-it-anchor");
+const markdownItLinkAttributes = require("markdown-it-link-attributes");
 
 module.exports = function(eleventyConfig) {
   const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
@@ -17,12 +18,23 @@ module.exports = function(eleventyConfig) {
     linkify: true
   };
   
-  let markdownLibrary = markdownIt(markdownOptions).use(markdownItAnchor, {
-    permalink: true,
-    permalinkClass: "direct-link",
-    permalinkSymbol: "",
-    level: [1, 2, 3, 4, 5, 6]
-  });
+  let markdownLibrary = markdownIt(markdownOptions)
+    .use(markdownItAnchor, {
+      permalink: true,
+      permalinkClass: "direct-link",
+      permalinkSymbol: "",
+      level: [1, 2, 3, 4, 5, 6]
+    })
+    .use(markdownItLinkAttributes, {
+      matcher(href) {
+        // Match external links (starts with http:// or https://)
+        return href.match(/^https?:\/\//);
+      },
+      attrs: {
+        target: "_blank",
+        rel: "noopener noreferrer"
+      }
+    });
   
   eleventyConfig.setLibrary("md", markdownLibrary);
 
