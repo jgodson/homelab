@@ -7,6 +7,7 @@ tags:
   - ansible
   - gitea
   - homelab
+  - ci-cd
 layout: post.njk
 ---
 

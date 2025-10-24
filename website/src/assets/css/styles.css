@@ -652,3 +652,13 @@ h6:hover .direct-link {
   padding: 0 0.15em;
   position: relative;
 }
+
+/* Inline code styling */
+code {
+  color: #3498db;
+}
+
+/* Make sure code blocks aren't affected */
+pre code {
+  color: inherit;
+}
