@@ -11,7 +11,7 @@ REMOTE_PATH="~/caddy/site" # Replace with the path on your server
 
 # Sync the dist directory to the remote server
 echo "🚢 Deploying to $SERVER..."
-rsync -avz --delete dist/ $REMOTE_USER@$SERVER:$REMOTE_PATH
+rsync -avz --checksum --delete dist/ $REMOTE_USER@$SERVER:$REMOTE_PATH
 
 echo "🚀 Deployment complete!"
 echo "🔍 View site at https://$DOMAIN"
