@@ -13,7 +13,7 @@ layout: post.njk
 
 A couple months ago, I received an email from Grafana alerting me to an issue in my homelab (you can read about [how I set up my monitoring and alerting here](/blog/grafana-alerts)):
 
-{% image "./src/assets/images/proxmox-shutdown-dreaded-email.png", "Email alert about Ceph cluster warning", "(min-width: 768px) 600px, 100vw" %}
+{% image "./src/assets/images/proxmox-shutdown-dreaded-email.png", "Email alert about Ceph cluster warning", "(min-width: 768px) 500px, 100vw", "500px" %}
 
 This was certainly concerning since Ceph is critical infrastructure in my homelab. After checking the Grafana dashboard, I discovered it was just a warning (phew!):
 
@@ -74,7 +74,7 @@ discover-and-validate
 
 Building this workflow was an exercise in discovering edge cases. Here are the major challenges and how I solved them.
 
-{% image "./src/assets/images/proxmox-shutdown-trial-and-error.png", "Multiple workflow runs showing trial and error", "(min-width: 768px) 600px, 100vw" %}
+{% image "./src/assets/images/proxmox-shutdown-trial-and-error.png", "Multiple workflow runs showing trial and error", "(min-width: 768px) 600px, 100vw", "600px" %}
 
 ### Challenge #1: Control Plane High Availability
 
@@ -249,11 +249,11 @@ After all the troubleshooting and refinement, the workflow now successfully:
 ✅ Restores HA configurations
 ✅ Uncordons Kubernetes nodes
 
-{% image "./src/assets/images/proxmox-shutdown-restarted.png", "Successful Proxmox restart workflow", "(min-width: 768px) 600px, 100vw" %}
+{% image "./src/assets/images/proxmox-shutdown-restarted.png", "Successful Proxmox restart workflow", "(min-width: 768px) 300px, 100vw", "300px" %}
 
 And most importantly, the Ceph warning is finally resolved:
 
-{% image "./src/assets/images/proxmox-shutdown-resolved.png", "Ceph cluster back to healthy state", "(min-width: 768px) 600px, 100vw" %}
+{% image "./src/assets/images/proxmox-shutdown-resolved.png", "Ceph cluster back to healthy state", "(min-width: 768px) 500px, 100vw", "500px" %}
 
 ## Key Takeaway
 

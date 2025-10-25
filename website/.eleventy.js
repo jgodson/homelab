@@ -44,7 +44,7 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/robots.txt");
 
   // Simplified image shortcode focusing on WebP optimization
-  eleventyConfig.addShortcode("image", async function(src, alt, sizes = "100vw") {
+  eleventyConfig.addShortcode("image", async function(src, alt, sizes = "100vw", maxWidth = null) {
     if (!src) {
       throw new Error(`Missing image source`);
     }
@@ -89,6 +89,11 @@ module.exports = function(eleventyConfig) {
       decoding: "async",
       class: "responsive-image"
     };
+    
+    // Add style attribute for max-width and centering if maxWidth is provided
+    if (maxWidth) {
+      imageAttributes.style = `max-width: ${maxWidth}; display: block; margin: 0 auto;`;
+    }
     
     return Image.generateHTML(metadata, imageAttributes);
   });
