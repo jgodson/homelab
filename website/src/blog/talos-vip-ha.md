@@ -181,6 +181,11 @@ This VIP setup was the final issue I ran into for my Proxmox automated restart w
 
 I'll be blogging about that as a whole as well as a few other hurdles I encountered during development of this workflow, so keep an eye out for some more posts in the coming days.
 
+#### Update (October 25, 2025)
+
+The Proxmox automated restart post is up! Check out [Automating Proxmox Host Restarts with Gitea Actions](/blog/proxmox-restart-automation) for the full story.
+
+---
 ## Resources
 
 - [Talos VIP Documentation](https://www.talos.dev/v1.9/talos-guides/network/vip/)

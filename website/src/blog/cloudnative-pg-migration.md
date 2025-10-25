@@ -207,13 +207,19 @@ Update your app to use: `postgresql-pg-rw.postgresql.svc.cluster.local:5432`
 2. **Migration is straightforward**: pg_dumpall → new cluster → restore
 3. **Always keep backups**: Things always break at the worst times
 
-## Additional Resources
-
-- [CloudNativePG Documentation](https://cloudnative-pg.io/documentation/current)
-- [CloudNativePG GitHub](https://github.com/cloudnative-pg/cloudnative-pg)
-
 ## What's Next?
 
 Stay tuned for the full story of the full Proxmox automation workflow as well as one more issue I ran into during the creation of it.
 
 Also, I'm going to get those scheduled backups running 😅
+
+#### Update (October 25, 2025)
+
+The Proxmox automated restart post is up! Check out [Automating Proxmox Host Restarts with Gitea Actions](/blog/proxmox-restart-automation) for the full story.
+
+---
+
+## Resources
+
+- [CloudNativePG Documentation](https://cloudnative-pg.io/documentation/current)
+- [CloudNativePG GitHub](https://github.com/cloudnative-pg/cloudnative-pg)

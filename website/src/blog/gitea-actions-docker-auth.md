@@ -317,6 +317,10 @@ You can find all the configuration files in my [homelab repository](https://gith
 - [`k8s-configs/gitea/deploy-runners.sh`](https://github.com/jgodson/homelab/blob/main/k8s-configs/gitea/deploy-runners.sh) - Deployment script with CronJob integration
 - [`k8s-configs/gitea/actions-runner-values.yaml`](https://github.com/jgodson/homelab/blob/main/k8s-configs/gitea/actions-runner-values.yaml) - Helm values for the runners
 
+#### Update (October 25, 2025)
+
+The Proxmox automated restart post is up! Check out [Automating Proxmox Host Restarts with Gitea Actions](/blog/proxmox-restart-automation) for the full story.
+
 ---
 
 Have you encountered similar issues with Docker authentication in action runners? Let me know how you solved it - I'm always interested in learning about alternative approaches!
