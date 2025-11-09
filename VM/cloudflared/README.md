@@ -1,7 +1,7 @@
 ### VM Config
 - CPU: 1 Cores
 - RAM: 2 GB
-- Disk: 10 GB (Shared for HA)
+- Disk: 20 GB (Shared for HA)
 - OS: Ubuntu server minimal
 - Use static IP (For metrics scraping, otherwise does not matter)
 
