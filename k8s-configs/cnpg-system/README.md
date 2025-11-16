@@ -129,21 +129,20 @@ Applications should connect using:
 ### Creating New Databases and Users
 
 ```bash
-# Get the superuser password
-PGPASSWORD=$(kubectl get secret -n postgresql postgresql-pg-superuser -o jsonpath='{.data.password}' | base64 -d)
+# Get the primary pod name
+POD_NAME=$(kubectl get pods -n postgresql -l "cnpg.io/cluster=postgresql-pg,role=primary" -o jsonpath='{.items[0].metadata.name}')
 
 # Create a new database and user
-kubectl exec -it postgresql-pg-1 -n postgresql -- bash -c "
-PGPASSWORD='$PGPASSWORD' psql -U postgres -c \"
-CREATE DATABASE myapp;
-CREATE USER myapp WITH PASSWORD 'secure_password_here';
-GRANT ALL PRIVILEGES ON DATABASE myapp TO myapp;
-\""
+kubectl exec -n postgresql "$POD_NAME" -- psql -U postgres -c "CREATE USER myapp WITH PASSWORD 'secure_password_here';"
+kubectl exec -n postgresql "$POD_NAME" -- psql -U postgres -c "CREATE DATABASE myapp OWNER myapp;"
 
 # Create Kubernetes secret for the application
-kubectl create secret generic myapp-postgresql-secret \
+kubectl create secret generic myapp-db \
+  --from-literal=DATABASE_URL='postgresql://myapp:secure_password_here@postgresql-pg-rw.postgresql.svc.cluster.local:5432/myapp' \
+  --from-literal=username='myapp' \
   --from-literal=password='secure_password_here' \
-  -n myapp-namespace
+  --from-literal=dbname='myapp' \
+  -n default  # App's namespace
 ```
 
 ### Listing Databases and Users
