@@ -1,0 +1,99 @@
+# Promtail DaemonSet values for tailing Kubernetes pod logs and shipping them to Loki
+fullnameOverride: promtail
+
+# Schedule on every node, including control-plane if tainted
+daemonset:
+  tolerations:
+    - operator: Exists
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3101"
+
+config:
+  server:
+    log_level: info
+    http_listen_port: 3101
+    grpc_listen_port: 0
+  positions:
+    filename: /run/promtail/positions.yaml
+  clients:
+    - url: http://loki-write.monitoring.svc.cluster.local:3100/loki/api/v1/push
+      tenant_id: homelab
+  scrape_configs:
+    - job_name: kubernetes-pods
+      kubernetes_sd_configs:
+        - role: pod
+      pipeline_stages:
+        - cri: {}
+      relabel_configs:
+        - action: drop
+          source_labels: [__meta_kubernetes_pod_phase]
+          regex: Pending|Succeeded|Failed
+        - action: drop
+          source_labels: [__meta_kubernetes_pod_controller_kind]
+          regex: Job
+        - action: drop
+          source_labels: [__meta_kubernetes_pod_annotation_promtail_io_scrape]
+          regex: "false"
+        - source_labels: [__meta_kubernetes_pod_node_name]
+          target_label: node
+        - source_labels: [__meta_kubernetes_namespace]
+          target_label: namespace
+        - source_labels: [__meta_kubernetes_pod_name]
+          target_label: pod
+        - source_labels: [__meta_kubernetes_pod_container_name]
+          target_label: container
+        - source_labels: [__meta_kubernetes_pod_label_app]
+          target_label: app
+        - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+          target_label: app_kubernetes_io_name
+        - source_labels: [__meta_kubernetes_pod_label_component]
+          target_label: component
+        - source_labels: [__meta_kubernetes_pod_label_release]
+          target_label: release
+        - source_labels: [__meta_kubernetes_pod_label_instance]
+          target_label: instance
+        - action: replace
+          source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
+          regex: (.*);(.*)
+          target_label: __path__
+          replacement: /var/log/pods/*$1/*$2/*.log
+
+    - job_name: kubernetes-system
+      kubernetes_sd_configs:
+        - role: pod
+          namespaces:
+            names:
+              - kube-system
+              - monitoring
+      pipeline_stages:
+        - cri: {}
+      relabel_configs:
+        - action: drop
+          source_labels: [__meta_kubernetes_pod_phase]
+          regex: Pending
+        - source_labels: [__meta_kubernetes_namespace]
+          target_label: namespace
+        - source_labels: [__meta_kubernetes_pod_name]
+          target_label: pod
+        - source_labels: [__meta_kubernetes_pod_container_name]
+          target_label: container
+        - source_labels: [__meta_kubernetes_pod_node_name]
+          target_label: node
+        - action: replace
+          source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
+          regex: (.*);(.*)
+          target_label: __path__
+          replacement: /var/log/pods/*$1/*$2/*.log
+
+  limits_config:
+    ingestion_rate_mb: 64
+    max_streams: 5000
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
