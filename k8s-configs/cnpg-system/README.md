@@ -131,18 +131,23 @@ Applications should connect using:
 ```bash
 # Get the primary pod name
 POD_NAME=$(kubectl get pods -n postgresql -l "cnpg.io/cluster=postgresql-pg,role=primary" -o jsonpath='{.items[0].metadata.name}')
+PASSWORD=$(openssl rand -hex 64)
+# Prefer underscores; hyphens require quoting in PostgreSQL identifiers
+APP=myapp
+NAMESPACE=default
+SECRET_NAME="${APP}-db"
 
 # Create a new database and user
-kubectl exec -n postgresql "$POD_NAME" -- psql -U postgres -c "CREATE USER myapp WITH PASSWORD 'secure_password_here';"
-kubectl exec -n postgresql "$POD_NAME" -- psql -U postgres -c "CREATE DATABASE myapp OWNER myapp;"
+kubectl exec -n postgresql "$POD_NAME" -- psql -U postgres -c "CREATE USER ${APP} WITH PASSWORD '${PASSWORD}';"
+kubectl exec -n postgresql "$POD_NAME" -- psql -U postgres -c "CREATE DATABASE ${APP} OWNER ${APP};"
 
 # Create Kubernetes secret for the application
-kubectl create secret generic myapp-db \
-  --from-literal=DATABASE_URL='postgresql://myapp:secure_password_here@postgresql-pg-rw.postgresql.svc.cluster.local:5432/myapp' \
-  --from-literal=username='myapp' \
-  --from-literal=password='secure_password_here' \
-  --from-literal=dbname='myapp' \
-  -n default  # App's namespace
+kubectl create secret generic "${SECRET_NAME}" \
+  --from-literal=DATABASE_URL="postgresql://${APP}:${PASSWORD}@postgresql-pg-rw.postgresql.svc.cluster.local:5432/${APP}" \
+  --from-literal=username="${APP}" \
+  --from-literal=password="${PASSWORD}" \
+  --from-literal=dbname="${APP}" \
+  -n "${NAMESPACE}" # App's namespace
 ```
 
 ### Listing Databases and Users
