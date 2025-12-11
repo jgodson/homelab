@@ -1,0 +1,20 @@
+flowchart LR
+  subgraph Shopify
+    OX["Oxygen app"]
+  end
+  CF["Cloudflare Tunnel"]
+  CDP["Caddy (ingress-public)"]
+  CDL["Caddy (ingress-local + AdGuard)"]
+  AL["Grafana Alloy\nOTLP 4317/4318"]
+  LK["Loki\n(chunks on Minio)"]
+  TP["Tempo\n(traces on Minio)"]
+  PR["Prometheus\n(not used here)"]
+  GF["Grafana UI"]
+
+  OX --> CF --> CDP --> CDL --> AL
+  AL -->|logs| LK
+  AL -->|traces| TP
+  AL -->|metrics| PR
+  LK --> GF
+  TP --> GF
+  PR --> GF
