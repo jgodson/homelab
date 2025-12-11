@@ -55,7 +55,7 @@ alloy:
         action {
           key = "loki.attribute.labels"
           action = "insert"
-          value = "hostname, level, shop_id, storefront_id, deployment_id, code, processed_by"
+          value = "hostname, level, shop_id, storefront_id, deployment_id, code, processed_by, type, method"
         }
 
         action {
