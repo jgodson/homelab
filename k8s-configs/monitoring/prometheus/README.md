@@ -2,7 +2,7 @@
 1. Add the helm repo `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
 2. Install helm chart
     ```bash
-    helm install prometheus prometheus-community/prometheus \
+    helm upgrade --install prometheus prometheus-community/prometheus \
     -f values.yaml \
     -n monitoring
     ```
