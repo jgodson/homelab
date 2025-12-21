@@ -2,7 +2,9 @@
 - CPU: 8 Cores
 - RAM: 8 GB
 - Disk: 64 GB
-- OS: Ubuntu Desktop
+    - Use `Cache: Writeback` for best performance on HDD
+    - Additionally after creating run `zfs set sync=disabled rpool/data/vm-<vmid>-disk-0`
+- OS: Ubuntu Desktop˜
 
 ### To get running
 

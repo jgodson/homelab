@@ -9,6 +9,8 @@ Home Assistant is a home automation platform that puts local control and privacy
 - **CPU**: 4 Cores
 - **RAM**: 4 GB
 - **Disk**: 32 GB
+    - Use `Cache: Writeback` for best performance on HDD
+    - Additionally after creating run `zfs set sync=disabled rpool/data/vm-<vmid>-disk-0`
 - **Network**: Static IP address
 
 ### Prerequisites

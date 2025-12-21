@@ -10,6 +10,8 @@ Frigate is a Network Video Recorder (NVR) that uses computer vision to provide o
 - **CPU**: 12 Cores (for CPU-based object detection)
 - **RAM**: 8 GB
 - **Disk**: 256 GB (Can be adjusted according to your needs)
+    - Use `Cache: Writeback` for best performance on HDD
+    - Additionally after creating run `zfs set sync=disabled rpool/data/vm-<vmid>-disk-0`
 - **Network**: Static IP address
 
 ### Prerequisites

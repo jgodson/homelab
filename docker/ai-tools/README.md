@@ -9,6 +9,8 @@ This setup provides a comprehensive suite of AI tools for personal use, includin
 - **CPU**: 28 Cores (I don't have GPU acceleration on my server 😭)
 - **RAM**: 32 GB
 - **Disk**: 128 GB
+    - Use `Cache: Writeback` for best performance on HDD
+    - Additionally after creating run `zfs set sync=disabled rpool/data/vm-<vmid>-disk-0`
 - **Network**: Static IP address
 
 ### Prerequisites

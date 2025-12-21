@@ -9,6 +9,8 @@ MinIO provides S3-compatible object storage used in the homelab for backup stora
 - **CPU**: 4 Cores
 - **RAM**: 8 GB
 - **Disk**: 512 GB
+    - Use `Cache: Writeback` for best performance on HDD
+    - Additionally after creating run `zfs set sync=disabled rpool/data/vm-<vmid>-disk-0`
 - **Network**: Static IP address
 
 ### Prerequisites
