@@ -219,6 +219,7 @@ controller:
 
 ingress:
   enabled: true
+  faroPort: 12345
   ingressClassName: "traefik"
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: "web"
