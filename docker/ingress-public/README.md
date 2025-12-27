@@ -244,6 +244,12 @@ docker compose up -d
 > ```bash
 > docker exec caddy caddy reload --config /etc/caddy/Caddyfile
 > ```
+>
+> Alternatively, you can use the provided script to update and reload the Caddyfile from your local machine:
+> ```bash
+> cd caddy
+> ./update-caddyfile.sh
+> ```
 
 ## References
 - [Cloudflare Tunnels Documentation](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)

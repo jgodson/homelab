@@ -58,7 +58,7 @@
   }
 
   handle @server_error {
-    respond "Server error occurred. I have been notified." {http.error.status_code}
+    respond "Server error occurred. Please try again later." {http.error.status_code}
   }
 
   handle {
@@ -155,18 +155,51 @@ telemetry.{$DOMAIN}:80 {
 
   # Handle all OTLP requests (HTTP and gRPC)
   handle {
-    reverse_proxy https://alloy.home.jasongodson.com {
+    # Proxy to Traefik directly
+    reverse_proxy 192.168.1.35:80 {
       header_up Host alloy.home.jasongodson.com
-      transport http {
-        read_timeout 5m
-        write_timeout 5m
-        dial_timeout 10s
-      }
     }
   }
 
   handle_errors {
     import error_handler
+  }
+}
+
+# Game Server
+play.{$DOMAIN}:80 {
+  rate_limit {
+    # Limit authentication token requests (*/request_token)
+    zone auth_limit {
+      match {
+        path */request_token
+      }
+      key {client_ip}
+      events 2
+      window 30s
+    }
+
+    # Limit join attempts (*/join)
+    zone join_limit {
+      match {
+        path */join
+      }
+      key {client_ip}
+      events 2
+      window 30s
+    }
+  }
+
+  # Proxy to Traefik directly
+  reverse_proxy 192.168.1.35:80 {
+    header_up Host {host}
+
+    header_up X-Real-IP {client_ip}
+    header_up X-Forwarded-For {client_ip}
+
+    # Disable buffering
+    # This forces Caddy to flush packets immediately, reducing latency for WebSockets
+    flush_interval -1
   }
 }
 
