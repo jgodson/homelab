@@ -181,6 +181,17 @@ extraScrapeConfigs: |
         regex: '.*'
         replacement: 'issue-to-pr'
 
+  - job_name: treasure-takedown-matchmaker
+    scheme: https
+    static_configs:
+      - targets: ['matchmaker.home.jasongodson.com']
+    metrics_path: /treasure-takedown/admin/metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '.*'
+        replacement: 'matchmaker'
+
 prometheus-pushgateway:
   enabled: false
 
