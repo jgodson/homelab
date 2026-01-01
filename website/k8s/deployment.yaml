@@ -1,11 +1,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "{{APP_NAME}}"
-  namespace: "{{NAMESPACE}}"
+  name: {{APP_NAME}}
+  namespace: {{NAMESPACE}}
   labels:
-    app: "{{APP_NAME}}"
-    app.kubernetes.io/part-of: "{{APP_NAME}}"
+    app: {{APP_NAME}}
+    app.kubernetes.io/part-of: {{APP_NAME}}
 spec:
   replicas: 1
   selector:

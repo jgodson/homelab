@@ -211,8 +211,9 @@ curl -I https://example.com
 
 ### Website Deployment
 
-To deploy the website to the Caddy server:
-- Follow the instructions in the [website README](/website/README.md#deploy-to-remote-server)
+The website is hosted on the Kubernetes cluster. Caddy is configured to reverse proxy the main domain to the cluster's ingress controller.
+
+For more details on building and deploying the website, see the [website README](../../website/README.md).
 
 ### Security Monitoring
 
