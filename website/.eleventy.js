@@ -43,6 +43,9 @@ module.exports = function(eleventyConfig) {
   // Copy robots.txt to the output (_site) directory
   eleventyConfig.addPassthroughCopy("src/robots.txt");
 
+  const imageCacheDir = path.join(__dirname, ".cache", "eleventy-img");
+  const imageConcurrency = 2;
+
   // Simplified image shortcode focusing on WebP optimization
   eleventyConfig.addShortcode("image", async function(src, alt, sizes = "100vw", maxWidth = null) {
     if (!src) {
@@ -56,7 +59,12 @@ module.exports = function(eleventyConfig) {
     const sourceMetadata = await Image(src, {
       widths: [null],
       formats: ["png"],
-      dryRun: true
+      dryRun: true,
+      concurrency: imageConcurrency,
+      cacheOptions: {
+        duration: "1d",
+        directory: imageCacheDir
+      }
     });
     
     // Get original width to avoid generating larger sizes
@@ -72,6 +80,11 @@ module.exports = function(eleventyConfig) {
       formats: ["webp", "png"],
       outputDir: "./src_site/assets/images/",
       urlPath: "/assets/images/",
+      concurrency: imageConcurrency,
+      cacheOptions: {
+        duration: "1d",
+        directory: imageCacheDir
+      },
       filenameFormat: function(_, src, width, format) {
         const name = path.basename(src, path.extname(src));
         return `${name}-${width}w.${format}`;

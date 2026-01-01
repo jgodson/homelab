@@ -1,0 +1,28 @@
+sequenceDiagram
+  participant U as Player browser
+  participant CF as Cloudflare Tunnel
+  participant IN as Ingress
+  participant MM as Matchmaker (Go)
+  participant GS as Godot server (same pod)
+
+  U->>CF: GET /treasure-takedown
+  CF->>IN: forward
+  IN->>MM: / (static assets)
+  MM-->>U: web build static assets
+
+  U->>CF: POST /request_token
+  CF->>IN: forward
+  IN->>MM: /request_token
+  MM-->>U: JWT
+
+  U->>CF: POST /join (JWT)
+  CF->>IN: forward
+  IN->>MM: /join
+  MM-->>U: Join Ticket
+
+  U->>CF: WS /connect (Join Ticket)
+  CF->>IN: forward
+  IN->>MM: /connect (WebSocket)
+  MM->>GS: proxy WS to localhost:<port>
+
+  GS-->>MM: /server/lock (internal)

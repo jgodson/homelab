@@ -8,6 +8,7 @@ tags:
   - gitea
   - homelab
   - ci-cd
+  - infrastucture
 layout: post.njk
 ---
 

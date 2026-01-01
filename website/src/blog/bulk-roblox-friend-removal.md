@@ -6,6 +6,7 @@ tags:
   - automation
   - roblox
   - scripting
+  - gaming
   - ai
 layout: post.njk
 ---

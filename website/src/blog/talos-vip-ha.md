@@ -7,6 +7,7 @@ tags:
   - talos
   - homelab
   - automation
+  - infrastructure
 layout: post.njk
 ---
 

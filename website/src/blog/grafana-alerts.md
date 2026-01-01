@@ -7,6 +7,7 @@ tags:
   - kubernetes
   - cloudflare
   - homelab
+  - infrastucture
 layout: post.njk
 ---
 

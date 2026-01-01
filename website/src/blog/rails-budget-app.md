@@ -7,6 +7,7 @@ tags:
   - open-source
   - finance
   - automation
+  - backend
 layout: post.njk
 ---
 

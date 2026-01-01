@@ -30,6 +30,14 @@ function renderAll() {
   files.forEach((input) => {
     const basename = path.basename(input, path.extname(input));
     const output = path.join(outputDir, `${basename}.svg`);
+    if (fs.existsSync(output)) {
+      const inputStat = fs.statSync(input);
+      const outputStat = fs.statSync(output);
+      if (outputStat.mtimeMs >= inputStat.mtimeMs) {
+        console.log(`Skipping up-to-date Mermaid output for ${input}`);
+        return;
+      }
+    }
     console.log(`Rendering ${input} -> ${output}`);
     execSync(
       `npx --yes @mermaid-js/mermaid-cli -i "${input}" -o "${output}" -t default`,
