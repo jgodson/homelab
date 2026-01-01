@@ -80,9 +80,13 @@
   }
 
   handle {
-    root * /srv
-    file_server
-    
+    # Proxy to Traefik directly
+    reverse_proxy 192.168.1.35:80 {
+      header_up Host {host}
+      header_up X-Real-IP {client_ip}
+      header_up X-Forwarded-For {client_ip}
+    }
+
     # Security headers
     header {
       # Prevent clickjacking
@@ -193,7 +197,6 @@ play.{$DOMAIN}:80 {
   # Proxy to Traefik directly
   reverse_proxy 192.168.1.35:80 {
     header_up Host {host}
-
     header_up X-Real-IP {client_ip}
     header_up X-Forwarded-For {client_ip}
 
