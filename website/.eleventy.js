@@ -150,24 +150,28 @@ module.exports = function(eleventyConfig) {
 
   eleventyConfig.addFilter("dateToFormat", function(date) {
     if (!date) return '';
-    
-    const dateObj = new Date(date);
-    
-    // Add one day to fix the timezone offset issue
-    dateObj.setDate(dateObj.getDate() + 1);
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return dateObj.toLocaleDateString('en-US', options);
+
+    const dateObj = date instanceof Date ? date : new Date(date);
+    const utcDate = new Date(Date.UTC(
+      dateObj.getUTCFullYear(),
+      dateObj.getUTCMonth(),
+      dateObj.getUTCDate()
+    ));
+    const options = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' };
+    return utcDate.toLocaleDateString('en-US', options);
   });
-  
+
   eleventyConfig.addFilter("dateToISO", function(date) {
     if (!date) return '';
-    
-    const dateObj = new Date(date);
-    
-    // Add one day to fix the timezone offset issue
-    dateObj.setDate(dateObj.getDate() + 1);
-  
-    return dateObj.toISOString();
+
+    const dateObj = date instanceof Date ? date : new Date(date);
+    const utcDate = new Date(Date.UTC(
+      dateObj.getUTCFullYear(),
+      dateObj.getUTCMonth(),
+      dateObj.getUTCDate()
+    ));
+
+    return utcDate.toISOString();
   });
   
   // Add a filter to get the most recent post date for the Atom feed
