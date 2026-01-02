@@ -15,6 +15,10 @@ echo -e "${GREEN}Updating Caddyfile on ${REMOTE_HOST}...${NC}"
 # Copy Caddyfile
 scp Caddyfile ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/caddy/Caddyfile
 
+# Sync site directory
+echo -e "${GREEN}Syncing site files...${NC}"
+rsync -avz --delete site/ ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/caddy/site/
+
 # Reload Caddy
 echo -e "${GREEN}Reloading Caddy...${NC}"
 ssh ${REMOTE_USER}@${REMOTE_HOST} "sudo docker exec caddy caddy reload --config /etc/caddy/Caddyfile"

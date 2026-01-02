@@ -48,7 +48,7 @@
   @server_error expression {http.error.status_code} >= 500
   
   handle @404 {
-    rewrite * /404
+    rewrite * /404.html
     root * /srv
     file_server
   }
@@ -232,7 +232,8 @@ kube-manager.{$DOMAIN}:80 {
     Permissions-Policy "interest-cohort=()"
   }
 
-  handle /api/webhook/github {
+  handle /api/webhook/* {
+    # Proxy to Traefik directly
     reverse_proxy 192.168.1.35:80 {
       header_up Host {host}
       header_up X-Real-IP {client_ip}
@@ -241,7 +242,11 @@ kube-manager.{$DOMAIN}:80 {
   }
 
   handle {
-    respond "Not Found" 404
+    error "Not Found" 404
+  }
+
+  handle_errors {
+    import error_handler
   }
 }
 
@@ -270,7 +275,7 @@ kube-manager.{$DOMAIN}:80 {
   }
 
   handle {
-    respond "Not Found" 404
+    error "Not Found" 404
   }
 
   handle_errors {

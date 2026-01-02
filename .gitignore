@@ -4,3 +4,4 @@ dist
 src_site
 no-commit
 helm-actions
+scripts/issues
