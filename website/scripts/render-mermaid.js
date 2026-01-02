@@ -40,7 +40,7 @@ function renderAll() {
     }
     console.log(`Rendering ${input} -> ${output}`);
     execSync(
-      `npx --yes @mermaid-js/mermaid-cli -i "${input}" -o "${output}" -t default`,
+      `npx --yes @mermaid-js/mermaid-cli -i "${input}" -o "${output}" -t default -p puppeteer-config.json`,
       { stdio: 'inherit', cwd: rootDir }
     );
   });
