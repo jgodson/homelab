@@ -27,6 +27,8 @@ RUN printf '%s\n' \
   'server {' \
   '  listen 8080;' \
   '  server_name _;' \
+  '  port_in_redirect off;' \
+  '  absolute_redirect off;' \
   '' \
   '  root /usr/share/nginx/html;' \
   '  index index.html;' \
