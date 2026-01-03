@@ -17,7 +17,7 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": 0,
   "links": [],
   "panels": [
@@ -1252,5 +1252,5 @@
   "timezone": "",
   "title": "Issue-To-PR",
   "uid": "issue-to-pr",
-  "version": 5
+  "version": 6
 }
