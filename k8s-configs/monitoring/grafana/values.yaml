@@ -40,6 +40,8 @@ smtp:
   existingSecret: grafana-smtp
   fromName: Grafana Alerts
 
+envFromSecret: grafana-influxdb-token
+
 grafana.ini:
   reporting_enabled: false
   smtp:
@@ -49,6 +51,106 @@ grafana.ini:
   security:
     cookie_secure: true
     strict_transport_security: true
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: PBFA97CFB590B2093
+        access: proxy
+        url: http://prometheus-server.monitoring.svc.cluster.local
+        isDefault: true
+        editable: false
+        jsonData:
+          timeInterval: 1m
+      - name: Loki
+        type: loki
+        uid: P8E80F9AEF21F6940
+        access: proxy
+        url: http://loki-read.monitoring.svc.cluster.local:3100
+        isDefault: false
+        editable: false
+        jsonData: {}
+      - name: tempo
+        type: tempo
+        uid: belv26m2iiqdca
+        access: proxy
+        url: http://tempo-query-frontend.monitoring.svc.cluster.local:3100
+        isDefault: false
+        editable: false
+        jsonData:
+          nodeGraph:
+            enabled: true
+          search:
+            filters:
+              - id: service-name
+                operator: "="
+                scope: resource
+                tag: service.name
+              - id: span-name
+                operator: "="
+                scope: span
+                tag: name
+          serviceMap: {}
+          streamingEnabled:
+            search: false
+          tracesToLogsV2:
+            customQuery: false
+            datasourceUid: P8E80F9AEF21F6940
+            filterBySpanID: false
+            filterByTraceID: true
+            query: "{service_name=\"$service_name\"} |= \"$request_id\""
+            spanEndTimeShift: 1h
+            spanStartTimeShift: -1h
+            tags:
+              - key: service.name
+                value: service_name
+          tracesToMetrics:
+            datasourceUid: PBFA97CFB590B2093
+            queries: []
+            tags:
+              - key: service.name
+                value: service_name
+      - name: InfluxDB - Proxmox
+        type: influxdb
+        uid: aegyydl2mv37kd
+        access: proxy
+        url: http://influxdb-influxdb2.monitoring.svc.cluster.local:8086
+        withCredentials: true
+        isDefault: false
+        editable: false
+        jsonData:
+          dbName: proxmox
+          defaultBucket: proxmox
+          httpHeaderName1: Authorization
+          httpMode: POST
+          insecureGrpc: true
+          oauthPassThru: false
+          organization: 0512234fdee01f81
+          timeout: 60
+          tlsAuth: false
+          tlsAuthWithCACert: false
+          tlsSkipVerify: false
+          version: InfluxQL
+        secureJsonData:
+          httpHeaderValue1: ${INFLUXDB_TOKEN}
+      - name: InfluxDB - HomeAssistant
+        type: influxdb
+        uid: aegz2deoojz0gb
+        access: proxy
+        url: http://influxdb-influxdb2.monitoring.svc.cluster.local:8086
+        withCredentials: true
+        isDefault: false
+        editable: false
+        jsonData:
+          dbName: homeassistant
+          httpHeaderName1: Authorization
+          httpMode: POST
+          timeout: 60
+        secureJsonData:
+          httpHeaderValue1: ${INFLUXDB_TOKEN}
 
 testFramework:
   enabled: false

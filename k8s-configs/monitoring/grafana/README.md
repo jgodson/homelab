@@ -1,29 +1,11 @@
 ### Steps
-1. Create secrets (`Grafana admin credentials`, `Grafana SMTP secret` (two here) in 1Password)
+1. Create secrets (`Grafana admin credentials`, `Grafana SMTP secret`, `Grafana InfluxDB token`) in 1Password
 2. Install helm chart with the deploy script `./deploy.sh`
 3. Log into the admin interface at grafana.home.jasongodson.com
 4. Create a new API Token in the InfluxDB admin for `Read` access to `All Buckets`.
-5. Prometheus and Loki are already set up as datasources but InfluxDB2 needs to be added:
-    - Go to Administration -> Plugins and Data -> Plugins
-    - Search for InfluxDB and click on the InfluxDB plugin
-    - Click on "Add new data source" in the top right and add the Proxmox config:
-        - Name: `InfluxDB - Proxmox`
-        - Query language: `InfluxQL`
-        - URL: `http://influxdb.monitoring.svc.cluster.local:8086`
-        - Timeout: `60`
-        - Check `With Credentials` under "Auth"
-        - Under "Custom HTTP Headers" add a new header called `Authorization`. Then the value is `Token <API_TOKEN>` from above.
-        - Database: `proxmox`
-        - HTTP Method: `POST`
-    - Add another for Home Assistant:
-        - Name: `InfluxDB - HomeAssistant`
-        - Query language: `InfluxQL`
-        - URL: `http://influxdb.monitoring.svc.cluster.local:8086`
-        - Timeout: `60`
-        - Check `With Credentials` under "Auth"
-        - Under "Custom HTTP Headers" add a new header called `Authorization`. Then the value is `Token <API_TOKEN>` from above.
-        - Database: `homeassistant`
-        - HTTP Method: `POST`
+5. Provision datasources via Helm:
+    - Create a Kubernetes secret named `grafana-influxdb-token` with a key `INFLUXDB_TOKEN` set to `Token <API_TOKEN>` from above.
+    - Prometheus, Loki, Tempo, and InfluxDB datasources are now provisioned via `values.yaml`, so they should appear read-only in the UI.
 6. You can now import previously exported dashboards (like the ones in [dashboards](./dashboards/)) if needed. However the uid of the datasource has likely changed, which means you will have to replace all the uid's for the datasource in the dashboard with the new one. This can be obtained from the url by navigating to the datasource and grabbing it from the url. 
    
    Example: `https://grafana.home.jasongodson.com/connections/datasources/edit/aegyydl2mv37kd` would be `aegyydl2mv37kd`.
