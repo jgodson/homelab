@@ -192,6 +192,17 @@ extraScrapeConfigs: |
         regex: '.*'
         replacement: 'matchmaker'
 
+  - job_name: budget-app
+    scheme: https
+    static_configs:
+      - targets: ['budget.home.jasongodson.com']
+    metrics_path: /metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '.*'
+        replacement: 'budget-app'
+
 prometheus-pushgateway:
   enabled: false
 
