@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 72,
+  "id": 0,
   "links": [],
   "panels": [
     {
@@ -792,9 +792,9 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "editorMode": "code",
-          "expr": "increase(kube_manager_build_duration_seconds_count{status=\"success\", step=\"total\"}[$__rate_interval])",
-          "legendFormat": "Success",
+          "editorMode": "builder",
+          "expr": "sum by(status) (increase(kube_manager_build_duration_seconds_count{status=\"success\", step=\"total\"}[$__rate_interval]))",
+          "legendFormat": "{{status}}",
           "range": true,
           "refId": "A"
         },
@@ -804,18 +804,9 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "increase(kube_manager_build_duration_seconds_count{status=\"failed\", step=\"total\"}[$__rate_interval])",
-          "legendFormat": "Failed",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
           "expr": "kube_manager_builds{status=\"pending\"}",
-          "legendFormat": "Pending",
+          "legendFormat": "pending",
+          "range": true,
           "refId": "C"
         },
         {
@@ -823,8 +814,10 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
+          "editorMode": "code",
           "expr": "kube_manager_builds{status=\"building\"}",
-          "legendFormat": "Building",
+          "legendFormat": "building",
+          "range": true,
           "refId": "D"
         }
       ],
@@ -916,11 +909,11 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "disableTextWrap": false,
-          "editorMode": "code",
-          "expr": "increase(kube_manager_deployment_duration_seconds_count{status=\"success\"}[$__rate_interval])",
+          "editorMode": "builder",
+          "expr": "sum by(status) (increase(kube_manager_deployment_duration_seconds_count{status=\"success\"}[$__rate_interval]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
-          "legendFormat": "Success",
+          "legendFormat": "{{status}}",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -931,18 +924,9 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "increase(kube_manager_deployment_duration_seconds_count{status=\"failed\"}[$__rate_interval])",
-          "legendFormat": "Failed",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
           "expr": "kube_manager_deployments{status=\"pending\"}",
-          "legendFormat": "Pending",
+          "legendFormat": "pending",
+          "range": true,
           "refId": "C"
         },
         {
@@ -950,8 +934,10 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
+          "editorMode": "code",
           "expr": "kube_manager_deployments{status=\"deploying\"}",
-          "legendFormat": "Deploying",
+          "legendFormat": "deploying",
+          "range": true,
           "refId": "D"
         }
       ],
@@ -1997,5 +1983,5 @@
   "timezone": "",
   "title": "Kube Manager",
   "uid": "kube-manager",
-  "version": 4
+  "version": 5
 }
