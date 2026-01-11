@@ -190,7 +190,18 @@ extraScrapeConfigs: |
       - source_labels: [__address__]
         target_label: instance
         regex: '.*'
-        replacement: 'matchmaker'
+        replacement: 'matchmaker-treasure'
+
+  - job_name: botb-matchmaker
+    scheme: https
+    static_configs:
+      - targets: ['matchmaker.home.jasongodson.com']
+    metrics_path: /battle-of-the-brains/admin/metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '.*'
+        replacement: 'matchmaker-botb'
 
   - job_name: budget-app
     scheme: https

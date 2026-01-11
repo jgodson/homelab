@@ -20,5 +20,5 @@ echo "📧 Using from_address: $FROM_EMAIL"
 
 helm upgrade --install "$RELEASE_NAME" "$CHART_NAME" \
   -n "$NAMESPACE" \
-  -f values.yaml \
+  -f grafana-values.yaml \
   --set "grafana.grafana.ini.smtp.from_address=${FROM_EMAIL}"

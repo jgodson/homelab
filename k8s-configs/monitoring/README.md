@@ -1,3 +1,14 @@
+# Monitoring Stack
+
+## Quick Start (Makefile)
+
+A `Makefile` is provided to simplify deployment updates and prevent configuration drift. Run these commands from the `k8s-configs/monitoring` directory.
+
+*   **Deploy everything:** `make deploy-all`
+*   **Deploy specific service:** `make deploy-prometheus`, `make deploy-alloy`, etc.
+
+## Manual Setup Steps
+
 1. Apply metrics-server.yaml `kubectl apply -f metrics-server.yaml`
 1. Make sure Caddy & Adguard are running with Docker. [See readme](../../docker/ingress-local+adguard/README.md)
 1. Make sure metallb is already deployed since Traefik needs a LoadBalancer. [See readme](../metallb/README.md)

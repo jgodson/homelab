@@ -13,7 +13,7 @@ Grafana Alloy is a central collector that can process both logs and traces throu
    ```bash
    helm repo add grafana https://grafana.github.io/helm-charts
    helm repo update
-   helm upgrade --install alloy grafana/alloy -f values.yaml -n monitoring
+   helm upgrade --install alloy grafana/alloy -f alloy-values.yaml -n monitoring
    ```
 
 #### Usage

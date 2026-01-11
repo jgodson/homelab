@@ -6,7 +6,7 @@ Monitor virtual machines and get **real disk usage metrics** using Telegraf with
 
 The VM list must be supplied via a mounted file and referenced by the `VM_LIST_FILE` environment variable.
 
-Current default in `values.yaml`:
+Current default in `telegraf-values.yaml`:
 
 ```
 VM_LIST_FILE=/config/vms/hosts
@@ -48,7 +48,7 @@ InfluxDB will therefore contain only `vm_collection_status` entries for these fa
 
 You can instead store hosts in a Secret if you consider the content sensitive. In that case:
 1. Create a Secret with key `hosts`.
-2. Replace the `vm-hosts` volume definition in `values.yaml` from `configMap:` to `secret:`.
+2. Replace the `vm-hosts` volume definition in `telegraf-values.yaml` from `configMap:` to `secret:`.
 3. Keep the same mountPath and `VM_LIST_FILE` environment variable.
 
 ## Updating Hosts
@@ -137,7 +137,7 @@ kubectl exec -n monitoring deployment/telegraf -- /scripts/collect-vm-disk-usage
 The deployment uses the official Telegraf Helm chart defaults with Proxmox-specific overrides:
 
 - **Official Chart Defaults**: Image, resources, security contexts provided by chart
-- **`values.yaml`**: Only Proxmox-specific configuration (config, secrets, monitoring settings)
+- **`telegraf-values.yaml`**: Only Proxmox-specific configuration (config, secrets, monitoring settings)
 
 ### Collected Metrics
 
@@ -260,7 +260,7 @@ helm repo update influxdata
 
 ### Telegraf Settings
 
-Edit `values.yaml` to customize:
+Edit `telegraf-values.yaml` to customize:
 
 - **Collection interval**: Change `agent.interval` (default: 60s)
 - **Resource limits**: Modify `resources` section
@@ -285,21 +285,21 @@ To monitor VMs in different environments, create separate deployments:
 ```bash
 # Production VMs
 helm install telegraf-prod influxdata/telegraf \
-  -f values.yaml \
+  -f telegraf-values.yaml \
   --set config.global_tags.environment="production" \
   --set-file config.inputs[0].exec.data_format="json" \
   -n monitoring
 
 # Staging VMs
 helm install telegraf-staging influxdata/telegraf \
-  -f values.yaml \
+  -f telegraf-values.yaml \
   --set config.global_tags.environment="staging" \
   -n monitoring
 ```
 
 ### Custom Tags
 
-Add custom tags to all metrics by modifying `values.yaml`:
+Add custom tags to all metrics by modifying `telegraf-values.yaml`:
 
 ```yaml
 config:

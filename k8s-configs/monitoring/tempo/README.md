@@ -21,12 +21,12 @@
    ```bash
    helm repo add grafana https://grafana.github.io/helm-charts
    helm repo update
-   helm install tempo grafana/tempo-distributed -f values.yaml -n monitoring
+   helm install tempo grafana/tempo-distributed -f tempo-values.yaml -n monitoring
    ```
 
 4. **Configure Grafana to use Tempo**
    
-   Add the following data source in Grafana (this can be added to your `values.yaml` for the Grafana Helm chart or configured via the UI):
+   Add the following data source in Grafana (this can be added to your `tempo-values.yaml` for the Grafana Helm chart or configured via the UI):
    ```yaml
    - name: Tempo
      type: tempo

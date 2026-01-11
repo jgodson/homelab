@@ -21,7 +21,7 @@
 
 3. **Install Helm chart**
    ```bash
-   helm install loki grafana/loki -f values.yaml -n monitoring
+   helm install loki grafana/loki -f loki-values.yaml -n monitoring
    ```
 
 4. **Test log ingestion**

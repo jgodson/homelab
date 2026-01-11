@@ -14,7 +14,7 @@ Save or tweak the bundled values first:
 
 ```bash
 cd k8s-configs/monitoring/promtail
-ls values.yaml  # review & adjust labels/limits if needed
+ls promtail-values.yaml  # review & adjust labels/limits if needed
 ```
 
 Then install or upgrade via Helm:
@@ -24,10 +24,10 @@ helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 helm upgrade --install promtail grafana/promtail \
   -n monitoring \
-  -f values.yaml
+  -f promtail-values.yaml
 ```
 
-Key things in the provided `values.yaml`:
+Key things in the provided `promtail-values.yaml`:
 - Sets `clients[0].url` to the in-cluster Loki write service with `tenant_id: homelab`.
 - Enables tolerations so the DaemonSet schedules on tainted control-plane nodes.
 - Defines two scrape jobs: one for general workloads and one scoped to `kube-system` + `monitoring` namespaces.
@@ -57,7 +57,7 @@ If you don’t see logs, double-check that Loki and Promtail agree on TLS/HTTP, 
 
 ## Tuning ideas
 
-- Adjust resource requests/limits in `values.yaml` if Promtail throttles on busy nodes.
+- Adjust resource requests/limits in `promtail-values.yaml` if Promtail throttles on busy nodes.
 - Add more `relabel_configs` to capture custom pod labels (shop IDs, environments, etc.).
 - Wire Promtail into Grafana Agent/Alloy instead by switching the client URL to the Alloy OTLP HTTP endpoint if you want centralized processing.
-- Attach a `podSecurityPolicy`/`securityContext` if your cluster has stricter requirements; the chart exposes the knobs in `values.yaml`.
+- Attach a `podSecurityPolicy`/`securityContext` if your cluster has stricter requirements; the chart exposes the knobs in `promtail-values.yaml`.

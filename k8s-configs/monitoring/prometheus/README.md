@@ -3,7 +3,7 @@
 2. Install helm chart
     ```bash
     helm upgrade --install prometheus prometheus-community/prometheus \
-    -f values.yaml \
+    -f prometheus-values.yaml \
     -n monitoring
     ```
 

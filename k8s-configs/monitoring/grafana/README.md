@@ -5,7 +5,7 @@
 4. Create a new API Token in the InfluxDB admin for `Read` access to `All Buckets`.
 5. Provision datasources via Helm:
     - Create a Kubernetes secret named `grafana-influxdb-token` with a key `INFLUXDB_TOKEN` set to `Token <API_TOKEN>` from above.
-    - Prometheus, Loki, Tempo, and InfluxDB datasources are now provisioned via `values.yaml`, so they should appear read-only in the UI.
+    - Prometheus, Loki, Tempo, and InfluxDB datasources are provisioned via `grafana-values.yaml`, so they should appear read-only in the UI.
 6. You can now import previously exported dashboards (like the ones in [dashboards](./dashboards/)) if needed. However the uid of the datasource has likely changed, which means you will have to replace all the uid's for the datasource in the dashboard with the new one. This can be obtained from the url by navigating to the datasource and grabbing it from the url. 
    
    Example: `https://grafana.home.jasongodson.com/connections/datasources/edit/aegyydl2mv37kd` would be `aegyydl2mv37kd`.
