@@ -111,6 +111,81 @@ module.exports = function(eleventyConfig) {
     return Image.generateHTML(metadata, imageAttributes);
   });
 
+  eleventyConfig.addPairedShortcode("slideshow", async function(content) {
+    const lines = content.split('\n').filter(line => line.trim() !== '');
+    let slidesHtml = '';
+    
+    // Generate unique ID
+    const slideshowId = 'slideshow-' + Math.random().toString(36).substr(2, 9);
+    
+    for (const line of lines) {
+      // Expected format: path/to/image.png, Caption Text
+      // Split by first comma only
+      const firstCommaIndex = line.indexOf(',');
+      let src = '';
+      let caption = '';
+      
+      if (firstCommaIndex === -1) {
+        src = line.trim();
+      } else {
+        src = line.substring(0, firstCommaIndex).trim();
+        caption = line.substring(firstCommaIndex + 1).trim();
+      }
+      
+      if (!src) continue;
+      
+      try {
+         let options = {
+          widths: [600, 900, 1200],
+          formats: ["webp", "png"],
+          outputDir: "./src_site/assets/images/",
+          urlPath: "/assets/images/",
+          concurrency: imageConcurrency,
+          cacheOptions: {
+            duration: "1d",
+            directory: imageCacheDir
+          },
+          filenameFormat: function(id, src, width, format) {
+            const name = path.basename(src, path.extname(src));
+            return `${name}-${width}w.${format}`;
+          },
+          jpegOptions: false,
+          avifOptions: false
+        };
+        
+        let metadata = await Image(src, options);
+        
+        let imageAttributes = {
+          alt: caption || "Slideshow Image",
+          sizes: "100vw",
+          loading: "lazy",
+          decoding: "async",
+          class: "slide-image"
+        };
+        
+        const imgHtml = Image.generateHTML(metadata, imageAttributes);
+        
+        slidesHtml += `
+          <div class="mySlides fade">
+            ${imgHtml}
+            ${caption ? `<div class="text">${caption}</div>` : ''}
+          </div>
+        `;
+      } catch (e) {
+        console.error(`Error processing slideshow image ${src}:`, e);
+        // Fallback or skip
+      }
+    }
+    
+    return `
+      <div class="slideshow-container" id="${slideshowId}" tabindex="0" aria-label="Image Slideshow">
+        ${slidesHtml}
+        <a class="prev" onclick="changeSlide(this.parentElement, -1)">&#10094;</a>
+        <a class="next" onclick="changeSlide(this.parentElement, 1)">&#10095;</a>
+      </div>
+    `;
+  });
+
   const tagSet = new Set();
   
   // Set up blog collection

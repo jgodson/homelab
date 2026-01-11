@@ -662,3 +662,102 @@ code {
 pre code {
   color: inherit;
 }
+
+/* Slideshow container */
+.slideshow-container {
+  max-width: 1000px;
+  position: relative;
+  margin: auto;
+  background: #f1f1f1;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 1em;
+  margin-bottom: 2em;
+  outline: none; /* Remove default focus outline */
+}
+
+.slideshow-container:focus {
+  box-shadow: 0 0 0 2px #3498db; /* Custom focus ring */
+}
+
+/* Hide the images by default */
+.mySlides {
+  display: none;
+  text-align: center;
+  background-color: #000; /* Dark background better for game screenshots */
+}
+
+.mySlides picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.mySlides picture img {
+  width: 100%;
+  height: auto;
+  max-height: 500px;
+  object-fit: contain;
+  display: block; 
+  margin: 0 auto; /* Center horizontally if max-width takes effect */
+}
+
+/* Next & previous buttons */
+.prev, .next {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  width: auto;
+  margin-top: -22px;
+  padding: 16px;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  transition: 0.6s ease;
+  border-radius: 0 3px 3px 0;
+  user-select: none;
+  background-color: rgba(0,0,0,0.3);
+  text-decoration: none; /* Make sure it doesn't look like a link */
+  z-index: 10;
+}
+
+/* Position the "next button" to the right */
+.next {
+  right: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+/* Position the "prev button" to the left */
+.prev {
+  left: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+/* On hover, add a black background color with a little bit see-through */
+.prev:hover, .next:hover {
+  background-color: rgba(0,0,0,0.8);
+}
+
+/* Caption text */
+.text {
+  color: #f2f2f2;
+  font-size: 15px;
+  padding: 8px 12px;
+  position: absolute;
+  bottom: 0;
+  padding-bottom: 12px;
+  width: 100%;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* Fading animation */
+.fade {
+  animation-name: fade;
+  animation-duration: 0.5s;
+}
+
+@keyframes fade {
+  from {opacity: .4}
+  to {opacity: 1}
+}
