@@ -13,8 +13,6 @@ tags:
 layout: post.njk
 ---
 
-## The Context
-
 I've been building two Rust applications simultaneously. One, a Kubernetes cluster manager named `kube-manager` and the other an automation tool for my side projects I called `issue-to-pr` (naming is hard). I have been using AI as my primary coding partner. The approach was intentionally exploratory: give the LLM minimal direction, let it make most of architectural decisions, see what happens, then tweak later. 
 
 Why this approach? Two reasons:

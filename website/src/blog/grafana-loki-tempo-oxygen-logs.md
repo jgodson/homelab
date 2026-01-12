@@ -14,8 +14,6 @@ tags:
 layout: post.njk
 ---
 
-# Self-Hosted Oxygen Log and Trace Ingestion with Grafana, Alloy, Loki, and Tempo
-
 When setting up my homelab, one of the key components I wanted was a robust logging and tracing solution for my applications. I've implemented a self-hosted stack utilizing Grafana, Grafana Alloy, Loki, and Tempo. This setup provides a comprehensive way to collect, store, and visualize logs and traces. I don't have any external services to monitor but [Hydrogen apps hosted on Oxygen](https://shopify.dev/docs/storefronts/headless/hydrogen/getting-started) offer [log drains](https://shopify.dev/docs/storefronts/headless/hydrogen/logging) and [trace exports](https://shopify.dev/docs/storefronts/headless/hydrogen/trace-exports) to custom endpoints, so this was a great oppourtunity to try it out!
 
 Currently, the volume of logs and traces from my Oxygen applications is low (none outside of testing really 😂). While this configuration works flawlessly for me, I haven't pushed it to understand its full scalability. However, if you're looking for a solid foundation to set up your own self-hosted log and trace ingestion, this example should provide an excellent starting point.

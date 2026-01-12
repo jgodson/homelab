@@ -11,8 +11,6 @@ tags:
 layout: post.njk
 ---
 
-## The Context
-
 For several years I had been using Google Sheets to track spending and set up a budget, however I found myself very frustrated when I had to manually enter all of my transactions into it. I eventually wrote some Ruby scripts to reformat statement data from multiple credit cards so I could copy and paste it into Google Sheets — however, it was still a pain as it would cause issues with formatting and I'd have to spend time fixing it. Finally one day I decided it was time to make it all a bit more automated and have a UX I had more control over, so I built my own app.
 
 I chose Ruby on Rails to build it with for two reasons. First, I wanted something easy to work with and I was familiar with. The second, I wanted to more deeply learn Rails by building an app from scratch as I generally spend most of my time working on existing apps.

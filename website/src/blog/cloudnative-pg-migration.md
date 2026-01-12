@@ -11,8 +11,6 @@ tags:
 layout: post.njk
 ---
 
-## The Problem
-
 As I mentioned in my post about [adding a Talos VIP to keep my cluster highly available](/blog/talos-vip-ha), I have been creating a automated shutdown workflow for my Proxmox VM's to safely shut them down. Part of that is cordoning and draining a Kubernetes node before shutting it down. Well, when I did that and my Postgres DB was moved to a new pod, it was suddenly having issues pulling the image!
 
 ## The Crisis: Broadcom Paywalls Bitnami

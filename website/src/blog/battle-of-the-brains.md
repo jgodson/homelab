@@ -11,7 +11,6 @@ tags:
 layout: post.njk
 ---
 
-## Why I Built It
 This project started as a simple goal: make math practice feel like a game show for my son and daughter. We've played [Jackbox Games](https://www.jackboxgames.com) as a family before and loved the energy, so that served as the main inspiration. They need repetition, but I wanted it to feel playful, competitive, and exciting instead of like homework. Since I already had a working multiplayer backend from my previous Godot game, [Treasure Takedown](/blog/godot-multiplayer-backend-portal/), I realized a new web‑based party game could piggyback on that foundation.
 
 After just one evening and a morning of focused work, the outcome exceeded my expectations. It was genuinely fun to play, and the kids were into it.
