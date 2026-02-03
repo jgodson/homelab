@@ -93,60 +93,86 @@ Thanks for reading! Stay tuned for more post about things in my life related tec
 
 #### Appendix
 
+##### Updated Feb 2, 2026
+
+Instructions to use:
+- Log in
+- Go to the Credit Card page (or Chequing)
+- Click the “View all” link to the right of the Activity header
+- Click “Load more” until you have all the transactions you need, then run the script below in the browser console.
+
 ##### Wealthsimple Credit Card transaction download script
 ```javascript
-(function() {
+(function () {
   const rows = [];
-
   const buttons = document.querySelectorAll("button");
 
-  buttons.forEach(button => {
+  function findNearestDateHeader(startEl) {
+    let el = startEl;
     let date = null;
-    let el = button;
     while (el && !date) {
       el = el.previousElementSibling || el.parentElement;
-      if (el && el.tagName === "H2" && /\d{4}|Today|Yesterday/i.test(el.textContent)) {
-        date = el.textContent.trim();
+      if (!el) break;
+      if (el.tagName === "H2" && /(\d{4}\b)|Today|Yesterday/i.test(el.textContent || "")) {
+        date = (el.textContent || "").trim();
       }
     }
+    return date;
+  }
+
+function normalizeAmountText(text) {
+  // unicode minus (−) -> hyphen-minus (-) and remove whitespace
+  return text ? text.replace(/\u2212/g, "-").replace(/\s+/g, " ").trim() : text;
+}
+
+  buttons.forEach((button) => {
+    const date = findNearestDateHeader(button);
+    if (!date) return;
 
     const ps = button.querySelectorAll("p");
-    const description = ps[0]?.textContent.trim();
+    const description = (ps[0]?.textContent || "").trim();
+    if (!description) return;
 
     let amount = null;
-    ps.forEach(p => {
-      if (/\$\d/.test(p.textContent)) {
-        amount = p.textContent.trim();
-      }
-    });
+    for (const p of ps) {
+      let text = (p.textContent || "").trim();
+      text = normalizeAmountText(text);
 
-    if (date && description && amount) {
-      rows.push([date, description, amount]);
+      if (/[−-]\s*\$\s*\d/.test(text) || /\$\s*\d/.test(text)) {
+        amount = text;
+        break;
+      }
     }
+    if (!amount) return;
+
+    rows.push([date, description, amount]);
   });
 
-  const uniqueRows = Array.from(new Set(rows.map(e => e.join("|")))).map(r => r.split("|"));
+  const uniqueRows = Array.from(new Set(rows.map((r) => r.join("|")))).map((s) => s.split("|"));
 
   function csvEscape(value) {
-    if (typeof value !== 'string') return value;
-    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-      return `"${value.replace(/"/g, '""')}"`; // Escape double quotes by doubling them
+    const str = String(value ?? "");
+    if (/[,"\n]/.test(str)) {
+      return `"${str.replace(/"/g, '""')}"`;
     }
-    return value;
+    return str;
   }
 
   const csvHeader = ["Date", "Description", "Amount"];
   const csvRows = [csvHeader, ...uniqueRows];
+  const csvText = csvRows.map((row) => row.map(csvEscape).join(",")).join("\n");
 
-  const csvContent = "data:text/csv;charset=utf-8,"
-    + csvRows.map(row => row.map(csvEscape).join(",")).join("\n");
+  const blob = new Blob([csvText], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
 
-  const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", "transactions.csv");
+  link.href = url;
+  link.download = "transactions.csv";
+  link.style.display = "none";
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 })();
+
 ```
