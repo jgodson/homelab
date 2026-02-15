@@ -6,6 +6,10 @@ metadata:
   namespace: postgresql
 spec:
   instances: 2  # Primary + 1 replica for HA
+
+  # Disable operator-managed PDB so node drains aren't blocked
+  # Failover is handled automatically by CNPG with primaryUpdateStrategy: unsupervised
+  enablePDB: false
   
   # Use CloudNativePG's PostgreSQL 16 image (UID 26, compatible with operator)
   # Official postgres:16 uses UID 999 which causes "user does not exist" errors

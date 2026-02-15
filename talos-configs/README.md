@@ -9,9 +9,15 @@ This directory contains Talos Linux machine configuration files, patches, and re
   - This is the config applied to control plane nodes
   - Can be merged with real secrets to recreate the cluster
   - Updated by running `sync-configs.sh`
-- `sync-configs.sh` — Retrieve and redact current cluster config
+- `worker-config.yaml` — Worker node **machine config** (auto-redacted)
+  - Same redaction as controlplane, applied to worker nodes
+  - Updated by running `sync-configs.sh --worker` or `sync-configs.sh --all`
+- `sync-configs.sh` — Retrieve and redact current cluster configs
   - Run this whenever you make cluster config changes
-  - Keeps the versioned config in sync with the live cluster
+  - Keeps the versioned configs in sync with the live cluster
+  - `./sync-configs.sh` — sync controlplane only (default)
+  - `./sync-configs.sh --worker` — sync worker only
+  - `./sync-configs.sh --all` — sync both
 - `merge-secrets.sh` — Merge real secrets into redacted template
   - For disaster recovery: creates usable configs from the template
   - Takes a backup config with secrets + template → new config
@@ -23,9 +29,11 @@ This directory contains Talos Linux machine configuration files, patches, and re
 
 ## Cluster Configuration
 
-**Control Plane Nodes**: 192.168.1.30, 192.168.1.31, 192.168.1.32  
-**Control Plane VIP**: 192.168.1.250:6443 (ens18 interface)  
-**Kubernetes**: v1.32.2  
+**Control Plane Nodes**: 192.168.1.30, 192.168.1.31, 192.168.1.32
+**Worker Nodes**: 192.168.1.33
+**Control Plane VIP**: 192.168.1.250:6443 (ens18 interface)
+**CNI**: Cilium (Flannel disabled via `cluster.network.cni.name: none`)
+**Kubernetes**: v1.32.2
 **Talos**: v1.9.5
 
 The cluster uses a Virtual IP (VIP) for high-availability control plane access. If one control plane goes down, the VIP automatically moves to another healthy node, ensuring kubectl always works.
@@ -42,8 +50,8 @@ talosctl get members
 # For health checks, specify --nodes with the VIP
 talosctl health --nodes 192.168.1.250 --server=false
 
-# Or check individual nodes explicitly
-talosctl health --nodes 192.168.1.30,192.168.1.31,192.168.1.32
+# Or check individual nodes explicitly (all 4 nodes)
+talosctl health --nodes 192.168.1.30,192.168.1.31,192.168.1.32,192.168.1.33
 ```
 
 ## Syncing Configs
@@ -51,13 +59,20 @@ talosctl health --nodes 192.168.1.30,192.168.1.31,192.168.1.32
 **Run this after making any cluster configuration changes:**
 
 ```bash
+# Sync both controlplane and worker configs (default)
 ./sync-configs.sh
+
+# Sync worker config only
+./sync-configs.sh --worker
+
+# Sync controlplane config only
+./sync-configs.sh --controlplane
 ```
 
 This will:
-1. Retrieve the current machine config from node 192.168.1.31
+1. Retrieve the current machine config from the target node(s)
 2. Automatically redact all sensitive data (certificates, keys, tokens, secrets)
-3. Save the safe version to `controlplane-config.yaml`
+3. Save the safe version(s) to `controlplane-config.yaml` / `worker-config.yaml`
 4. Ready to commit to GitHub!
 
 ## CI/CD Integration (Gitea Actions)
@@ -103,4 +118,4 @@ If you need to recreate control plane nodes from scratch:
   - Cluster secrets and encryption keys
   - Kubeconfig credentials
 - Always run `sync-configs.sh` before committing config changes
-- Never manually edit `controlplane-config.yaml` — regenerate it with the script
+- Never manually edit `controlplane-config.yaml` or `worker-config.yaml` — regenerate with the script

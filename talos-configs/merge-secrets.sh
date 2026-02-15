@@ -2,28 +2,55 @@
 #
 # merge-secrets.sh - Merge secrets from a real config into the redacted template
 #
-# Usage: ./merge-secrets.sh <path-to-real-config> <output-file>
+# Usage: ./merge-secrets.sh <path-to-real-config> <output-file> [--worker]
 # Example: ./merge-secrets.sh /path/to/backup-config.yaml new-controlplane.yaml
+# Example: ./merge-secrets.sh /path/to/backup-worker.yaml new-worker.yaml --worker
 #
 # This takes secrets from a real config and merges them into the current
-# redacted controlplane-config.yaml, creating a new usable config file.
+# redacted template (controlplane-config.yaml or worker-config.yaml).
 #
 
 set -e
 
+# Parse arguments
+USE_WORKER=false
+REAL_CONFIG=""
+OUTPUT_FILE=""
+
+for arg in "$@"; do
+  case $arg in
+    --worker)
+      USE_WORKER=true
+      shift
+      ;;
+    *)
+      if [ -z "$REAL_CONFIG" ]; then
+        REAL_CONFIG="$arg"
+      elif [ -z "$OUTPUT_FILE" ]; then
+        OUTPUT_FILE="$arg"
+      fi
+      ;;
+  esac
+done
+
 # Check arguments
-if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <path-to-real-config> <output-file>"
+if [ -z "$REAL_CONFIG" ] || [ -z "$OUTPUT_FILE" ]; then
+    echo "Usage: $0 <path-to-real-config> <output-file> [--worker]"
     echo ""
-    echo "Example: $0 /path/to/backup-config.yaml new-controlplane.yaml"
+    echo "Examples:"
+    echo "  $0 /path/to/backup-config.yaml new-controlplane.yaml"
+    echo "  $0 /path/to/backup-worker.yaml new-worker.yaml --worker"
     echo ""
     echo "This merges secrets from a real config into the redacted template."
     exit 1
 fi
 
-REAL_CONFIG="$1"
-OUTPUT_FILE="$2"
-TEMPLATE="controlplane-config.yaml"
+# Select template based on node type
+if [ "$USE_WORKER" = true ]; then
+    TEMPLATE="worker-config.yaml"
+else
+    TEMPLATE="controlplane-config.yaml"
+fi
 
 # Validate inputs
 if [ ! -f "$REAL_CONFIG" ]; then
@@ -125,6 +152,11 @@ secretbox = extract_value(real_config, r'secretboxEncryptionSecret:\s*([A-Za-z0-
 if secretbox:
     template = re.sub(r'secretboxEncryptionSecret:\s*REDACTED_SECRET', f'secretboxEncryptionSecret: {secretbox}', template)
 
+# AESCBC encryption secret
+aescbc = extract_value(real_config, r'aescbcEncryptionSecret:\s*([A-Za-z0-9+/=]{20,})')
+if aescbc:
+    template = re.sub(r'aescbcEncryptionSecret:\s*REDACTED_SECRET', f'aescbcEncryptionSecret: {aescbc}', template)
+
 # Kubernetes CA
 k8s_ca_crt = extract_value(real_config, r'cluster:.*?ca:.*?crt:\s*(LS0tLS[A-Za-z0-9+/=]+)')
 if k8s_ca_crt:
@@ -181,11 +213,12 @@ echo ""
 echo "✅ Merge complete!"
 echo ""
 echo "Output file: $OUTPUT_FILE"
+echo "Template used: $TEMPLATE"
 echo ""
 echo "⚠️  IMPORTANT: This file contains REAL SECRETS!"
 echo "   - Do NOT commit this file to Git"
 echo "   - Store it securely (encrypted backup, password manager, etc.)"
-echo "   - Use it to recreate control plane nodes if needed"
+echo "   - Use it to recreate nodes if needed"
 echo ""
 echo "To use this config:"
 echo "  talosctl apply-config --insecure --nodes <NODE_IP> --file $OUTPUT_FILE"
