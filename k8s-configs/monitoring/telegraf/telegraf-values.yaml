@@ -1,6 +1,15 @@
 # Telegraf values for SSH-based VM monitoring
-# Uses script that installs SSH at runtime (with elevated permissions)
 # Chart: https://artifacthub.io/packages/helm/influxdata/telegraf
+
+# Install openssh-client before Telegraf starts so the collection
+# script doesn't need to install it at runtime on every restart
+initContainers:
+  - name: install-ssh
+    image: docker.io/library/telegraf:1.36-alpine
+    command: ['sh', '-c', 'apk add --no-cache openssh-client && cp /usr/bin/ssh /ssh-bin/ssh && cp /usr/bin/scp /ssh-bin/scp 2>/dev/null; cp /etc/ssh/ssh_config /ssh-bin/ssh_config 2>/dev/null; true']
+    volumeMounts:
+      - name: ssh-bin
+        mountPath: /ssh-bin
 
 # Disable service since we don't need external access
 service:
@@ -20,13 +29,15 @@ env:
         key: influx-org
   - name: VM_LIST_FILE
     value: /config/vms/hosts
+  - name: PATH
+    value: /usr/local/bin/ssh-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Mount SSH key and script
 volumes:
   - name: ssh-key
     secret:
       secretName: telegraf-ssh-key
-      defaultMode: 0644
+      defaultMode: 0400
       items:
         - key: id_rsa
           path: id_rsa
@@ -38,6 +49,8 @@ volumes:
     configMap:
       name: telegraf-vm-hosts
       defaultMode: 0644
+  - name: ssh-bin
+    emptyDir: {}
 
 volumeMounts:
   - name: ssh-key
@@ -48,6 +61,9 @@ volumeMounts:
     readOnly: true
   - name: vm-hosts
     mountPath: /config/vms
+    readOnly: true
+  - name: ssh-bin
+    mountPath: /usr/local/bin/ssh-tools
     readOnly: true
 
 # Telegraf configuration
@@ -134,7 +150,7 @@ serviceMonitor:
 podDisruptionBudget:
   enabled: false
 
-# Security context (A custom image or initContainer would be better, but chart doesn't support initContainers)
+# Security context - runs as root to access SSH key and install packages
 podSecurityContext:
   runAsUser: 0
   runAsGroup: 0
