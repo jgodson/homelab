@@ -45,6 +45,8 @@ cluster:
         endpoint: https://192.168.1.250:6443
     clusterName: cluster-private
     network:
+        cni:
+            name: none # Disable built-in Flannel; Cilium deployed via Helm
         dnsDomain: cluster.local
         podSubnets:
             - 10.244.0.0/16
