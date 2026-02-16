@@ -18,6 +18,10 @@ statefulset:
   # Act Runner container overrides
   actRunner:
     tag: 0.2.13
+    extraVolumeMounts:
+      - name: registry-creds
+        mountPath: /root/.docker
+        readOnly: true
     
     # Custom runner configuration
     config: |
@@ -27,10 +31,40 @@ statefulset:
         enabled: true
       runner:
         name: "homelab-k8s-runner"
-        labels: 
+        labels:
           - "homelab-latest:docker://gitea.home.jasongodson.com/homelab/actions-runner:latest"
           - "host-docker:host"
         capacity: 1
+      container:
+        privileged: true
+        network: host
+        docker_host: tcp://127.0.0.1:2376
+        options: -v /certs/client:/certs/client -v /root/.docker:/root/.docker:ro
+        valid_volumes:
+          - /certs/client
+          - /root/.docker
+
+  # Mount registry credentials into DinD so it can pull private images
+  extraVolumes:
+    - name: registry-creds
+      secret:
+        secretName: gitea-registry-secret
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+    - name: dind-config
+      configMap:
+        name: dind-daemon-config
+
+  dind:
+    extraVolumeMounts:
+      - name: registry-creds
+        mountPath: /root/.docker
+        readOnly: true
+      - name: dind-config
+        mountPath: /etc/docker/daemon.json
+        subPath: daemon.json
+        readOnly: true
 
   # Storage override
   persistence:

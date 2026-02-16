@@ -76,16 +76,15 @@ check_prerequisites() {
         exit 1
     fi
     
-    if ! kubectl get secret gitea-docker-registry-creds -n "$NAMESPACE" &> /dev/null; then
-        log_error "Secret 'gitea-docker-registry-creds' not found in namespace '$NAMESPACE'"
+    if ! kubectl get secret gitea-registry-secret -n "$NAMESPACE" &> /dev/null; then
+        log_error "Secret 'gitea-registry-secret' not found in namespace '$NAMESPACE'"
         echo ""
-        echo "This secret is required for automatic Docker registry login."
+        echo "This secret is required for Docker registry authentication."
         echo "To create it:"
-        echo "   kubectl create secret generic gitea-docker-registry-creds -n $NAMESPACE \\"
-        echo "     --from-literal=username='<GITEA_USERNAME>' \\"
-        echo "     --from-literal=password='<GITEA_TOKEN_OR_PASSWORD>'"
-        echo ""
-        echo "Tip: Use the same token value from your REGISTRY_TOKEN CI/CD secret"
+        echo "   kubectl create secret docker-registry gitea-registry-secret -n $NAMESPACE \\"
+        echo "     --docker-server=gitea.home.jasongodson.com \\"
+        echo "     --docker-username='<GITEA_USERNAME>' \\"
+        echo "     --docker-password='<GITEA_TOKEN_OR_PASSWORD>'"
         exit 1
     fi
     
@@ -121,15 +120,15 @@ ensure_namespace() {
     fi
 }
 
-# Deploy Docker login CronJob
-deploy_docker_login_cronjob() {
-    log_info "Deploying Docker login CronJob..."
-    
-    if [ -f "$SCRIPT_DIR/docker-login-cronjob.yaml" ]; then
-        kubectl apply -f "$SCRIPT_DIR/docker-login-cronjob.yaml"
-        log_success "Docker login CronJob deployed"
+# Apply prerequisite resources (ConfigMaps, etc.) needed before Helm install
+apply_prerequisites() {
+    log_info "Applying prerequisite resources..."
+
+    if [ -f "$SCRIPT_DIR/dind-daemon-config.yaml" ]; then
+        kubectl apply -f "$SCRIPT_DIR/dind-daemon-config.yaml"
+        log_success "DinD daemon config applied (MTU fix for Flannel overlay)"
     else
-        log_warning "docker-login-cronjob.yaml not found, skipping CronJob deployment"
+        log_warning "dind-daemon-config.yaml not found, skipping"
     fi
 }
 
@@ -187,9 +186,9 @@ main() {
     
     check_prerequisites
     ensure_namespace
+    apply_prerequisites
     update_helm_chart
     deploy_release
-    deploy_docker_login_cronjob
     show_status
     cleanup
     
@@ -199,7 +198,7 @@ main() {
     echo "  - homelab-latest: docker://gitea.home.jasongodson.com/homelab/actions-runner:latest"
     echo "  - host-docker: host (for Docker builds)"
     echo ""
-    log_info "Docker login CronJob runs every hour to maintain authentication"
+    log_info "Docker registry auth is mounted via gitea-registry-secret (no CronJob needed)"
     echo ""
     log_info "Use 'kubectl get pods -n $NAMESPACE' to monitor the runners"
 }

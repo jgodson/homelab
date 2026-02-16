@@ -39,9 +39,10 @@ To enable CI/CD workflows:
 
 3. **Create Docker registry credentials secret** (for pulling private images):
    ```bash
-   kubectl create secret generic gitea-docker-registry-creds -n gitea \
-     --from-literal=username='<USERNAME>' \
-     --from-literal=password='<PASSWORD>'
+   kubectl create secret docker-registry gitea-registry-secret -n gitea \
+     --docker-server=gitea.home.jasongodson.com \
+     --docker-username='<USERNAME>' \
+     --docker-password='<PASSWORD>'
    ```
 
 4. **Deploy runners:**
@@ -56,36 +57,20 @@ The runners are deployed using the [gitea/helm-actions](https://gitea.com/gitea/
 - **2 parallel runners** for concurrent job execution
 - **Custom labels:** `homelab-latest`, `host-docker`
 - **Privileged containers** enabled for Docker builds
-- **Automated Docker authentication** via hourly CronJob
+- **Automated Docker authentication** via mounted registry secret
 
 Configuration files:
 - `actions-runner-values.yaml` - Helm chart values
 - `namespace.yaml` - Includes PodSecurity policy for privileged containers
-- `docker-login-cronjob.yaml` - Automated Docker registry authentication
+- `dind-daemon-config.yaml` - DinD Docker daemon config (MTU fix, see below)
+
+#### Docker-in-Docker MTU Fix
+
+The DinD sidecar runs its own Docker bridge network at a default MTU of 1500. However, the Kubernetes pod network (Flannel) uses MTU 1450. This mismatch causes large TLS packets from Docker build containers to be silently dropped, making all HTTPS downloads hang during `docker build`. The `dind-daemon-config.yaml` ConfigMap sets the DinD bridge MTU to 1450 to match the overlay network. This is applied automatically by `deploy-runners.sh`.
 
 #### Docker Registry Authentication
 
-The runners need to authenticate with the Gitea Docker registry to pull private images. This is handled automatically by a CronJob that runs every hour.
-
-**How it works:**
-- The `act-runner` container uses a Docker client library to pull workflow images
-- This library reads credentials from `~/.docker/config.json` in the act-runner container
-- A CronJob runs every hour and creates this config file in all runner pods
-- This ensures credentials stay fresh and works across pod restarts
-
-**Manual execution** (useful for testing or immediate authentication):
-```bash
-# Create a one-time job from the CronJob
-kubectl create job -n gitea docker-login-manual --from=cronjob/gitea-runner-docker-login
-
-# Watch the logs
-kubectl logs -n gitea -l job-name=docker-login-manual -f
-
-# Verify credentials were created
-kubectl exec -n gitea gitea-actions-act-runner-0 -c act-runner -- cat /root/.docker/config.json
-```
-
-**Why not imagePullSecrets?** Kubernetes `imagePullSecrets` only help Kubernetes pull the runner pod's container image. They don't help when the act-runner uses the Docker API to pull workflow images at runtime.
+The runners need to authenticate with the Gitea Docker registry to pull private images. This is handled by mounting the `gitea-registry-secret` (type `kubernetes.io/dockerconfigjson`) directly into both the act-runner and DinD containers at `/root/.docker`. This survives pod restarts and rollouts with no extra jobs needed.
 
 ## 🏃 Actions Runners Information
 

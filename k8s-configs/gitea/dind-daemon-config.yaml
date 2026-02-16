@@ -1,0 +1,13 @@
+---
+# DinD daemon configuration
+# Sets Docker bridge MTU to match Flannel overlay network (1450)
+# Without this, TLS handshakes hang inside Docker build containers
+# due to packet fragmentation on the overlay network
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dind-daemon-config
+  namespace: gitea
+data:
+  daemon.json: |
+    {"mtu": 1450}
