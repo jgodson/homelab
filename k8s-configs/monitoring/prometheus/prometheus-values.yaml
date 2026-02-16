@@ -214,6 +214,42 @@ extraScrapeConfigs: |
         regex: '.*'
         replacement: 'budget-app'
 
+  - job_name: spendseer
+    scheme: http
+    metrics_path: /metrics
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - spendseer
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        regex: spendseer
+        action: keep
+      - source_labels: [__meta_kubernetes_pod_ip]
+        target_label: __address__
+        replacement: '$1:3000'
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: instance
+
+  - job_name: spendseer-cloudflared
+    scheme: http
+    metrics_path: /metrics
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - spendseer
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        regex: spendseer-cloudflared
+        action: keep
+      - source_labels: [__meta_kubernetes_pod_ip]
+        target_label: __address__
+        replacement: '$1:2000'
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: instance
+
 prometheus-pushgateway:
   enabled: false
 
