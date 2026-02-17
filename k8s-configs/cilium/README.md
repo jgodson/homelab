@@ -17,9 +17,11 @@ helm install cilium cilium/cilium --namespace kube-system -f values.yaml
 
 1. Apply the updated Talos machine config to all nodes:
    ```bash
+   # Control Plane
    talosctl apply-config --nodes 192.168.1.30 --file ../talos-configs/controlplane-config.yaml
-   talosctl apply-config --nodes 192.168.1.31 --file ../talos-configs/controlplane-config.yaml
-   talosctl apply-config --nodes 192.168.1.32 --file ../talos-configs/controlplane-config.yaml
+
+   # Workers
+   talosctl apply-config --nodes 192.168.1.33 --file ../talos-configs/worker-config.yaml
    ```
 
 2. Install Cilium:
@@ -40,12 +42,10 @@ helm install cilium cilium/cilium --namespace kube-system -f values.yaml
    # Wait for node to be Ready, verify pods are running
    kubectl get nodes
    kubectl get pods -A
-   # Repeat for .31 and .32
+   # Repeat
    ```
 
 ## Important Notes
 
 - After Cilium is installed, all existing NetworkPolicies will start being enforced
 - Audit any existing NetworkPolicies across all namespaces before migration
-- Pod CIDR: 10.244.0.0/16 (matching existing Talos config)
-- Service CIDR: 10.96.0.0/12 (matching existing Talos config)
