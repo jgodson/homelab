@@ -254,6 +254,43 @@ extraScrapeConfigs: |
       - source_labels: [__meta_kubernetes_namespace]
         target_label: namespace
 
+  - job_name: cloudflare-metrics-exporter
+    scheme: http
+    static_configs:
+      - targets: ['cloudflare-metrics-exporter.monitoring.svc.cluster.local:8080']
+    metrics_path: /metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '.*'
+        replacement: 'cloudflare-metrics-exporter'
+      - target_label: namespace
+        replacement: 'monitoring'
+
+  - job_name: cnpg
+    scheme: http
+    metrics_path: /metrics
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_cnpg_io_podRole]
+        regex: instance
+        action: keep
+      - source_labels: [__meta_kubernetes_pod_container_port_number]
+        regex: "9187"
+        action: keep
+      - source_labels: [__meta_kubernetes_pod_ip]
+        target_label: __address__
+        replacement: '$1:9187'
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: instance
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_label_cnpg_io_cluster]
+        target_label: cluster
+      - source_labels: [__meta_kubernetes_pod_label_cnpg_io_instanceRole]
+        target_label: cnpg_role
+
 prometheus-pushgateway:
   enabled: false
 
