@@ -6,6 +6,9 @@
 initContainers:
   - name: install-ssh
     image: docker.io/library/telegraf:1.36-alpine
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
     command: ['sh', '-c', 'apk add --no-cache openssh-client && cp /usr/bin/ssh /ssh-bin/ssh && cp /usr/bin/scp /ssh-bin/scp 2>/dev/null; cp /etc/ssh/ssh_config /ssh-bin/ssh_config 2>/dev/null; true']
     volumeMounts:
       - name: ssh-bin
@@ -37,7 +40,7 @@ volumes:
   - name: ssh-key
     secret:
       secretName: telegraf-ssh-key
-      defaultMode: 0400
+      defaultMode: 0440
       items:
         - key: id_rsa
           path: id_rsa
@@ -150,11 +153,13 @@ serviceMonitor:
 podDisruptionBudget:
   enabled: false
 
-# Security context - runs as root to access SSH key and install packages
-podSecurityContext:
-  runAsUser: 0
-  runAsGroup: 0
-  fsGroup: 0
+# Pod security context used by this chart (key name must be `securityContext`)
+# so mounted secret files become group-readable by the telegraf user.
+securityContext:
+  runAsUser: 100
+  runAsGroup: 101
+  fsGroup: 101
+  fsGroupChangePolicy: OnRootMismatch
 
 containerSecurityContext:
   allowPrivilegeEscalation: false

@@ -7,6 +7,12 @@ set -o pipefail 2>/dev/null || true
 
 [ "${DEBUG:-}" = "1" ] && echo "# DEBUG: Script start" >&2
 
+# Ensure bundled SSH client path is available even if PATH is minimal.
+if [ -x /usr/local/bin/ssh-tools/ssh ]; then
+    PATH="/usr/local/bin/ssh-tools:$PATH"
+    export PATH
+fi
+
 SSH_INSTALLED=0
 if ! command -v ssh >/dev/null 2>&1; then
     echo "# SSH client not found - attempting install" >&2
@@ -41,6 +47,11 @@ SSH_OPTS="-n -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=${SS
 if [ ! -f "$SSH_KEY" ]; then
     echo "# Missing SSH key $SSH_KEY" >&2
     emit_status_array key_missing
+    exit 0
+fi
+if [ ! -r "$SSH_KEY" ]; then
+    echo "# SSH key is not readable: $SSH_KEY" >&2
+    emit_status_array key_unreadable
     exit 0
 fi
 
@@ -116,8 +127,8 @@ main() {
         if collect_one "$vm_name" "$vm_ip"; then
             success_count=$((success_count+1))
         else
-            TS_MS=$(( $(date +%s) * 1000 ))
             rc=$?
+            TS_MS=$(( $(date +%s) * 1000 ))
             case "$rc" in
               1) err="invalid_params";;
               2) err="empty_output";;
