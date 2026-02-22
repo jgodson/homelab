@@ -234,6 +234,26 @@ extraScrapeConfigs: |
       - source_labels: [__meta_kubernetes_namespace]
         target_label: namespace
 
+  - job_name: spendseer-worker
+    scheme: http
+    metrics_path: /metrics
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - spendseer
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        regex: spendseer-worker
+        action: keep
+      - source_labels: [__meta_kubernetes_pod_ip]
+        target_label: __address__
+        replacement: '$1:7001'
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: instance
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+
   - job_name: spendseer-cloudflared
     scheme: http
     metrics_path: /metrics
