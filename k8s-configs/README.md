@@ -6,7 +6,7 @@ This directory contains configuration files for the Kubernetes cluster.
 
 For the Talos Linux nodes (Control Plane and Workers), use the following configuration:
 
-- **Count**: 3 VMs
+- **Count**: 4 VMs
 - **OS**: Talos Linux
 - **CPU**: 8 Cores
 - **RAM**: 16 GB
