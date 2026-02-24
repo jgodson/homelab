@@ -23,7 +23,13 @@ server:
     allowPrivilegeEscalation: false
     capabilities:
       drop: ["ALL"]
-      
+
+  extraSecretMounts:
+    - name: uptime-kuma-token
+      secretName: uptime-kuma-api-key
+      mountPath: /etc/secrets/uptime-kuma
+      readOnly: true
+
 configmapReload:
   prometheus:
     containerSecurityContext:
@@ -310,6 +316,20 @@ extraScrapeConfigs: |
         target_label: cluster
       - source_labels: [__meta_kubernetes_pod_label_cnpg_io_instanceRole]
         target_label: cnpg_role
+
+  - job_name: uptime-kuma
+    scheme: http
+    static_configs:
+      - targets: ['uptime-kuma.monitoring.svc.cluster.local:80']
+    metrics_path: /metrics
+    basic_auth:
+      username: 'prometheus'
+      password_file: /etc/secrets/uptime-kuma/token
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '.*'
+        replacement: 'uptime-kuma'
 
 prometheus-pushgateway:
   enabled: false

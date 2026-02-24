@@ -1,8 +1,8 @@
 NAMESPACE := monitoring
 
-.PHONY: deploy-all deploy-alloy deploy-grafana deploy-influxdb deploy-loki deploy-prometheus deploy-promtail deploy-telegraf deploy-tempo
+.PHONY: deploy-all deploy-alloy deploy-grafana deploy-influxdb deploy-loki deploy-prometheus deploy-promtail deploy-telegraf deploy-tempo deploy-uptime-kuma
 
-deploy-all: deploy-prometheus deploy-loki deploy-tempo deploy-promtail deploy-telegraf deploy-influxdb deploy-grafana deploy-alloy
+deploy-all: deploy-prometheus deploy-loki deploy-tempo deploy-promtail deploy-telegraf deploy-influxdb deploy-grafana deploy-alloy deploy-uptime-kuma
 
 deploy-alloy:
 	helm upgrade --install alloy grafana/alloy -f ./alloy/alloy-values.yaml -n $(NAMESPACE)
@@ -27,3 +27,6 @@ deploy-telegraf:
 
 deploy-tempo:
 	helm upgrade --install tempo grafana/tempo-distributed -f ./tempo/tempo-values.yaml -n $(NAMESPACE)
+
+deploy-uptime-kuma:
+	kubectl apply -f ./uptime-kuma/
