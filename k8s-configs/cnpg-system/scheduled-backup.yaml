@@ -1,0 +1,12 @@
+# Daily base backup to MinIO (in addition to continuous WAL archiving)
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: postgresql-pg-daily
+  namespace: postgresql
+spec:
+  schedule: "0 0 3 * * *" # 3:00 AM daily (6-field: sec min hour dom mon dow)
+  backupOwnerReference: self
+  cluster:
+    name: postgresql-pg
+  immediate: true # Take first backup immediately on creation

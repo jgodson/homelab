@@ -42,6 +42,25 @@ spec:
   monitoring:
     enablePodMonitor: true
   
+  # Backup configuration - continuous WAL archiving + scheduled base backups to MinIO
+  backup:
+    barmanObjectStore:
+      destinationPath: "s3://cnpg-backups/"
+      endpointURL: "http://192.168.1.252:9000"
+      s3Credentials:
+        accessKeyId:
+          name: cnpg-minio-credentials
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: cnpg-minio-credentials
+          key: ACCESS_SECRET_KEY
+      wal:
+        compression: gzip
+        maxParallel: 2
+      data:
+        compression: gzip
+    retentionPolicy: "30d"
+
   # PostgreSQL configuration
   postgresql:
     parameters:

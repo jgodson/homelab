@@ -46,17 +46,9 @@ kubectl get cluster -n postgresql
 kubectl get pods -n postgresql
 ```
 
-### 4. Restore PostgreSQL backup (if you have one)
+### 4. Restore from backup (if needed)
 
-```bash
-# Get the superuser password
-PGPASSWORD=$(kubectl get secret -n postgresql postgresql-pg-superuser -o jsonpath='{.data.password}' | base64 -d)
-
-# Restore from backup
-cat ~/postgresql-backup-YYYYMMDD-HHMMSS.sql | \
-  kubectl exec -i -n postgresql postgresql-pg-1 -- \
-  env PGPASSWORD=$PGPASSWORD psql -U postgres
-```
+If restoring from a previous backup, see [Disaster Recovery](#disaster-recovery) below.
 
 ### 5. Create application secrets
 
@@ -89,25 +81,180 @@ CloudNativePG includes built-in Prometheus metrics. If you have Prometheus Opera
 kubectl get podmonitor -n postgresql
 ```
 
-## Backup Configuration (Optional)
+## Backup Configuration
 
-Add to `cluster.yaml`:
+Backup is already configured in `cluster.yaml` (continuous WAL archiving + barmanObjectStore) and `scheduled-backup.yaml` (daily base backups at 3 AM). Backups are stored in MinIO and replicated offsite via rclone.
+
+### What's Backed Up
+
+- **Continuous WAL archiving**: Every WAL segment is compressed (gzip) and uploaded to MinIO as it's produced. Enables point-in-time recovery.
+- **Daily base backups**: Full base backup at 3:00 AM daily, compressed with gzip, 30-day retention.
+- **Offsite replication**: rclone syncs the `cnpg-backups` bucket every 6 hours.
+- **Storage**: MinIO bucket `cnpg-backups` at `http://192.168.1.252:9000`
+
+### Prerequisites
+
+The backup config in `cluster.yaml` expects a MinIO bucket and K8s secret to already exist. If deploying from scratch (or after a full disaster recovery), create them first:
+
+1. Create the `cnpg-backups` bucket and a dedicated MinIO user:
+   ```bash
+   # Inside the MinIO container
+   mc alias set local http://localhost:9000 <root-user> <root-password>
+   mc mb local/cnpg-backups
+   mc admin user add local cnpg-backup-homelab <password>
+   mc admin policy attach local readwrite --user cnpg-backup-homelab
+   ```
+
+2. Create the Kubernetes secret:
+   ```bash
+   kubectl create secret generic cnpg-minio-credentials \
+     --from-literal=ACCESS_KEY_ID=cnpg-backup-homelab \
+     --from-literal=ACCESS_SECRET_KEY=<password> \
+     -n postgresql
+   ```
+
+3. Apply the cluster and scheduled backup as normal:
+   ```bash
+   kubectl apply -f cluster.yaml
+   kubectl apply -f scheduled-backup.yaml
+   ```
+
+### Verifying Backups
+
+```bash
+# Check scheduled backup status
+kubectl get scheduledbackups -n postgresql
+
+# Check backup objects
+kubectl get backups -n postgresql
+
+# Check WAL archiving in cluster status
+kubectl describe cluster postgresql-pg -n postgresql | grep -A5 "Last Successful Archival"
+
+# Check MinIO bucket contents (on minio host)
+sudo docker exec -it minio mc ls local/cnpg-backups/postgresql-pg/ --recursive
+```
+
+### Disaster Recovery
+
+#### Scenario 1: Restore from MinIO (MinIO is healthy)
+
+If the CNPG cluster is lost but MinIO still has the backups, create a recovery cluster:
 
 ```yaml
+# recovery-cluster.yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgresql-pg
+  namespace: postgresql
 spec:
-  backup:
-    barmanObjectStore:
-      destinationPath: s3://my-bucket/postgresql-backups
-      s3Credentials:
-        accessKeyId:
-          name: backup-credentials
-          key: ACCESS_KEY_ID
-        secretAccessKey:
-          name: backup-credentials
-          key: SECRET_ACCESS_KEY
-      wal:
-        compression: gzip
-    retentionPolicy: "30d"
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:16-bookworm
+  storage:
+    storageClass: ceph-rbd
+    size: 50Gi
+  bootstrap:
+    recovery:
+      source: postgresql-pg-backup
+      # Uncomment to recover to a specific point in time:
+      # recoveryTarget:
+      #   targetTime: "2026-02-22T17:00:00Z"
+  externalClusters:
+    - name: postgresql-pg-backup
+      barmanObjectStore:
+        destinationPath: "s3://cnpg-backups/"
+        endpointURL: "http://192.168.1.252:9000"
+        s3Credentials:
+          accessKeyId:
+            name: cnpg-minio-credentials
+            key: ACCESS_KEY_ID
+          secretAccessKey:
+            name: cnpg-minio-credentials
+            key: ACCESS_SECRET_KEY
+```
+
+```bash
+# 1. Delete the broken cluster (if it still exists)
+kubectl delete cluster postgresql-pg -n postgresql
+
+# 2. Ensure the MinIO credentials secret exists
+kubectl get secret cnpg-minio-credentials -n postgresql
+
+# 3. Apply the recovery cluster
+kubectl apply -f recovery-cluster.yaml
+
+# 4. Watch recovery progress
+kubectl get cluster -n postgresql -w
+kubectl logs -f -n postgresql -l cnpg.io/cluster=postgresql-pg
+
+# 5. Once healthy, re-apply the scheduled backup
+kubectl apply -f scheduled-backup.yaml
+```
+
+#### Scenario 2: Full disaster recovery (MinIO is also lost)
+
+If both CNPG and MinIO are gone, restore from the offsite copy.
+
+```bash
+# 1. Get MinIO running again (redeploy VM/container, fresh install is fine)
+
+# 2. Recreate the cnpg-backups bucket
+sudo docker exec -it minio mc alias set local http://localhost:9000 <root-user> <root-password>
+sudo docker exec -it minio mc mb local/cnpg-backups
+
+# 3. Recreate the backup user
+sudo docker exec -it minio mc admin user add local cnpg-backup-homelab <password>
+sudo docker exec -it minio mc admin policy attach local readwrite --user cnpg-backup-homelab
+
+# 4. Pull backups from offsite back to MinIO
+#    Option A: Use rclone from the MinIO host
+rclone sync gdrive:homelab-backups/cnpg-backups minio:cnpg-backups
+
+#    Option B: Use the Docker rclone-sync service (reverse direction)
+#    Edit the rclone command temporarily to sync FROM offsite TO minio
+
+# 5. Verify backup files are present
+sudo docker exec -it minio mc ls local/cnpg-backups/postgresql-pg/ --recursive
+
+# 6. Recreate the K8s secret
+kubectl create secret generic cnpg-minio-credentials \
+  --from-literal=ACCESS_KEY_ID=cnpg-backup-homelab \
+  --from-literal=ACCESS_SECRET_KEY=<password> \
+  -n postgresql
+
+# 7. Apply the recovery cluster (same YAML as Scenario 1 above)
+kubectl apply -f recovery-cluster.yaml
+
+# 8. Watch recovery, then re-apply scheduled backup
+kubectl get cluster -n postgresql -w
+kubectl apply -f scheduled-backup.yaml
+```
+
+#### Point-in-time recovery notes
+
+- CNPG can recover to any point in time covered by WAL archiving
+- The `targetTime` must be in RFC 3339 format: `"2026-02-22T17:00:00Z"`
+- Without `recoveryTarget`, CNPG recovers to the latest available point
+- WAL segments are archived continuously, so RPO is typically seconds to minutes
+- Recovery time depends on base backup size + WAL replay (expect minutes for small DBs)
+
+#### Verifying a restore
+
+```bash
+# Check cluster is healthy
+kubectl get cluster -n postgresql
+
+# Check all instances are running
+kubectl get pods -n postgresql -l cnpg.io/cluster=postgresql-pg
+
+# Verify databases exist
+PGPASSWORD=$(kubectl get secret -n postgresql postgresql-pg-superuser -o jsonpath='{.data.password}' | base64 -d)
+kubectl exec -it postgresql-pg-1 -n postgresql -- \
+  env PGPASSWORD=$PGPASSWORD psql -U postgres -c '\l'
+
+# Verify WAL archiving is active on the new cluster
+kubectl describe cluster postgresql-pg -n postgresql | grep -A5 "Last Successful Archival"
 ```
 
 ## Resources
@@ -199,32 +346,10 @@ kubectl exec -i postgresql-pg-1 -n postgresql -- \
   env PGPASSWORD=$PGPASSWORD psql -U postgres < full_backup.sql
 ```
 
-### Automated Backups (Recommended)
+### Automated Backups
 
-CloudNativePG supports automated backups to S3-compatible storage. Add to `cluster.yaml`:
-
-```yaml
-spec:
-  backup:
-    barmanObjectStore:
-      destinationPath: s3://my-bucket/postgresql-backups
-      s3Credentials:
-        accessKeyId:
-          name: backup-credentials
-          key: ACCESS_KEY_ID
-        secretAccessKey:
-          name: backup-credentials
-          key: SECRET_ACCESS_KEY
-      wal:
-        compression: gzip
-    retentionPolicy: "30d"
-    
-  # Schedule automatic backups
-  scheduledBackup:
-    - name: daily-backup
-      schedule: "0 0 2 * * *"  # 2 AM daily
-      backupOwnerReference: self
-```
+Automated backups are configured - see [Backup Configuration](#backup-configuration) above for details.
+Continuous WAL archiving + daily base backups to MinIO with 30-day retention.
 
 ## Troubleshooting
 

@@ -36,6 +36,38 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # Offsite backup replication: MinIO -> Google Drive
+  # Triggered via host cron: 0 */6 * * * cd /home/manager/minio && docker compose --profile backup run --rm rclone-sync
+  #
+  # One-time setup:
+  #   1. mkdir -p ./rclone
+  #   2. docker compose --profile backup run --rm rclone-sync rclone config
+  #      - Create "minio" remote: type=s3, provider=Minio, endpoint=http://minio:9000
+  #      - Create "gdrive" remote: type=drive (follow OAuth2 flow)
+  #   3. Add the host cron job above
+  rclone-sync:
+    image: rclone/rclone:latest
+    container_name: rclone-sync
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        echo "Starting rclone sync to Google Drive at $$(date)"
+        for bucket in cnpg-backups docker-backups etcd-backups gitea-backups; do
+          echo "Syncing $$bucket..."
+          rclone sync minio:$$bucket gdrive:homelab-backups/$$bucket \
+            --transfers 4 \
+            --checkers 8 \
+            --log-level INFO \
+            --stats 30s \
+            2>&1 || echo "Warning: sync failed for $$bucket"
+        done
+        echo "Rclone sync complete at $$(date)"
+    volumes:
+      - ./rclone:/config/rclone
+    profiles:
+      - backup
+
 secrets:
   root_user:
     file: ./secrets/minio_root_user.txt
