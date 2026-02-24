@@ -213,9 +213,9 @@ controller:
               - alloy
           topologyKey: kubernetes.io/hostname
 
+  # PDB disabled - single-replica pods with minAvailable:1 deadlock node drains
   podDisruptionBudget:
-    enabled: true
-    minAvailable: 1
+    enabled: false
 
 ingress:
   enabled: true
