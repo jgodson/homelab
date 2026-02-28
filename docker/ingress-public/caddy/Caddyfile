@@ -250,6 +250,28 @@ kube-manager.{$DOMAIN}:80 {
   }
 }
 
+# Sites
+sites.{$DOMAIN}:80 {
+  log
+
+  # Proxy to Traefik directly
+  reverse_proxy 192.168.1.35:80 {
+    header_up Host {host}
+    header_up X-Real-IP {client_ip}
+    header_up X-Forwarded-For {client_ip}
+  }
+
+  # Security headers
+  header {
+    X-Frame-Options "SAMEORIGIN"
+    X-Content-Type-Options "nosniff"
+    X-XSS-Protection "1; mode=block"
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Permissions-Policy "interest-cohort=()"
+  }
+}
+
 # Subdomains
 *.{$DOMAIN}:80 {
   log
