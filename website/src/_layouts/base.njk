@@ -26,6 +26,7 @@
       <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="{{ metadata.title }}">
       <link rel="sitemap" href="/sitemap.xml" type="application/xml" title="Sitemap">
       <script src="/assets/js/slideshow.js" defer></script>
+      <script src="/assets/js/lightbox.js" defer></script>
   </head>
   <body>
     <header>
@@ -79,5 +80,10 @@
       <p>© 2026 Jason Godson</p>
     </div>
 
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox">
+      <span class="lightbox-close">&times;</span>
+      <img class="lightbox-content" id="lightbox-img">
+    </div>
   </body>
 </html>
