@@ -1,0 +1,10 @@
+{
+  "uid": "homelab-email-primary",
+  "name": "__ALERT_EMAIL__",
+  "type": "email",
+  "settings": {
+    "addresses": "__ALERT_EMAIL__",
+    "singleEmail": false
+  },
+  "disableResolveMessage": false
+}

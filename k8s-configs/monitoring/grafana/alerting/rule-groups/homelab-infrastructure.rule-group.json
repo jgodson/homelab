@@ -1,0 +1,560 @@
+{
+  "title": "Infrastructure",
+  "folderUid": "afdvo8ju8txq8e",
+  "interval": 60,
+  "rules": [
+    {
+      "uid": "femctfetxf5s0c",
+      "orgID": 1,
+      "folderUID": "afdvo8ju8txq8e",
+      "ruleGroup": "Infrastructure",
+      "title": "Ceph Status not Healthy",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "PBFA97CFB590B2093",
+          "model": {
+            "disableTextWrap": false,
+            "editorMode": "builder",
+            "expr": "ceph_health_status",
+            "fullMetaSearch": false,
+            "includeNullMetadata": true,
+            "instant": true,
+            "intervalMs": 1000,
+            "legendFormat": "__auto",
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A",
+            "useBackend": false
+          }
+        },
+        {
+          "refId": "C",
+          "queryType": "",
+          "relativeTimeRange": {
+            "from": 0,
+            "to": 0
+          },
+          "datasourceUid": "__expr__",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    0
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "0s",
+      "keep_firing_for": "0s",
+      "annotations": {
+        "__dashboardUid__": "vwcB0Bzmk",
+        "__panelId__": "19",
+        "description": "Ceph cluster is not marked as Healthy"
+      },
+      "labels": {
+        "service": "ceph",
+        "severity": "warning",
+        "scope": "homelab"
+      },
+      "isPaused": false,
+      "notification_settings": null,
+      "record": null
+    },
+    {
+      "uid": "homelab-minio-down",
+      "orgID": 1,
+      "folderUID": "afdvo8ju8txq8e",
+      "ruleGroup": "Infrastructure",
+      "title": "Minio Down",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "",
+          "relativeTimeRange": {
+            "from": 900,
+            "to": 0
+          },
+          "datasourceUid": "PBFA97CFB590B2093",
+          "model": {
+            "editorMode": "code",
+            "expr": "max(monitor_status{job=\"uptime-kuma\",monitor_name=\"Minio\"}) or vector(0)",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "queryType": "",
+          "relativeTimeRange": {
+            "from": 0,
+            "to": 0
+          },
+          "datasourceUid": "__expr__",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "keep_firing_for": "0s",
+      "annotations": {
+        "summary": "Minio is down.",
+        "description": "Uptime Kuma reports the Minio monitor as down."
+      },
+      "labels": {
+        "service": "homelab",
+        "component": "minio",
+        "severity": "critical"
+      },
+      "isPaused": false,
+      "notification_settings": null,
+      "record": null
+    },
+    {
+      "uid": "homelab-blog-down",
+      "orgID": 1,
+      "folderUID": "afdvo8ju8txq8e",
+      "ruleGroup": "Infrastructure",
+      "title": "Blog Down",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "",
+          "relativeTimeRange": {
+            "from": 900,
+            "to": 0
+          },
+          "datasourceUid": "PBFA97CFB590B2093",
+          "model": {
+            "editorMode": "code",
+            "expr": "max(monitor_status{job=\"uptime-kuma\",monitor_name=\"Blog\"}) or vector(0)",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "queryType": "",
+          "relativeTimeRange": {
+            "from": 0,
+            "to": 0
+          },
+          "datasourceUid": "__expr__",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "keep_firing_for": "0s",
+      "annotations": {
+        "summary": "Blog is down.",
+        "description": "Uptime Kuma reports the Blog monitor as down."
+      },
+      "labels": {
+        "service": "homelab",
+        "component": "blog",
+        "severity": "critical"
+      },
+      "isPaused": false,
+      "notification_settings": null,
+      "record": null
+    },
+    {
+      "uid": "homelab-cf-exporter-down",
+      "orgID": 1,
+      "folderUID": "afdvo8ju8txq8e",
+      "ruleGroup": "Infrastructure",
+      "title": "Cloudflare Exporter Down",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "PBFA97CFB590B2093",
+          "model": {
+            "editorMode": "code",
+            "expr": "max(cf_exporter_up) or vector(0)",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "queryType": "",
+          "relativeTimeRange": {
+            "from": 0,
+            "to": 0
+          },
+          "datasourceUid": "__expr__",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    1
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "keep_firing_for": "0s",
+      "annotations": {
+        "summary": "Cloudflare metrics exporter is down.",
+        "description": "The cf_exporter_up metric is below 1."
+      },
+      "labels": {
+        "service": "homelab",
+        "component": "cloudflare-exporter",
+        "severity": "critical"
+      },
+      "isPaused": false,
+      "notification_settings": null,
+      "record": null
+    },
+    {
+      "uid": "homelab-vm-disk-high",
+      "orgID": 1,
+      "folderUID": "afdvo8ju8txq8e",
+      "ruleGroup": "Infrastructure",
+      "title": "VM Disk Usage Over 90 Percent",
+      "condition": "C",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "aegyydl2mv37kd",
+          "model": {
+            "datasource": {
+              "type": "influxdb",
+              "uid": "aegyydl2mv37kd"
+            },
+            "query": "SELECT max(\"used_percentage\") FROM \"vm_disk_usage\" WHERE $timeFilter",
+            "rawQuery": true,
+            "refId": "A",
+            "resultFormat": "time_series"
+          }
+        },
+        {
+          "refId": "B",
+          "queryType": "",
+          "relativeTimeRange": {
+            "from": 0,
+            "to": 0
+          },
+          "datasourceUid": "__expr__",
+          "model": {
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "reducer": "last",
+            "refId": "B",
+            "settings": {
+              "mode": "dropNN"
+            },
+            "type": "reduce"
+          }
+        },
+        {
+          "refId": "C",
+          "queryType": "",
+          "relativeTimeRange": {
+            "from": 0,
+            "to": 0
+          },
+          "datasourceUid": "__expr__",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    90
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "C"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "B",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "C",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "10m",
+      "keep_firing_for": "0s",
+      "annotations": {
+        "summary": "A VM disk is above 90% usage.",
+        "description": "The vm_disk_usage measurement reports max used_percentage above 90 across monitored VMs."
+      },
+      "labels": {
+        "service": "homelab",
+        "component": "vm-disk",
+        "severity": "warning"
+      },
+      "isPaused": false,
+      "notification_settings": null,
+      "record": null
+    },
+    {
+      "uid": "homelab-postgresql-cnpg-low",
+      "orgID": 1,
+      "folderUID": "afdvo8ju8txq8e",
+      "ruleGroup": "Infrastructure",
+      "title": "PostgreSQL CNPG Replicas Below Expected",
+      "condition": "B",
+      "data": [
+        {
+          "refId": "A",
+          "queryType": "",
+          "relativeTimeRange": {
+            "from": 600,
+            "to": 0
+          },
+          "datasourceUid": "PBFA97CFB590B2093",
+          "model": {
+            "editorMode": "code",
+            "expr": "sum(up{job=\"cnpg\", namespace=\"postgresql\"}) or vector(0)",
+            "instant": true,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "range": false,
+            "refId": "A"
+          }
+        },
+        {
+          "refId": "B",
+          "queryType": "",
+          "relativeTimeRange": {
+            "from": 0,
+            "to": 0
+          },
+          "datasourceUid": "__expr__",
+          "model": {
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    2
+                  ],
+                  "type": "lt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "B"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "last"
+                },
+                "type": "query"
+              }
+            ],
+            "datasource": {
+              "type": "__expr__",
+              "uid": "__expr__"
+            },
+            "expression": "A",
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "refId": "B",
+            "type": "threshold"
+          }
+        }
+      ],
+      "noDataState": "NoData",
+      "execErrState": "Error",
+      "for": "5m",
+      "keep_firing_for": "0s",
+      "annotations": {
+        "summary": "PostgreSQL CNPG replicas are below expected.",
+        "description": "The postgresql namespace reports fewer than 2 CNPG targets up."
+      },
+      "labels": {
+        "service": "homelab",
+        "component": "postgresql",
+        "severity": "warning"
+      },
+      "isPaused": false,
+      "notification_settings": null,
+      "record": null
+    }
+  ]
+}
