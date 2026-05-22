@@ -77,7 +77,7 @@ datasources:
         type: tempo
         uid: belv26m2iiqdca
         access: proxy
-        url: http://tempo-query-frontend.monitoring.svc.cluster.local:3100
+        url: http://tempo-query-frontend.monitoring.svc.cluster.local:3200
         isDefault: false
         editable: false
         jsonData:
