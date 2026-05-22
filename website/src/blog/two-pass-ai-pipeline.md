@@ -10,7 +10,7 @@ tags:
 layout: post.njk
 ---
 
-I started this project with a practical question for [Spendseer](https://app.spendseer.com): could server-local AI extract useful transaction data from bills and receipts, or would this be the kind of feature where paying for a large hosted model API is simply the right answer?
+I started this project with a practical question for [SpendSeer](https://app.spendseer.com): could server-local AI extract useful transaction data from bills and receipts, or would this be the kind of feature where paying for a large hosted model API is simply the right answer?
 
 I wanted the local option to work. It would give me more control over cost, latency, and document handling. But financial imports are not a forgiving AI use case. A model that is "mostly right" can still create more work than it saves if it pulls the wrong total or turns a grocery receipt into twenty noisy line items.
 
@@ -34,7 +34,7 @@ In one early single-pass vision benchmark, the whole 19-document corpus scored *
 The breakthrough came when I realized I needed to preserve the visual layout of PDFs, but separate the **Transcription** pass from the **Reasoning** pass. By letting each model do exactly what it is best at, then backing that up with deterministic cleanup in the parser, the results improved dramatically.
 
 ### Pass 1: Transcription (The "Vision" Pass)
-Instead of asking the model for JSON, Spendseer converts the document into visual input and asks for a raw, layout-preserving text dump. PDFs are converted to PNGs first; images are sent directly.
+Instead of asking the model for JSON, SpendSeer converts the document into visual input and asks for a raw, layout-preserving text dump. PDFs are converted to PNGs first; images are sent directly.
 
 I benchmarked `llama3.2-vision` against `glm-ocr:bf16`. While their single-pass accuracy was similar, `glm-ocr` was the clear winner for transcription. It is specifically fine-tuned for OCR tasks and handled dense, multi-page utility bills reliably without "summarizing" the text prematurely.
 
@@ -43,7 +43,7 @@ I benchmarked `llama3.2-vision` against `glm-ocr:bf16`. While their single-pass 
 -   **Goal:** Fidelity. We want a text-based representation of the image that preserves columns and service sections.
 
 ### Pass 2: Reasoning (The "Text" Pass)
-Now that we have a layout-preserved text representation, Spendseer sends it to a larger reasoning model to structure the JSON. The current parser also detects document profiles, retries multi-service utility summaries when reconciliation fails, and applies deterministic cleanup before rows are saved.
+Now that we have a layout-preserved text representation, SpendSeer sends it to a larger reasoning model to structure the JSON. The current parser also detects document profiles, retries multi-service utility summaries when reconciliation fails, and applies deterministic cleanup before rows are saved.
 
 I tested `llama3.1:8b`, `qwen2.5:7b`, and `gpt-oss:20b`. The `gpt-oss:20b` model significantly outperformed the smaller models. It had a much better understanding of financial subtotals versus grand totals, and it didn't struggle with complex JSON formatting.
 
@@ -63,7 +63,7 @@ The strongest baseline I kept from those experiments was:
 - **Average Latency:** **96.93 seconds**
 - **Eval Corpus Size:** `19` documents
 
-That score is based on matching imported rows against ground truth totals. The ground truth records base amount plus tax separately, but Spendseer imports the all-in row amount because transactions care about the final amount paid.
+That score is based on matching imported rows against ground truth totals. The ground truth records base amount plus tax separately, but SpendSeer imports the all-in row amount because transactions care about the final amount paid.
 
 The results on the Enmax utility bills were the most impressive. In the early single-pass attempts, models often extracted one visible number but lost the relationship between electricity, natural gas, city utility sections, taxes, and grand totals. With the two-pass pipeline, the parser can use the layout-preserved transcription from `glm-ocr` to reconcile a $251.88 Electricity subtotal plus $12.59 GST into the correct $264.47 imported row.
 
@@ -101,6 +101,6 @@ The parser path I ended up preferring is now the feature-flagged path:
 ## Final Thoughts
 I started this work trying to answer a simple question: could server-local AI handle this well enough, or would I need to pay for a large hosted model API to get reliable results?
 
-My answer at this point is: probably, but not casually. The experiments convinced me that local extraction can work, but only with a lot more guardrails and direction than a naive "send the bill to a model and ask for JSON" approach. Layout preservation matters. Explicit evaluation matters. Deterministic cleanup matters. The model needs to be guided toward the exact financial shape Spendseer expects.
+My answer at this point is: probably, but not casually. The experiments convinced me that local extraction can work, but only with a lot more guardrails and direction than a naive "send the bill to a model and ask for JSON" approach. Layout preservation matters. Explicit evaluation matters. Deterministic cleanup matters. The model needs to be guided toward the exact financial shape SpendSeer expects.
 
-That is why this is staying behind a feature flag for now. It feels possible, and the early results are strong enough that I want to keep pushing on it, but I am going to test it more thoroughly against real imports before committing it as a generally available Spendseer feature.
+That is why this is staying behind a feature flag for now. It feels possible, and the early results are strong enough that I want to keep pushing on it, but I am going to test it more thoroughly against real imports before committing it as a generally available SpendSeer feature.
