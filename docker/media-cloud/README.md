@@ -2,32 +2,48 @@
 
 Docker Compose services for the `media-cloud` VM.
 
-This starts with Jellyfin only. Immich and Nextcloud should be added after the base storage and deployment path are proven.
+Currently included:
+
+- Jellyfin for movies, shows, and other video files
+- Immich for photo and personal video backup
 
 ## Layout
 
 - `/opt/homelab/docker/media-cloud` - compose files, cloned from this repo by automation
 - `/mnt/storage/media` - media library, mounted read-only into Jellyfin
 - `/mnt/storage/jellyfin` - Jellyfin config and cache
-- `/mnt/storage/immich` - reserved for Immich
+- `/mnt/storage/immich/upload` - Immich uploaded assets
+- `/mnt/storage/immich/postgres` - Immich Postgres data
+- `/mnt/storage/immich/model-cache` - Immich machine-learning model cache
 - `/mnt/storage/nextcloud-data` - reserved for Nextcloud
 
 ## First Run
 
-On `media-cloud`:
+The private automation repo creates the host-local `.env` file and storage directories.
+
+Manual equivalent on `media-cloud`:
 
 ```bash
 cd /opt/homelab/docker/media-cloud
 cp .env.example .env
-mkdir -p /mnt/storage/jellyfin/config /mnt/storage/jellyfin/cache
-sudo chown -R 1000:1000 /mnt/storage/jellyfin
+sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=$(openssl rand -hex 16)/" .env
+chmod 600 .env
+mkdir -p /mnt/storage/jellyfin/{config,cache}
+mkdir -p /mnt/storage/immich/{upload,postgres,model-cache}
+sudo chown -R 1000:1000 /mnt/storage/jellyfin /mnt/storage/immich
 sudo docker compose up -d
 ```
 
-Then open:
+Then open Jellyfin:
 
 ```text
 http://192.168.1.4:8096
+```
+
+And Immich:
+
+```text
+http://192.168.1.4:2283
 ```
 
 ## Media Uploads
