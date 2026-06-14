@@ -38,12 +38,14 @@ Then open Jellyfin:
 
 ```text
 http://192.168.1.4:8096
+https://media.home.jasongodson.com
 ```
 
 And Immich:
 
 ```text
 http://192.168.1.4:2283
+https://photos.home.jasongodson.com
 ```
 
 ## Media Uploads
