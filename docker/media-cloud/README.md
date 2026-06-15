@@ -11,6 +11,7 @@ Currently included:
 
 - `/opt/homelab/docker/media-cloud` - compose files, cloned from this repo by automation
 - `/mnt/storage/media` - media library, mounted read-only into Jellyfin
+- `/mnt/storage/share/documents` - general document/file share
 - `/mnt/storage/jellyfin` - Jellyfin config and cache
 - `/mnt/storage/immich/upload` - Immich uploaded assets
 - `/mnt/storage/immich/postgres` - Immich Postgres data
@@ -50,7 +51,7 @@ https://photos.home.jasongodson.com
 
 ## Media Uploads
 
-Jellyfin treats `/mnt/storage/media` as read-only. Add files on the host, over SSH/SCP/rsync, or later through a dedicated share/service.
+Jellyfin treats `/mnt/storage/media` as read-only from inside the container. Add files on the host, over SSH/SCP/rsync, or through Samba.
 
 Expected media folders:
 
@@ -62,3 +63,16 @@ Expected media folders:
 ```
 
 After adding files, rescan the Jellyfin library from the web UI.
+
+## Samba Shares
+
+The private automation repo configures Samba on `media-cloud`.
+
+Shares:
+
+```text
+smb://192.168.1.4/documents
+smb://192.168.1.4/media
+```
+
+Use the `manager` username. The Samba password is generated host-locally by automation.
