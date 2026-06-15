@@ -66,7 +66,7 @@ After adding files, rescan the Jellyfin library from the web UI.
 
 ## Samba Shares
 
-The private automation repo configures Samba on `media-cloud`.
+The private automation repo configures Samba on `media-cloud` and advertises it for network discovery.
 
 Shares:
 
@@ -76,3 +76,9 @@ smb://192.168.1.4/media
 ```
 
 Use the `manager` username. The Samba password is generated host-locally by automation.
+
+Discovery:
+
+- macOS/Finder should discover `media-cloud` via Bonjour.
+- Windows should discover `media-cloud` via WS-Discovery.
+- DNS is still the stable access path if configured: `smb://files.home.jasongodson.com/media`.
