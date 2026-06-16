@@ -7,9 +7,9 @@ metadata:
 spec:
   instances: 2  # Primary + 1 replica for HA
 
-  # Disable operator-managed PDB so node drains aren't blocked
-  # Failover is handled automatically by CNPG with primaryUpdateStrategy: unsupervised
-  enablePDB: false
+  # Let CNPG manage the PodDisruptionBudget so node drains cannot evict the
+  # primary when the replica is unavailable.
+  enablePDB: true
   
   # Use CloudNativePG's PostgreSQL 16 image (UID 26, compatible with operator)
   # Official postgres:16 uses UID 999 which causes "user does not exist" errors
@@ -40,7 +40,7 @@ spec:
   
   # Monitoring
   monitoring:
-    enablePodMonitor: true
+    enablePodMonitor: false
   
   # Backup configuration - continuous WAL archiving + scheduled base backups to MinIO
   backup:
