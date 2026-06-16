@@ -11,13 +11,13 @@ This directory contains Talos Linux machine configuration files, patches, and re
   - Updated by running `sync-configs.sh`
 - `worker-config.yaml` — Worker node **machine config** (auto-redacted)
   - Same redaction as controlplane, applied to worker nodes
-  - Updated by running `sync-configs.sh --worker` or `sync-configs.sh --all`
+  - Updated by running `sync-configs.sh --worker` or `sync-configs.sh`
 - `sync-configs.sh` — Retrieve and redact current cluster configs
   - Run this whenever you make cluster config changes
   - Keeps the versioned configs in sync with the live cluster
-  - `./sync-configs.sh` — sync controlplane only (default)
+  - `./sync-configs.sh` — sync controlplane and worker configs
+  - `./sync-configs.sh --controlplane` — sync controlplane config only
   - `./sync-configs.sh --worker` — sync worker only
-  - `./sync-configs.sh --all` — sync both
 - `merge-secrets.sh` — Merge real secrets into redacted template
   - For disaster recovery: creates usable configs from the template
   - Takes a backup config with secrets + template → new config
@@ -74,6 +74,62 @@ This will:
 2. Automatically redact all sensitive data (certificates, keys, tokens, secrets)
 3. Save the safe version(s) to `controlplane-config.yaml` / `worker-config.yaml`
 4. Ready to commit to GitHub!
+
+The script samples one control plane node and one worker node:
+
+- Control plane sample: `192.168.1.31`
+- Worker sample: `192.168.1.33`
+
+The current cluster has three control plane nodes and one worker-only node. If you suspect role or node drift, compare the live configs before trusting a single sampled config:
+
+```bash
+talosctl read /system/state/config.yaml -n 192.168.1.30 > /tmp/cp1.yaml
+talosctl read /system/state/config.yaml -n 192.168.1.31 > /tmp/cp2.yaml
+talosctl read /system/state/config.yaml -n 192.168.1.32 > /tmp/cp3.yaml
+talosctl read /system/state/config.yaml -n 192.168.1.33 > /tmp/worker.yaml
+```
+
+## Refreshing talosconfig
+
+`~/.talos/config` is the Talos client authentication file. Its admin client certificate expires. Check it with:
+
+```bash
+talosctl config info
+```
+
+If the certificate is expired, Talos API calls fail with an error similar to:
+
+```text
+tls: expired certificate
+```
+
+Recover by regenerating a client config from a secure, unredacted control plane machine config backup:
+
+```bash
+talosctl gen secrets \
+  --from-controlplane-config /path/to/unredacted/controlplane.yaml \
+  --output-file /tmp/talos-secrets.yaml \
+  --force
+
+cp ~/.talos/config ~/.talos/config.expired-$(date +%Y%m%d%H%M%S)
+
+talosctl gen config cluster-private https://192.168.1.250:6443 \
+  --with-secrets /tmp/talos-secrets.yaml \
+  --output-types talosconfig \
+  --output ~/.talos/config \
+  --force
+
+talosctl config endpoint 192.168.1.250
+talosctl config node 192.168.1.30,192.168.1.31,192.168.1.32,192.168.1.33
+chmod 600 ~/.talos/config
+rm -f /tmp/talos-secrets.yaml
+```
+
+After refreshing local `~/.talos/config`, update the Gitea `TALOSCONFIG` secret if workflows use Talos:
+
+```bash
+./encode-talosconfig.sh
+```
 
 ## CI/CD Integration (Gitea Actions)
 
