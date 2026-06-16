@@ -21,6 +21,11 @@
 
 ## Installation
 
+Current deployed operator:
+
+- Helm chart: `cloudnative-pg-0.27.1`
+- App/operator version: `1.28.1`
+
 ### 1. Install CloudNativePG Operator
 
 ```bash
@@ -30,7 +35,16 @@ helm repo update
 helm install cnpg \
   --namespace cnpg-system \
   --create-namespace \
+  --version 0.27.1 \
   cnpg/cloudnative-pg
+```
+
+For an existing install, upgrade to the tracked version with:
+
+```bash
+helm upgrade cnpg cnpg/cloudnative-pg \
+  --namespace cnpg-system \
+  --version 0.27.1
 ```
 
 ### 2. Create PostgreSQL Cluster
