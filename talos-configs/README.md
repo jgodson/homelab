@@ -50,8 +50,10 @@ talosctl get members
 # For health checks, specify --nodes with the VIP
 talosctl health --nodes 192.168.1.250 --server=false
 
-# Or check individual nodes explicitly (all 4 nodes)
-talosctl health --nodes 192.168.1.30,192.168.1.31,192.168.1.32,192.168.1.33
+# Or check the full cluster explicitly
+talosctl health \
+  --control-plane-nodes 192.168.1.30,192.168.1.31,192.168.1.32 \
+  --worker-nodes 192.168.1.33
 ```
 
 ## Syncing Configs
@@ -100,14 +102,33 @@ kubectl get nodes -o wide
 kubectl get pods -A | grep -Ev 'Running|Completed'
 kubectl get clusters.postgresql.cnpg.io -A \
   -o custom-columns=NAMESPACE:.metadata.namespace,NAME:.metadata.name,PHASE:.status.phase,READY:.status.readyInstances,INSTANCES:.spec.instances,PRIMARY:.status.currentPrimary
-talosctl health --nodes 192.168.1.30,192.168.1.31,192.168.1.32,192.168.1.33
+talosctl health \
+  --control-plane-nodes 192.168.1.30,192.168.1.31,192.168.1.32 \
+  --worker-nodes 192.168.1.33
 ```
 
-Upgrade a single node:
+If the node hosts a CNPG primary, promote a healthy replica first so the primary PDB does not block drain:
+
+```bash
+kubectl cnpg promote <CLUSTER_NAME> <REPLICA_POD> -n <NAMESPACE>
+```
+
+Cordon and drain the node explicitly:
+
+```bash
+kubectl cordon <NODE_NAME>
+kubectl drain <NODE_NAME> \
+  --ignore-daemonsets \
+  --delete-emptydir-data \
+  --timeout=15m
+```
+
+Upgrade the drained node. Disable Talos-managed drain because Kubernetes drain has already been handled explicitly:
 
 ```bash
 talosctl upgrade \
   --nodes <NODE_IP> \
+  --drain=false \
   --image ghcr.io/siderolabs/installer:<TALOS_VERSION>
 ```
 
