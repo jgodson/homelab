@@ -89,6 +89,49 @@ talosctl read /system/state/config.yaml -n 192.168.1.32 > /tmp/cp3.yaml
 talosctl read /system/state/config.yaml -n 192.168.1.33 > /tmp/worker.yaml
 ```
 
+## Upgrading Talos
+
+Upgrade one node at a time. Do not start the next node until Kubernetes and stateful workloads have settled.
+
+Pre-flight checks:
+
+```bash
+kubectl get nodes -o wide
+kubectl get pods -A | grep -Ev 'Running|Completed'
+kubectl get clusters.postgresql.cnpg.io -A \
+  -o custom-columns=NAMESPACE:.metadata.namespace,NAME:.metadata.name,PHASE:.status.phase,READY:.status.readyInstances,INSTANCES:.spec.instances,PRIMARY:.status.currentPrimary
+talosctl health --nodes 192.168.1.30,192.168.1.31,192.168.1.32,192.168.1.33
+```
+
+Upgrade a single node:
+
+```bash
+talosctl upgrade \
+  --nodes <NODE_IP> \
+  --image ghcr.io/siderolabs/installer:<TALOS_VERSION>
+```
+
+After each node:
+
+1. Wait for the node to return `Ready` with the expected Talos version.
+2. Wait for workloads to finish rescheduling and image pulls. A node drain can cause several minutes of churn even when the drain succeeds.
+3. Verify there are no unexpected non-running pods:
+   ```bash
+   kubectl get pods -A | grep -Ev 'Running|Completed'
+   ```
+4. Verify CNPG clusters are healthy and fully replicated before touching another node:
+   ```bash
+   kubectl get clusters.postgresql.cnpg.io -A \
+     -o custom-columns=NAMESPACE:.metadata.namespace,NAME:.metadata.name,PHASE:.status.phase,READY:.status.readyInstances,INSTANCES:.spec.instances,PRIMARY:.status.currentPrimary
+   ```
+5. For CNPG specifically, confirm the primary has a streaming replica:
+   ```bash
+   kubectl exec -n postgresql <PRIMARY_POD> -- \
+     psql -U postgres -d postgres -tAc "select application_name, state, sync_state, replay_lsn from pg_stat_replication;"
+   ```
+
+If a stateful workload is degraded, stop the upgrade and recover it before continuing. A successful `talosctl upgrade` only proves the node upgraded; it does not prove the cluster workloads are safe for the next disruption.
+
 ## Refreshing talosconfig
 
 `~/.talos/config` is the Talos client authentication file. Its admin client certificate expires. Check it with:
