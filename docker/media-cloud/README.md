@@ -42,6 +42,8 @@ http://192.168.1.4:8096
 https://media.home.jasongodson.com
 ```
 
+Jellyfin also publishes UDP `7359` for local app discovery. If a client still does not auto-discover the server, add `https://media.home.jasongodson.com` or `http://192.168.1.4:8096` manually.
+
 And Immich:
 
 ```text

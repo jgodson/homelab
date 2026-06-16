@@ -8,6 +8,7 @@ services:
       TZ: "${TZ:-America/Edmonton}"
     ports:
       - "8096:8096"
+      - "7359:7359/udp"
     volumes:
       - "${JELLYFIN_CONFIG_ROOT:-/mnt/storage/jellyfin}/config:/config"
       - "${JELLYFIN_CONFIG_ROOT:-/mnt/storage/jellyfin}/cache:/cache"
