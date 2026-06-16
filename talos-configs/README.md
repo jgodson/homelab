@@ -34,7 +34,7 @@ This directory contains Talos Linux machine configuration files, patches, and re
 **Control Plane VIP**: 192.168.1.250:6443 (ens18 interface)
 **CNI**: Cilium (Flannel disabled via `cluster.network.cni.name: none`)
 **Kubernetes**: v1.32.2
-**Talos**: v1.9.5
+**Talos**: v1.9.6
 
 The cluster uses a Virtual IP (VIP) for high-availability control plane access. If one control plane goes down, the VIP automatically moves to another healthy node, ensuring kubectl always works.
 
