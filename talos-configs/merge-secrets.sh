@@ -10,7 +10,9 @@
 # redacted template (controlplane-config.yaml or worker-config.yaml).
 #
 
-set -e
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Parse arguments
 USE_WORKER=false
@@ -47,9 +49,9 @@ fi
 
 # Select template based on node type
 if [ "$USE_WORKER" = true ]; then
-    TEMPLATE="worker-config.yaml"
+    TEMPLATE="$SCRIPT_DIR/worker-config.yaml"
 else
-    TEMPLATE="controlplane-config.yaml"
+    TEMPLATE="$SCRIPT_DIR/controlplane-config.yaml"
 fi
 
 # Validate inputs
@@ -80,132 +82,82 @@ echo "  Real config: $REAL_CONFIG"
 echo "  Output: $OUTPUT_FILE"
 echo ""
 
-# Extract secrets from real config using yq (if available) or python
-if command -v yq &> /dev/null; then
-    echo "Using yq for YAML processing..."
-    
-    # Start with the template
-    cp "$TEMPLATE" "$OUTPUT_FILE"
-    
-    # Extract and merge secrets
-    yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "$TEMPLATE" "$REAL_CONFIG" > "$OUTPUT_FILE.tmp"
-    
-    # Replace REDACTED values with real ones from the real config
-    yq eval-all '
-        (select(fileIndex == 0) | .. | select(. == "REDACTED_BASE64")) =
-        (select(fileIndex == 1) | getpath(path))
-    ' "$TEMPLATE" "$REAL_CONFIG" > "$OUTPUT_FILE"
-    
-    rm -f "$OUTPUT_FILE.tmp"
-    
-elif command -v python3 &> /dev/null; then
-    echo "Using Python for YAML processing..."
-    
-    python3 << 'PYTHON_SCRIPT'
-import sys
-import re
+if command -v ruby &> /dev/null; then
+    echo "Using Ruby for path-aware YAML processing..."
 
-# Read both files
-with open(sys.argv[1], 'r') as f:
-    template = f.read()
+    ruby - "$TEMPLATE" "$REAL_CONFIG" "$OUTPUT_FILE" << 'RUBY_SCRIPT'
+require "yaml"
 
-with open(sys.argv[2], 'r') as f:
-    real_config = f.read()
+template_path, real_config_path, output_path = ARGV
+placeholders = [
+  "REDACTED_BASE64",
+  "REDACTED_ID",
+  "REDACTED_SECRET",
+  "REDACTED_TOKEN"
+].freeze
 
-# Extract secrets from real config using regex
-def extract_value(yaml_text, pattern):
-    match = re.search(pattern, yaml_text, re.MULTILINE)
-    return match.group(1) if match else None
+template = YAML.load_file(template_path)
+real_config = YAML.load_file(real_config_path)
+replacements = []
+missing = []
 
-# Machine token
-machine_token = extract_value(real_config, r'^\s*token:\s*([a-z0-9]{6}\.[a-z0-9]{16})')
-if machine_token:
-    template = re.sub(r'token:\s*REDACTED_TOKEN', f'token: {machine_token}', template)
+format_path = lambda do |path|
+  path.reduce("") do |memo, part|
+    if part.is_a?(Integer)
+      "#{memo}[#{part}]"
+    elsif memo.empty?
+      part.to_s
+    else
+      "#{memo}.#{part}"
+    end
+  end
+end
 
-# Machine CA cert
-machine_ca_crt = extract_value(real_config, r'machine:\s*\n.*?ca:\s*\n.*?crt:\s*(LS0tLS[A-Za-z0-9+/=]+)')
-if machine_ca_crt:
-    template = re.sub(r'(machine:.*?ca:.*?crt:\s*)REDACTED_BASE64', f'\\1{machine_ca_crt}', template, flags=re.DOTALL)
+merge_redacted = lambda do |template_value, real_value, path|
+  case template_value
+  when Hash
+    template_value.each_with_object({}) do |(key, value), merged|
+      next_real = real_value.is_a?(Hash) ? real_value[key] : nil
+      merged[key] = merge_redacted.call(value, next_real, path + [key])
+    end
+  when Array
+    template_value.each_with_index.map do |value, index|
+      next_real = real_value.is_a?(Array) ? real_value[index] : nil
+      merge_redacted.call(value, next_real, path + [index])
+    end
+  else
+    if placeholders.include?(template_value)
+      if real_value.nil? || placeholders.include?(real_value)
+        missing << format_path.call(path)
+        template_value
+      else
+        replacements << format_path.call(path)
+        real_value
+      end
+    else
+      template_value
+    end
+  end
+end
 
-# Machine CA key
-machine_ca_key = extract_value(real_config, r'machine:.*?ca:.*?key:\s*(LS0tLS[A-Za-z0-9+/=]+)')
-if machine_ca_key:
-    template = re.sub(r'(machine:.*?ca:.*?key:\s*)REDACTED_BASE64', f'\\1{machine_ca_key}', template, flags=re.DOTALL)
+merged = merge_redacted.call(template, real_config, [])
 
-# Cluster ID
-cluster_id = extract_value(real_config, r'cluster:\s*\n.*?id:\s*([A-Za-z0-9+/=_-]{20,})')
-if cluster_id:
-    template = re.sub(r'id:\s*REDACTED_ID', f'id: {cluster_id}', template)
+unless missing.empty?
+  warn "Error: real config does not contain non-redacted values for:"
+  missing.each { |path| warn "  - #{path}" }
+  exit 1
+end
 
-# Cluster secret
-cluster_secret = extract_value(real_config, r'cluster:.*?secret:\s*([A-Za-z0-9+/=]{20,})')
-if cluster_secret:
-    template = re.sub(r'secret:\s*REDACTED_SECRET', f'secret: {cluster_secret}', template, count=1)
+yaml = YAML.dump(merged).sub(/\A---\s*\n/, "")
+File.write(output_path, yaml)
 
-# Bootstrap token
-bootstrap_token = extract_value(real_config, r'cluster:.*?token:\s*([a-z0-9]{6}\.[a-z0-9]{16})')
-if bootstrap_token:
-    template = re.sub(r'(cluster:.*?token:\s*)REDACTED_TOKEN', f'\\1{bootstrap_token}', template, flags=re.DOTALL)
-
-# Secretbox encryption secret
-secretbox = extract_value(real_config, r'secretboxEncryptionSecret:\s*([A-Za-z0-9+/=]{20,})')
-if secretbox:
-    template = re.sub(r'secretboxEncryptionSecret:\s*REDACTED_SECRET', f'secretboxEncryptionSecret: {secretbox}', template)
-
-# AESCBC encryption secret
-aescbc = extract_value(real_config, r'aescbcEncryptionSecret:\s*([A-Za-z0-9+/=]{20,})')
-if aescbc:
-    template = re.sub(r'aescbcEncryptionSecret:\s*REDACTED_SECRET', f'aescbcEncryptionSecret: {aescbc}', template)
-
-# Kubernetes CA
-k8s_ca_crt = extract_value(real_config, r'cluster:.*?ca:.*?crt:\s*(LS0tLS[A-Za-z0-9+/=]+)')
-if k8s_ca_crt:
-    template = re.sub(r'(cluster:.*?ca:.*?crt:\s*)REDACTED_BASE64', f'\\1{k8s_ca_crt}', template, flags=re.DOTALL)
-
-# Kubernetes CA key
-k8s_ca_key = extract_value(real_config, r'cluster:.*?ca:.*?key:\s*(LS0tLS[A-Za-z0-9+/=]+)')
-if k8s_ca_key:
-    template = re.sub(r'(cluster:.*?ca:.*?key:\s*)REDACTED_BASE64', f'\\1{k8s_ca_key}', template, flags=re.DOTALL)
-
-# Aggregator CA
-agg_ca_crt = extract_value(real_config, r'aggregatorCA:.*?crt:\s*(LS0tLS[A-Za-z0-9+/=]+)')
-if agg_ca_crt:
-    template = re.sub(r'(aggregatorCA:.*?crt:\s*)REDACTED_BASE64', f'\\1{agg_ca_crt}', template, flags=re.DOTALL)
-
-# Aggregator CA key
-agg_ca_key = extract_value(real_config, r'aggregatorCA:.*?key:\s*(LS0tLS[A-Za-z0-9+/=]+)')
-if agg_ca_key:
-    template = re.sub(r'(aggregatorCA:.*?key:\s*)REDACTED_BASE64', f'\\1{agg_ca_key}', template, flags=re.DOTALL)
-
-# Service account key
-sa_key = extract_value(real_config, r'serviceAccount:.*?key:\s*(LS0tLS[A-Za-z0-9+/=]+)')
-if sa_key:
-    template = re.sub(r'(serviceAccount:.*?key:\s*)REDACTED_BASE64', f'\\1{sa_key}', template, flags=re.DOTALL)
-
-# Etcd CA
-etcd_ca_crt = extract_value(real_config, r'etcd:.*?ca:.*?crt:\s*(LS0tLS[A-Za-z0-9+/=]+)')
-if etcd_ca_crt:
-    template = re.sub(r'(etcd:.*?ca:.*?crt:\s*)REDACTED_BASE64', f'\\1{etcd_ca_crt}', template, flags=re.DOTALL)
-
-# Etcd CA key
-etcd_ca_key = extract_value(real_config, r'etcd:.*?ca:.*?key:\s*(LS0tLS[A-Za-z0-9+/=]+)')
-if etcd_ca_key:
-    template = re.sub(r'(etcd:.*?ca:.*?key:\s*)REDACTED_BASE64', f'\\1{etcd_ca_key}', template, flags=re.DOTALL)
-
-# Write output
-with open(sys.argv[3], 'w') as f:
-    f.write(template)
-
-print("✅ Secrets merged successfully!")
-
-PYTHON_SCRIPT "$TEMPLATE" "$REAL_CONFIG" "$OUTPUT_FILE"
-
+puts "Merged #{replacements.length} redacted values."
+RUBY_SCRIPT
 else
-    echo "Error: Neither yq nor python3 found. Please install one of them."
+    echo "Error: ruby was not found."
     echo ""
-    echo "Install yq: brew install yq"
-    echo "  or"
-    echo "Python should be available by default on macOS"
+    echo "Ruby is used here so redacted values are replaced by exact YAML path"
+    echo "instead of fragile text matching."
     exit 1
 fi
 

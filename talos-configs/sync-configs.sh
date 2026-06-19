@@ -55,7 +55,10 @@ sync_node() {
   local node_type="$3"
 
   echo "Retrieving Talos machine config from ${node_ip} (${node_type})..."
-  talosctl read /system/state/config.yaml -n "${node_ip}" > "${TEMP_FILE}"
+  if ! talosctl get machineconfig --nodes "${node_ip}" -o json | jq -r 'select(.metadata.id == "v1alpha1") | .spec' > "${TEMP_FILE}"; then
+    # Older Talos releases exposed the persisted config as a file.
+    talosctl read /system/state/config.yaml -n "${node_ip}" > "${TEMP_FILE}"
+  fi
 
   echo "Redacting sensitive information..."
   redact_config "${TEMP_FILE}" "${output_file}"

@@ -33,8 +33,8 @@ This directory contains Talos Linux machine configuration files, patches, and re
 **Worker Nodes**: 192.168.1.33
 **Control Plane VIP**: 192.168.1.250:6443 (ens18 interface)
 **CNI**: Cilium (Flannel disabled via `cluster.network.cni.name: none`)
-**Kubernetes**: v1.32.2
-**Talos**: v1.9.6
+**Kubernetes**: v1.36.2
+**Talos**: v1.13.4
 
 The cluster uses a Virtual IP (VIP) for high-availability control plane access. If one control plane goes down, the VIP automatically moves to another healthy node, ensuring kubectl always works.
 
@@ -85,10 +85,10 @@ The script samples one control plane node and one worker node:
 The current cluster has three control plane nodes and one worker-only node. If you suspect role or node drift, compare the live configs before trusting a single sampled config:
 
 ```bash
-talosctl read /system/state/config.yaml -n 192.168.1.30 > /tmp/cp1.yaml
-talosctl read /system/state/config.yaml -n 192.168.1.31 > /tmp/cp2.yaml
-talosctl read /system/state/config.yaml -n 192.168.1.32 > /tmp/cp3.yaml
-talosctl read /system/state/config.yaml -n 192.168.1.33 > /tmp/worker.yaml
+talosctl get machineconfig --nodes 192.168.1.30 -o json | jq -r 'select(.metadata.id == "v1alpha1") | .spec' > /tmp/cp1.yaml
+talosctl get machineconfig --nodes 192.168.1.31 -o json | jq -r 'select(.metadata.id == "v1alpha1") | .spec' > /tmp/cp2.yaml
+talosctl get machineconfig --nodes 192.168.1.32 -o json | jq -r 'select(.metadata.id == "v1alpha1") | .spec' > /tmp/cp3.yaml
+talosctl get machineconfig --nodes 192.168.1.33 -o json | jq -r 'select(.metadata.id == "v1alpha1") | .spec' > /tmp/worker.yaml
 ```
 
 ## Upgrading Talos
