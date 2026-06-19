@@ -108,6 +108,13 @@ echo "⏳ Waiting for Gitea to be ready..."
 # Wait for deployment to be ready
 kubectl wait --for=condition=available --timeout=300s deployment/gitea -n gitea
 
+if kubectl get secret gitea-minio-credentials -n gitea >/dev/null 2>&1; then
+    echo "💾 Installing Gitea data backup CronJob..."
+    kubectl apply -f backup-cronjob.yaml
+else
+    echo "⚠️  gitea-minio-credentials not found; backup CronJob was not installed"
+fi
+
 echo ""
 echo "✅ Gitea is ready!"
 echo ""

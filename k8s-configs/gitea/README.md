@@ -196,9 +196,31 @@ jobs:
 ## 🔄 Maintenance
 
 ### Backup
+
+The `postgresql-pg` CloudNativePG cluster backs up the Gitea database separately. The Gitea data CronJob preserves repositories, LFS objects, attachments, custom data, and configuration. Package blobs, logs, search indexes, and the database are excluded because they are rebuildable or backed up elsewhere.
+
+Create a dedicated MinIO user with read/write access limited to the `gitea-backups` bucket. Store the generated credentials in your normal secret manager, then create the Kubernetes secret:
+
 ```bash
-# Gitea data backup
-kubectl exec -n gitea deployment/gitea -- gitea dump
+kubectl create secret generic gitea-minio-credentials \
+  --namespace gitea \
+  --from-literal=MINIO_ACCESS_KEY='<ACCESS_KEY>' \
+  --from-literal=MINIO_SECRET_KEY='<SECRET_KEY>'
+
+kubectl apply -f backup-cronjob.yaml
+```
+
+The CronJob runs daily at `04:00` and retains 30 days in the `gitea-backups` bucket. MinIO's existing rclone service then copies that bucket to offsite storage.
+
+Run and verify an immediate backup:
+
+```bash
+kubectl create job \
+  --namespace gitea \
+  --from=cronjob/gitea-data-backup \
+  gitea-data-backup-manual-$(date +%s)
+
+kubectl get jobs,pods --namespace gitea
 ```
 
 ### Updates

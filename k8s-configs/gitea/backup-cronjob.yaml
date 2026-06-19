@@ -1,0 +1,109 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: gitea-data-backup
+  namespace: gitea
+spec:
+  schedule: "0 4 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: gitea-data-backup
+        spec:
+          restartPolicy: Never
+          securityContext:
+            fsGroup: 1000
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/instance: gitea
+                      app.kubernetes.io/name: gitea
+                  topologyKey: kubernetes.io/hostname
+          initContainers:
+            - name: create-dump
+              image: docker.gitea.com/gitea:1.24.6-rootless
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -ec
+              args:
+                - |
+                  rm -f /backup/gitea-data.zip
+                  gitea dump \
+                    --config /data/gitea/conf/app.ini \
+                    --file /backup/gitea-data.zip \
+                    --tempdir /tmp/gitea-dump \
+                    --skip-db \
+                    --skip-log \
+                    --skip-package-data \
+                    --skip-index
+                  test -s /backup/gitea-data.zip
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 1000
+                runAsGroup: 1000
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 1
+                  memory: 1Gi
+              volumeMounts:
+                - name: gitea-data
+                  mountPath: /data
+                  readOnly: true
+                - name: backup
+                  mountPath: /backup
+          containers:
+            - name: upload
+              image: minio/mc:latest
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -ec
+              args:
+                - |
+                  timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+                  mc alias set backup "${MINIO_ENDPOINT}" "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}"
+                  mc cp /backup/gitea-data.zip "backup/gitea-backups/gitea-data-${timestamp}.zip"
+                  mc rm --recursive --force --older-than 30d backup/gitea-backups/
+              env:
+                - name: MINIO_ENDPOINT
+                  value: http://192.168.1.252:9000
+                - name: MINIO_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: gitea-minio-credentials
+                      key: MINIO_ACCESS_KEY
+                - name: MINIO_SECRET_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: gitea-minio-credentials
+                      key: MINIO_SECRET_KEY
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+                  readOnly: true
+          volumes:
+            - name: gitea-data
+              persistentVolumeClaim:
+                claimName: gitea-shared-storage
+            - name: backup
+              emptyDir: {}
