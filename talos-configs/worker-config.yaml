@@ -54,6 +54,8 @@ machine:
     interfaces:
     - dhcp: false
       interface: ens18
+    nameservers:
+    - 192.168.1.253
   token: REDACTED_TOKEN
   type: worker
 persist: true

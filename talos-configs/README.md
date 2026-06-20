@@ -211,7 +211,7 @@ talosctl gen config cluster-private https://192.168.1.250:6443 \
   --force
 
 talosctl config endpoint 192.168.1.250
-talosctl config node 192.168.1.30,192.168.1.31,192.168.1.32,192.168.1.33
+talosctl config node 192.168.1.30 192.168.1.31 192.168.1.32 192.168.1.33
 chmod 600 ~/.talos/config
 rm -f /tmp/talos-secrets.yaml
 ```
