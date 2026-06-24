@@ -38,6 +38,8 @@ This directory contains Talos Linux machine configuration files, patches, and re
 
 The cluster uses a Virtual IP (VIP) for high-availability control plane access. If one control plane goes down, the VIP automatically moves to another healthy node, ensuring kubectl always works.
 
+`machine.features.diskQuotaSupport` is enabled to keep XFS project-quota support and kubelet quota-backed ephemeral disk usage tracking.
+
 ### Using talosctl with VIP
 
 Your talosconfig should be set to use the VIP endpoint. Common commands:
