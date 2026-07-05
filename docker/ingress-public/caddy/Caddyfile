@@ -98,7 +98,7 @@
       # Enable strict HTTPS
       Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
       # Control allowed sources for content
-      Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'"
+      Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src 'self' https://www.youtube-nocookie.com"
       # Control referrer information
       Referrer-Policy "strict-origin-when-cross-origin"
       # Disable FLoC tracking (Federated Learning of Cohorts, not really a thing anymore)
