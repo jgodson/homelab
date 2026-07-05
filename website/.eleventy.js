@@ -45,6 +45,13 @@ module.exports = function(eleventyConfig) {
 
   const imageCacheDir = path.join(__dirname, ".cache", "eleventy-img");
   const imageConcurrency = 2;
+  const escapeHtml = (value = "") => String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#39;"
+  }[character]));
 
   // Simplified image shortcode focusing on WebP optimization
   eleventyConfig.addShortcode("image", async function(src, alt, sizes = "100vw", maxWidth = null) {
@@ -164,25 +171,45 @@ module.exports = function(eleventyConfig) {
         };
         
         const imgHtml = Image.generateHTML(metadata, imageAttributes);
-        
-        slidesHtml += `
-          <div class="mySlides fade">
-            ${imgHtml}
-            ${caption ? `<div class="text">${caption}</div>` : ''}
-          </div>
-        `;
+        const captionHtml = caption ? `<div class="text">${escapeHtml(caption)}</div>` : '';
+
+        // Keep this compact so Markdown does not inject paragraphs and line breaks.
+        slidesHtml += `<div class="mySlides fade">${imgHtml}${captionHtml}</div>`;
       } catch (e) {
         console.error(`Error processing slideshow image ${src}:`, e);
         // Fallback or skip
       }
     }
     
+    return `<div class="slideshow-container" id="${slideshowId}" tabindex="0" aria-label="Image Slideshow">${slidesHtml}<a class="prev">&#10094;</a><a class="next">&#10095;</a></div>`;
+  });
+
+  eleventyConfig.addShortcode("youtubeEmbed", function(videoId, title = "YouTube video", caption = "") {
+    if (!videoId) {
+      return "";
+    }
+
+    const safeVideoId = String(videoId).trim().replace(/[^a-zA-Z0-9_-]/g, "");
+    if (!safeVideoId) {
+      return "";
+    }
+
+    const safeTitle = escapeHtml(title);
+    const safeCaption = escapeHtml(caption);
+
     return `
-      <div class="slideshow-container" id="${slideshowId}" tabindex="0" aria-label="Image Slideshow">
-        ${slidesHtml}
-        <a class="prev" onclick="changeSlide(this.parentElement, -1)">&#10094;</a>
-        <a class="next" onclick="changeSlide(this.parentElement, 1)">&#10095;</a>
-      </div>
+      <figure class="youtube-embed">
+        <div class="youtube-embed__frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/${safeVideoId}"
+            title="${safeTitle}"
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+          </iframe>
+        </div>
+        ${safeCaption ? `<figcaption>${safeCaption}</figcaption>` : ""}
+      </figure>
     `;
   });
 

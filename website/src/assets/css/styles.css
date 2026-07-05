@@ -457,6 +457,37 @@ blog-header time {
   border-radius: 5px;
 }
 
+.youtube-embed {
+  margin: 2em 0;
+}
+
+.youtube-embed__frame {
+  aspect-ratio: 16 / 9;
+  background: #111827;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+  line-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.youtube-embed iframe {
+  border: 0;
+  display: block;
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.youtube-embed figcaption {
+  color: #666;
+  font-size: 0.95em;
+  line-height: 1.5;
+  margin-top: 0.8em;
+  text-align: center;
+}
+
 .back-link {
   margin-top: 2em;
   text-align: center;
@@ -670,10 +701,16 @@ pre code {
   margin: auto;
   background: #f1f1f1;
   border-radius: 8px;
+  line-height: 0;
   overflow: hidden;
   margin-top: 1em;
   margin-bottom: 2em;
   outline: none; /* Remove default focus outline */
+}
+
+.slideshow-container > br,
+.mySlides > br {
+  display: none;
 }
 
 .slideshow-container:focus {
@@ -685,6 +722,8 @@ pre code {
   display: none;
   text-align: center;
   background-color: #000; /* Dark background better for game screenshots */
+  line-height: 0;
+  position: relative;
 }
 
 .mySlides picture {
@@ -713,6 +752,7 @@ pre code {
   color: white;
   font-weight: bold;
   font-size: 18px;
+  line-height: 1;
   transition: 0.6s ease;
   border-radius: 0 3px 3px 0;
   user-select: none;
@@ -740,8 +780,10 @@ pre code {
 
 /* Caption text */
 .text {
+  box-sizing: border-box;
   color: #f2f2f2;
   font-size: 15px;
+  line-height: 1.5;
   padding: 8px 12px;
   position: absolute;
   bottom: 0;
