@@ -4,6 +4,7 @@ services:
     restart: unless-stopped
     stop_grace_period: 30s
     image: ghcr.io/blakeblackshear/frigate:stable
+    shm_size: "256mb"
     volumes:
       - ./config:/config
       - ./storage:/media/frigate
@@ -21,3 +22,18 @@ services:
         mode: "non-blocking"
         max-size: "10m"
         max-file: "3"
+
+  myq-video-pipe:
+    build:
+      context: ./myq-bridge
+    container_name: myq-video-pipe
+    restart: unless-stopped
+    user: "${MYQ_ANDROID_APP_UID:-10116}:${MYQ_ANDROID_APP_UID:-10116}"
+    volumes:
+      - ${MYQ_ANDROID_DATA_DIR:-/home/manager/myq-android/android-data}/data/com.chamberlain.android.liftmaster.myq/files:/android-files:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8091/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3

@@ -1,0 +1,3 @@
+storage/
+.env
+myq-bridge/__pycache__/

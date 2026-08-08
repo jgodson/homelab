@@ -1,91 +1,100 @@
 # Frigate NVR
-⚠️ This one is a WIP (well, more so than everything else 😄), I haven't spent much time getting this one set up yet ⚠️
 
-## Overview
-Frigate is a Network Video Recorder (NVR) that uses computer vision to provide object detection for IP cameras. It integrates with Home Assistant and uses hardware acceleration to efficiently process multiple camera streams.
+This directory backs up the working Frigate configuration for the host at `192.168.1.3`, including the host-resident MyQ camera bridge.
 
-## System Requirements
+## Current cameras and detection
 
-### Hardware Recommendations
-- **CPU**: 12 Cores (for CPU-based object detection)
-- **RAM**: 8 GB
-- **Disk**: 256 GB (Can be adjusted according to your needs)
-    - Use `Cache: Writeback` for best performance on HDD
-    - Additionally after creating run `zfs set sync=disabled rpool/data/vm-<vmid>-disk-0`
-- **Network**: Static IP address
+- `myq_opener`: 1280x720 H.264, detection at 10 FPS
+- `myq_keypad`: 1152x864 H.264, detection at 10 FPS
+- `person` creates an alert review item
+- `dog` and `cat` create detection review items
+- Alert and detection recordings are retained for 10 days
+- Continuous and motion recordings are retained for 1 day
+- The two broken Wyze RTSP cameras remain as sanitized comments in `config/config.yml`
 
-### Prerequisites
-- Ubuntu Server (or similar Linux distribution)
-- Docker and Docker Compose (Can be installed with Ubuntu via snap)
-- Compatible IP cameras
+Frigate uses eleven OpenVINO CPU detector processes and the bundled SSD MobileNet v2 model. Multiple workers consume a shared detection queue across both cameras.
 
-## Installation
+## Layout
 
-### 1. Prepare the Environment
-
-Create the required directories for Frigate:
-```bash
-mkdir -p storage config
+```text
+config/config.yml                 Frigate and go2rtc configuration
+docker-compose.yml                Frigate plus the private H.264 pipe service
+myq-bridge/                       ReDroid, systemd, and H.264 bridge source
 ```
 
-#### DNS Configuration
+The MyQ bridge runs the official Android app in ReDroid. A host systemd service attaches to the app's installed video SDK, writes the two encoded H.264 streams to private FIFOs, and `myq-video-pipe` exposes them only on Frigate's Docker network. The bridge automatically relaunches the app and dismisses its Google Play Services compatibility dialog when the video session expires.
 
-In order to send logs or metrics to local hostnames, we need to use the internal DNS server. Follow [these instructions](docs/dns-config-ubuntu.md) to configure DNS for Ubuntu if it has not already been set to use the DNS server.
+MyQ Internet access is still required. This repository does not contain an authenticated Android data directory, the MyQ APK, or the Frida server binary.
 
-### 2. Configuration
+## Restore
 
-Copy the Docker Compose and config file to your server:
+The commands below assume this directory is the working directory on the new Frigate host and the Linux user is `manager`.
+
+### 1. Load Android Binder support
+
 ```bash
-scp -r ./docker-compose.yml config.yml user@your-server-ip:~/
+sudo install -o root -g root -m 0644 myq-bridge/myq-android.modules-load.conf /etc/modules-load.d/myq-android.conf
+sudo install -o root -g root -m 0644 myq-bridge/myq-android.modprobe.conf /etc/modprobe.d/myq-android.conf
+sudo modprobe binder_linux
 ```
 
-Modify the configuration file to:
-- Set camera details in `config.yml`
-- Update InfluxDB configuration with the correct host, org ID, and token
+### 2. Start ReDroid and sign in to MyQ
 
-### 3. Deployment
-
-Start the services:
 ```bash
+mkdir -p /home/manager/myq-android
+cp myq-bridge/docker-compose.android.yml /home/manager/myq-android/docker-compose.yml
+cd /home/manager/myq-android
 docker compose up -d
 ```
 
-## Post-Installation Setup
+Install the Chamberlain-signed MyQ Android APK into `myq-android`, then use the loopback-only ADB port through an SSH tunnel to open the Android UI and sign in. The tested app build was `5.243.1.73243` on Android 11 x86_64.
 
-1. Access the Frigate web interface at http://your-server-ip:5000
-2. Create an account in the Settings section
-3. Configure detection zones and object filters as needed
-4. Set up recording retention policies
+### 3. Install the host bridge
 
-## Maintenance
+Copy `myq-bridge` to `/home/manager/myq-frigate-bridge`. Create the Python environment and install the tested Frida client:
 
-### Recordings Management
-Frigate automatically manages recordings based on your retention settings.
-
-### Updates
-To update Frigate:
 ```bash
-docker compose pull
-docker compose up -d
+python3 -m venv /home/manager/myq-frida-venv
+/home/manager/myq-frida-venv/bin/pip install 'frida==16.7.19'
 ```
 
-## Integration with Home Assistant
+Place the matching Frida server x86_64 binary in the Android container as `/data/local/tmp/frida-server-myq16` and make it executable.
 
-Frigate can be integrated with Home Assistant using:
-- The Frigate integration in HACS
-- MQTT for event notifications
-- Direct camera feed integration
+Install the device configuration and systemd unit:
 
-## Troubleshooting
+```bash
+sudo install -o root -g root -m 0600 myq-bridge/myq-frigate-bridge.env.example /etc/myq-frigate-bridge.env
+sudo install -o root -g root -m 0644 myq-bridge/myq-android-bridge.service /etc/systemd/system/myq-android-bridge.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now myq-android-bridge.service
+```
 
-- If detections aren't working, check:
-  - CPU/GPU utilization
-  - Camera stream format (H.264 is recommended)
-  - Container logs: `docker logs frigate`
-- For performance issues, review the hardware acceleration settings
+The numeric device IDs in the example environment file are identifiers, not account credentials. Update them if the MyQ account or devices change.
+
+### 4. Start Frigate
+
+Return to this directory and run:
+
+```bash
+mkdir -p storage
+docker compose up -d --build
+```
+
+Open Frigate on port `8971`, create the initial account if needed, and configure notification email through Frigate without committing it to Git.
+
+## Health checks
+
+```bash
+sudo systemctl status myq-android-bridge.service
+sudo journalctl -u myq-android-bridge.service -n 30 --no-pager
+docker exec myq-video-pipe wget -qO- http://127.0.0.1:8091/health
+docker exec frigate wget -qO- http://127.0.0.1:1984/api/streams
+```
+
+The bridge health check requires recent bytes from both cameras, so a stalled feed no longer appears healthy.
 
 ## References
-- [Frigate Documentation](https://docs.frigate.video/)
-- [Reference Config](https://docs.frigate.video/configuration/reference)
-- [Hardware Acceleration Guide](https://docs.frigate.video/configuration/hardware_acceleration)
-- [Camera Compatibility](https://docs.frigate.video/configuration/camera_specific)
+
+- [Frigate configuration](https://docs.frigate.video/configuration/)
+- [Frigate review items](https://docs.frigate.video/configuration/review/)
+- [Frigate object detectors](https://docs.frigate.video/configuration/object_detectors/)

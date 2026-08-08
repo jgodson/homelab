@@ -1,0 +1,146 @@
+mqtt:
+  enabled: false
+
+go2rtc:
+  ffmpeg:
+    myq_h264: "-fflags +genpts -flags low_delay -use_wallclock_as_timestamps 1 -framerate 20 -f h264 -i {input}"
+  streams:
+    myq_opener:
+      - "ffmpeg:http://myq-video-pipe:8091/opener.h264#video=copy#input=myq_h264"
+    myq_keypad:
+      - "ffmpeg:http://myq-video-pipe:8091/keypad.h264#video=copy#input=myq_h264"
+
+cameras:
+  # Disabled until the Wyze RTSP feeds are repaired.
+  # wyze_cam1:
+  #   enabled: true
+  #   ffmpeg:
+  #     inputs:
+  #       - path: rtsp://USER:PASSWORD@WYZE_CAM_1/live
+  #         roles:
+  #           - detect
+  # wyze_cam2:
+  #   enabled: true
+  #   ffmpeg:
+  #     inputs:
+  #       - path: rtsp://USER:PASSWORD@WYZE_CAM_2/live
+  #         roles:
+  #           - detect
+  #   detect:
+  #     enabled: true
+  #     width: 1280
+  #     height: 720
+
+  myq_opener:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/myq_opener
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+            - record
+    detect:
+      enabled: true
+      width: 1280
+      height: 720
+      fps: 10
+
+  myq_keypad:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/myq_keypad
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+            - record
+    detect:
+      enabled: true
+      width: 1152
+      height: 864
+      fps: 10
+
+record:
+  enabled: true
+  alerts:
+    retain:
+      days: 10
+      mode: active_objects
+  detections:
+    retain:
+      days: 10
+      mode: active_objects
+  continuous:
+    days: 1
+  motion:
+    days: 1
+
+audio:
+  enabled: false
+
+objects:
+  track:
+    - person
+    - dog
+    - cat
+
+review:
+  alerts:
+    labels:
+      - person
+  detections:
+    labels:
+      - dog
+      - cat
+
+notifications:
+  enabled: false
+
+detectors:
+  ov1:
+    type: openvino
+    device: CPU
+  ov2:
+    type: openvino
+    device: CPU
+  ov3:
+    type: openvino
+    device: CPU
+  ov4:
+    type: openvino
+    device: CPU
+  ov5:
+    type: openvino
+    device: CPU
+  ov6:
+    type: openvino
+    device: CPU
+  ov7:
+    type: openvino
+    device: CPU
+  ov8:
+    type: openvino
+    device: CPU
+  ov9:
+    type: openvino
+    device: CPU
+  ov10:
+    type: openvino
+    device: CPU
+  ov11:
+    type: openvino
+    device: CPU
+
+model:
+  width: 300
+  height: 300
+  input_tensor: nhwc
+  input_pixel_format: bgr
+  path: /openvino-model/ssdlite_mobilenet_v2.xml
+  labelmap_path: /openvino-model/coco_91cl_bkgr.txt
+
+version: 0.17-0
+
+detect:
+  enabled: true

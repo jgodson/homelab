@@ -1,0 +1,4 @@
+android-data/
+*.apk
+frida-server*
+__pycache__/
