@@ -68,6 +68,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -80,13 +81,13 @@
           "decimals": 1,
           "mappings": [],
           "max": 125,
-          "min": 118,
+          "min": 115,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -111,9 +112,13 @@
       "id": 1,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "min",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
           "showLegend": true
         },
         "tooltip": {
@@ -122,7 +127,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "alias": "Voltage Avg",
@@ -305,6 +310,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -321,7 +327,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               }
             ]
           },
@@ -338,9 +344,13 @@
       "id": 2,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "min",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
           "showLegend": true
         },
         "tooltip": {
@@ -349,7 +359,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "alias": "$tag_entity_id",
@@ -399,6 +409,20 @@
           "options": {
             "regex": "tp_link_power_strip_b549_(.*)_current_consumption",
             "renamePattern": "$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "plug_5",
+            "renamePattern": "fibre_switch"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "plug_6",
+            "renamePattern": "monitor"
           }
         }
       ],
@@ -451,6 +475,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -468,7 +493,7 @@
             "steps": [
               {
                 "color": "blue",
-                "value": null
+                "value": 0
               },
               {
                 "color": "yellow",
@@ -508,7 +533,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "alias": "temperature",
@@ -554,7 +579,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -580,7 +605,7 @@
         "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "sum"
           ],
           "fields": "/^climate\\.main_floor\\.hvac_action_str$/",
           "values": false
@@ -589,7 +614,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
@@ -634,7 +659,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -669,7 +694,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
@@ -709,6 +734,7 @@
             "mode": "thresholds"
           },
           "custom": {
+            "axisPlacement": "auto",
             "fillOpacity": 75,
             "hideFrom": {
               "legend": false,
@@ -761,7 +787,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               }
             ]
           }
@@ -791,7 +817,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "alias": "Furnace",
@@ -880,6 +906,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -895,7 +922,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -927,7 +954,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "alias": "$tag_entity_id",
@@ -1038,6 +1065,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1053,7 +1081,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -1085,7 +1113,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
@@ -1113,11 +1141,363 @@
       ],
       "title": "Humidity",
       "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
+      "id": 11,
+      "panels": [],
+      "title": "Pool Equipment",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aegz2deoojz0gb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "fillOpacity": 75,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "off": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Off"
+                },
+                "on": {
+                  "color": "yellow",
+                  "index": 1,
+                  "text": "On"
+                },
+                "unavailable": {
+                  "color": "red",
+                  "index": 3,
+                  "text": "Unavailable"
+                },
+                "unknown": {
+                  "color": "orange",
+                  "index": 2,
+                  "text": "Unknown"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 0,
+        "y": 32
+      },
+      "id": 12,
+      "options": {
+        "alignValue": "center",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mergeValues": true,
+        "rowHeight": 1,
+        "showValue": "auto",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "alias": "Heater Pump",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "groupBy": [],
+          "measurement": "switch.tp_link_smart_plug_e471_heater_pump",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "state"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        },
+        {
+          "alias": "Pool Pump",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "groupBy": [],
+          "hide": false,
+          "measurement": "switch.tp_link_smart_plug_e471_pool_pump",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "state"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        }
+      ],
+      "title": "Pool Equipment State",
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aegz2deoojz0gb"
+      },
+      "description": "Total time the heater pump was on within the dashboard's selected time range (one-minute resolution).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "dthms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 32
+      },
+      "id": 13,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "alias": "Heater Pump",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "query": "SELECT last(\"value\") * 60 AS \"runtime_seconds\" FROM \"switch.tp_link_smart_plug_e471_heater_pump\" WHERE time >= '2026-08-08T07:03:00Z' AND time <= now() GROUP BY time(1m) fill(previous)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "config": {
+                  "id": "greaterOrEqual",
+                  "options": {
+                    "value": "${__from}"
+                  }
+                },
+                "fieldName": "Time"
+              },
+              {
+                "config": {
+                  "id": "lowerOrEqual",
+                  "options": {
+                    "value": "${__to}"
+                  }
+                },
+                "fieldName": "Time"
+              }
+            ],
+            "match": "all",
+            "type": "include"
+          }
+        }
+      ],
+      "title": "Heater Runtime",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aegz2deoojz0gb"
+      },
+      "description": "Total time the pool pump was on within the dashboard's selected time range (one-minute resolution).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "dthms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 32
+      },
+      "id": 14,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "alias": "Pool Pump",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "query": "SELECT last(\"value\") * 60 AS \"runtime_seconds\" FROM \"switch.tp_link_smart_plug_e471_pool_pump\" WHERE time >= '2026-08-08T07:03:00Z' AND time <= now() GROUP BY time(1m) fill(previous)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "config": {
+                  "id": "greaterOrEqual",
+                  "options": {
+                    "value": "${__from}"
+                  }
+                },
+                "fieldName": "Time"
+              },
+              {
+                "config": {
+                  "id": "lowerOrEqual",
+                  "options": {
+                    "value": "${__to}"
+                  }
+                },
+                "fieldName": "Time"
+              }
+            ],
+            "match": "all",
+            "type": "include"
+          }
+        }
+      ],
+      "title": "Pool Pump Runtime",
+      "type": "stat"
     }
   ],
   "preload": false,
   "refresh": "30s",
-  "schemaVersion": 40,
+  "schemaVersion": 42,
   "tags": [],
   "templating": {
     "list": []
@@ -1130,6 +1510,5 @@
   "timezone": "browser",
   "title": "Home Assistant",
   "uid": "bed1tc0o94ikga",
-  "version": 1,
-  "weekStart": ""
+  "version": 8
 }

@@ -35,11 +35,12 @@ Copy the necessary files to your server:
 scp -r ./docker-compose.yml configuration.yaml user@your-server-ip:~/homeassistant
 ```
 
-Update the InfluxDB configuration in the configuration file:
-- Open `configuration.yaml`
-- Locate the InfluxDB integration section
-- Update the host address if needed
-- Replace `<REPLACE_ME>` with your InfluxDB organization ID and token
+Configure the InfluxDB connection in Home Assistant under **Settings > Devices & services**.
+Connection and authentication settings are managed in the UI; `configuration.yaml`
+contains only the additional YAML options that Home Assistant still supports.
+
+Configure HTTP and reverse proxy settings under **Settings > System > Network**.
+The HTTP integration is UI-managed and must not be added to `configuration.yaml`.
 
 ### 3. DNS Configuration
 
