@@ -1,0 +1,96 @@
+- id: pool_heater_20_minutes_on_5_minutes_off
+  alias: Pool Heater - 20 minutes on, 5 minutes off
+  description: Runs a 25-minute cycle from 8:00 AM until 10:00 PM
+  triggers:
+    - trigger: time_pattern
+      minutes: "/1"
+    - trigger: homeassistant
+      event: start
+  conditions: []
+  actions:
+    - variables:
+        should_be_on: >-
+          {% set minute_of_day = now().hour * 60 + now().minute %}
+          {% set minutes_since_8am = minute_of_day - 480 %}
+          {{
+            0 <= minutes_since_8am < 840
+            and (minutes_since_8am % 25) < 20
+          }}
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{
+                  (should_be_on | bool)
+                  and not is_state(
+                    'switch.tp_link_smart_plug_e471_heater_pump',
+                    'on'
+                  )
+                }}
+          sequence:
+            - action: switch.turn_on
+              target:
+                entity_id: switch.tp_link_smart_plug_e471_heater_pump
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{
+                  not (should_be_on | bool)
+                  and not is_state(
+                    'switch.tp_link_smart_plug_e471_heater_pump',
+                    'off'
+                  )
+                }}
+          sequence:
+            - action: switch.turn_off
+              target:
+                entity_id: switch.tp_link_smart_plug_e471_heater_pump
+  mode: single
+
+- id: pool_pump_daily_schedule
+  alias: Pool Pump - Daily schedule
+  description: Runs from 8:00 AM to 4:00 PM and 5:00 PM to midnight
+  triggers:
+    - trigger: time_pattern
+      minutes: "/1"
+    - trigger: homeassistant
+      event: start
+  conditions: []
+  actions:
+    - variables:
+        should_be_on: >-
+          {% set minute_of_day = now().hour * 60 + now().minute %}
+          {{
+            480 <= minute_of_day < 960
+            or 1020 <= minute_of_day < 1440
+          }}
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{
+                  (should_be_on | bool)
+                  and not is_state(
+                    'switch.tp_link_smart_plug_e471_pool_pump',
+                    'on'
+                  )
+                }}
+          sequence:
+            - action: switch.turn_on
+              target:
+                entity_id: switch.tp_link_smart_plug_e471_pool_pump
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{
+                  not (should_be_on | bool)
+                  and not is_state(
+                    'switch.tp_link_smart_plug_e471_pool_pump',
+                    'off'
+                  )
+                }}
+          sequence:
+            - action: switch.turn_off
+              target:
+                entity_id: switch.tp_link_smart_plug_e471_pool_pump
+  mode: single
