@@ -268,56 +268,64 @@ def run_agent(address: str) -> None:
     session.on("detached", on_detached)
     suffix = f"{pid}_{int(time.time())}".replace("-", "_")
     script = session.create_script(agent_source(suffix))
-    script.load()
+    try:
+        script.load()
 
-    for _ in range(60):
-        if STOP or detached:
-            raise InterruptedError
+        for _ in range(60):
+            if STOP:
+                raise InterruptedError
+            if detached:
+                raise RuntimeError("Frida session detached")
+            try:
+                script.exports_sync.dismisscompatibility()
+            except Exception:
+                pass
+            if script.exports_sync.sessionlength() > 0:
+                break
+            time.sleep(1)
+        else:
+            raise RuntimeError("MyQ video session did not become ready")
+
+        result = script.exports_sync.start()
+        if not result.get("started"):
+            raise RuntimeError(
+                f"Android video start failed: {result.get('error', 'unknown error')}"
+            )
+        LOG.info("Both Android camera sessions requested")
+
+        last_counts: dict[str, int] = {}
+        stalled_checks = 0
+        while not STOP and not detached:
+            time.sleep(15)
+            current = script.exports_sync.stats()
+            cameras = current.get("cameras", {})
+            summary = []
+            advancing = True
+            for device_id in CAMERAS:
+                details = cameras.get(device_id, {})
+                count = int(details.get("frames", 0))
+                advancing = advancing and count > last_counts.get(device_id, -1)
+                last_counts[device_id] = count
+                summary.append(
+                    f"{device_id}:{details.get('width', 0)}x{details.get('height', 0)} "
+                    f"frames={count}"
+                )
+            LOG.info("; ".join(summary))
+            stalled_checks = 0 if advancing else stalled_checks + 1
+            if stalled_checks >= 4:
+                raise RuntimeError("One or more camera streams stopped advancing")
+
+        if detached and not STOP:
+            raise RuntimeError("Frida session detached")
+    finally:
         try:
-            script.exports_sync.dismisscompatibility()
+            script.exports_sync.stop()
         except Exception:
             pass
-        if script.exports_sync.sessionlength() > 0:
-            break
-        time.sleep(1)
-    else:
-        raise RuntimeError("MyQ video session did not become ready")
-
-    result = script.exports_sync.start()
-    if not result.get("started"):
-        raise RuntimeError(f"Android video start failed: {result.get('error', 'unknown error')}")
-    LOG.info("Both Android camera sessions requested")
-
-    last_counts: dict[str, int] = {}
-    stalled_checks = 0
-    while not STOP and not detached:
-        time.sleep(15)
-        current = script.exports_sync.stats()
-        cameras = current.get("cameras", {})
-        summary = []
-        advancing = True
-        for device_id in CAMERAS:
-            details = cameras.get(device_id, {})
-            count = int(details.get("frames", 0))
-            advancing = advancing and count > last_counts.get(device_id, -1)
-            last_counts[device_id] = count
-            summary.append(
-                f"{device_id}:{details.get('width', 0)}x{details.get('height', 0)} "
-                f"frames={count}"
-            )
-        LOG.info("; ".join(summary))
-        stalled_checks = 0 if advancing else stalled_checks + 1
-        if stalled_checks >= 4:
-            raise RuntimeError("One or more camera streams stopped advancing")
-
-    try:
-        script.exports_sync.stop()
-    except Exception:
-        pass
-    try:
-        session.detach()
-    except Exception:
-        pass
+        try:
+            session.detach()
+        except Exception:
+            pass
 
 
 def handle_signal(_signum, _frame) -> None:
@@ -346,7 +354,15 @@ def main() -> int:
         except Exception as error:
             LOG.error("Bridge cycle failed: %s", error)
             if not STOP:
-                if "video session did not become ready" in str(error):
+                error_text = str(error).lower()
+                restart_markers = (
+                    "video session did not become ready",
+                    "camera streams stopped advancing",
+                    "android video start failed",
+                    "script has been destroyed",
+                    "frida session detached",
+                )
+                if any(marker in error_text for marker in restart_markers):
                     try:
                         restart_android_app()
                     except Exception as restart_error:

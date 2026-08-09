@@ -5,6 +5,8 @@ services:
     stop_grace_period: 30s
     image: ghcr.io/blakeblackshear/frigate:stable
     shm_size: "256mb"
+    env_file:
+      - ./frigate.env
     volumes:
       - ./config:/config
       - ./storage:/media/frigate

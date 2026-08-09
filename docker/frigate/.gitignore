@@ -1,3 +1,4 @@
 storage/
 .env
+frigate.env
 myq-bridge/__pycache__/

@@ -9,6 +9,10 @@ go2rtc:
       - "ffmpeg:http://myq-video-pipe:8091/opener.h264#video=copy#input=myq_h264"
     myq_keypad:
       - "ffmpeg:http://myq-video-pipe:8091/keypad.h264#video=copy#input=myq_h264"
+    tapo_local:
+      - "rtsp://{FRIGATE_TAPO_LOCAL_USER}:{FRIGATE_TAPO_LOCAL_PASSWORD}@192.168.1.40:554/stream1#backchannel=0"
+    tapo_local_sub:
+      - "rtsp://{FRIGATE_TAPO_LOCAL_USER}:{FRIGATE_TAPO_LOCAL_PASSWORD}@192.168.1.40:554/stream2#backchannel=0"
 
 cameras:
   # Disabled until the Wyze RTSP feeds are repaired.
@@ -60,6 +64,28 @@ cameras:
       width: 1152
       height: 864
       fps: 10
+
+  tapo_local:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/tapo_local_sub
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+        - path: rtsp://127.0.0.1:8554/tapo_local
+          input_args: preset-rtsp-restream
+          roles:
+            - record
+    detect:
+      enabled: true
+      width: 640
+      height: 360
+      fps: 5
+    live:
+      streams:
+        Main: tapo_local
+        Sub: tapo_local_sub
 
 record:
   enabled: true

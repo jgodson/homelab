@@ -6,23 +6,37 @@ This directory backs up the working Frigate configuration for the host at `192.1
 
 - `myq_opener`: 1280x720 H.264, detection at 10 FPS
 - `myq_keypad`: 1152x864 H.264, detection at 10 FPS
+- `tapo_local`: Tapo C120 at `192.168.1.40`; main stream records and the substream detects at 5 FPS
 - `person` creates an alert review item
 - `dog` and `cat` create detection review items
 - Alert and detection recordings are retained for 10 days
 - Continuous and motion recordings are retained for 1 day
 - The two broken Wyze RTSP cameras remain as sanitized comments in `config/config.yml`
 
-Frigate uses eleven OpenVINO CPU detector processes and the bundled SSD MobileNet v2 model. Multiple workers consume a shared detection queue across both cameras.
+The Tapo Camera Account credentials are supplied through the untracked
+`frigate.env` file. Copy `frigate.env.example` to `frigate.env` and replace the
+placeholder values before starting Frigate, or run `set-tapo-credentials.sh` to
+enter and URL-encode them securely. The address `192.168.1.40` must remain
+reserved for MAC address `3c:6a:d2:92:7f:d8`.
+
+Frigate uses eleven OpenVINO CPU detector processes and the bundled SSD MobileNet v2 model. Multiple workers consume a shared detection queue across all cameras.
 
 ## Layout
 
 ```text
 config/config.yml                 Frigate and go2rtc configuration
 docker-compose.yml                Frigate plus the private H.264 pipe service
+set-tapo-credentials.sh           Secure local Tapo credential prompt
 myq-bridge/                       ReDroid, systemd, and H.264 bridge source
 ```
 
 The MyQ bridge runs the official Android app in ReDroid. A host systemd service attaches to the app's installed video SDK, writes the two encoded H.264 streams to private FIFOs, and `myq-video-pipe` exposes them only on Frigate's Docker network. The bridge automatically relaunches the app and dismisses its Google Play Services compatibility dialog when the video session expires.
+
+Each bridge cycle disconnects its SDK managers and detaches its Frida session,
+including error paths. If either camera stops advancing for four consecutive
+15-second checks, or the Android process destroys/detaches the injected script,
+the bridge force-restarts the MyQ app before requesting fresh sessions. This
+prevents stale SDK sessions from accumulating during repeated recoveries.
 
 MyQ Internet access is still required. This repository does not contain an authenticated Android data directory, the MyQ APK, or the Frida server binary.
 
