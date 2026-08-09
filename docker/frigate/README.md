@@ -6,18 +6,20 @@ This directory backs up the working Frigate configuration for the host at `192.1
 
 - `myq_opener`: 1280x720 H.264, detection at 10 FPS
 - `myq_keypad`: 1152x864 H.264, detection at 10 FPS
-- `tapo_local`: Tapo C120 at `192.168.1.40`; main stream records and the substream detects at 5 FPS
+- `backyard`: Tapo C120 at `192.168.1.40`; main stream records and the substream detects at 5 FPS
+- `wyze_cam2`: 1920x1080 H.264 at `192.168.1.226`; recording at source quality and detecting at 960x540/5 FPS
 - `person` creates an alert review item
 - `dog` and `cat` create detection review items
 - Alert and detection recordings are retained for 10 days
 - Continuous and motion recordings are retained for 1 day
-- The two broken Wyze RTSP cameras remain as sanitized comments in `config/config.yml`
+- `wyze_cam2` tracks only `dog` and `cat`; person detection is disabled for that camera
+- The broken `wyze_cam1` RTSP definition remains as a sanitized comment in `config/config.yml`
 
-The Tapo Camera Account credentials are supplied through the untracked
-`frigate.env` file. Copy `frigate.env.example` to `frigate.env` and replace the
-placeholder values before starting Frigate, or run `set-tapo-credentials.sh` to
-enter and URL-encode them securely. The address `192.168.1.40` must remain
-reserved for MAC address `3c:6a:d2:92:7f:d8`.
+Camera credentials are supplied through the untracked `frigate.env` file. Copy
+`frigate.env.example` to `frigate.env` and replace the placeholder values before
+starting Frigate. The `set-tapo-credentials.sh` helper securely prompts for and
+URL-encodes the Tapo values. The address `192.168.1.40` must remain reserved for
+MAC address `3c:6a:d2:92:7f:d8`.
 
 Frigate uses eleven OpenVINO CPU detector processes and the bundled SSD MobileNet v2 model. Multiple workers consume a shared detection queue across all cameras.
 
