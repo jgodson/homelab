@@ -17,6 +17,9 @@ MinIO provides S3-compatible object storage used in the homelab for backup stora
 - Ubuntu Server (or similar Linux distribution)
 - Docker and Docker Compose (Can be installed with Ubuntu via snap)
 - DNS resolution for local domain (optional)
+- The Grafana Loki Docker logging plugin, installed and enabled with the
+  `loki` alias. The `homelab-automation` repository manages this dependency
+  and reconciles it before MinIO starts after a Docker daemon restart.
 
 ## Installation
 
@@ -84,6 +87,10 @@ docker compose up -d
   - Docker container status: `docker ps`
   - Container logs: `docker compose logs minio`
   - Network connectivity to the MinIO port
+  - Loki logging plugin state: `docker plugin ls`
+- If the Loki plugin is disabled, Docker cannot create the MinIO container
+  because the Compose file explicitly selects `driver: loki`. Re-enable it
+  with `sudo docker plugin enable loki`, then run `docker compose up -d`.
 
 ## References
 - [MinIO Documentation](https://min.io/docs/minio/container/index.html)
