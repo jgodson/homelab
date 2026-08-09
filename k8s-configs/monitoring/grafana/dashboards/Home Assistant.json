@@ -1222,6 +1222,7 @@
         "x": 0,
         "y": 32
       },
+      "description": "Switch state over the selected time range. Queries one day before the visible range so the last known state can be carried forward; unchanged off periods no longer appear as missing data.",
       "id": 12,
       "options": {
         "alignValue": "center",
@@ -1247,23 +1248,11 @@
             "type": "influxdb",
             "uid": "aegz2deoojz0gb"
           },
-          "groupBy": [],
-          "measurement": "switch.tp_link_smart_plug_e471_heater_pump",
-          "orderByTime": "ASC",
-          "policy": "default",
+          "query": "SELECT last(\"state\") AS \"state\" FROM \"switch.tp_link_smart_plug_e471_heater_pump\" WHERE time >= ${__from}ms - 24h AND time <= ${__to}ms GROUP BY time(1m) fill(previous)",
+          "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "state"
-                ],
-                "type": "field"
-              }
-            ]
-          ],
-          "tags": []
+          "select": []
         },
         {
           "alias": "Pool Pump",
@@ -1271,24 +1260,41 @@
             "type": "influxdb",
             "uid": "aegz2deoojz0gb"
           },
-          "groupBy": [],
           "hide": false,
-          "measurement": "switch.tp_link_smart_plug_e471_pool_pump",
-          "orderByTime": "ASC",
-          "policy": "default",
+          "query": "SELECT last(\"state\") AS \"state\" FROM \"switch.tp_link_smart_plug_e471_pool_pump\" WHERE time >= ${__from}ms - 24h AND time <= ${__to}ms GROUP BY time(1m) fill(previous)",
+          "rawQuery": true,
           "refId": "B",
           "resultFormat": "time_series",
-          "select": [
-            [
+          "select": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
               {
-                "params": [
-                  "state"
-                ],
-                "type": "field"
+                "config": {
+                  "id": "greaterOrEqual",
+                  "options": {
+                    "value": "${__from}"
+                  }
+                },
+                "fieldName": "Time"
+              },
+              {
+                "config": {
+                  "id": "lowerOrEqual",
+                  "options": {
+                    "value": "${__to}"
+                  }
+                },
+                "fieldName": "Time"
               }
-            ]
-          ],
-          "tags": []
+            ],
+            "match": "all",
+            "type": "include"
+          }
         }
       ],
       "title": "Pool Equipment State",
@@ -1299,7 +1305,7 @@
         "type": "influxdb",
         "uid": "aegz2deoojz0gb"
       },
-      "description": "Total time the heater pump was on within the dashboard's selected time range (one-minute resolution).",
+      "description": "Total completed minutes the heater pump was on within the dashboard's selected time range.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1339,7 +1345,7 @@
         "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "sum"
           ],
           "fields": "",
           "values": false
@@ -1356,7 +1362,7 @@
             "type": "influxdb",
             "uid": "aegz2deoojz0gb"
           },
-          "query": "SELECT last(\"value\") * 60 AS \"runtime_seconds\" FROM \"switch.tp_link_smart_plug_e471_heater_pump\" WHERE time >= '2026-08-08T07:03:00Z' AND time <= now() GROUP BY time(1m) fill(previous)",
+          "query": "SELECT last(\"value\") * 60 AS \"runtime_seconds\" FROM \"switch.tp_link_smart_plug_e471_heater_pump\" WHERE time >= ${__from}ms - 24h AND time <= ${__to}ms - 1m GROUP BY time(1m) fill(previous)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -1399,7 +1405,7 @@
         "type": "influxdb",
         "uid": "aegz2deoojz0gb"
       },
-      "description": "Total time the pool pump was on within the dashboard's selected time range (one-minute resolution).",
+      "description": "Total completed minutes the pool pump was on within the dashboard's selected time range.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1456,7 +1462,7 @@
             "type": "influxdb",
             "uid": "aegz2deoojz0gb"
           },
-          "query": "SELECT last(\"value\") * 60 AS \"runtime_seconds\" FROM \"switch.tp_link_smart_plug_e471_pool_pump\" WHERE time >= '2026-08-08T07:03:00Z' AND time <= now() GROUP BY time(1m) fill(previous)",
+          "query": "SELECT last(\"value\") * 60 AS \"runtime_seconds\" FROM \"switch.tp_link_smart_plug_e471_pool_pump\" WHERE time >= ${__from}ms - 24h AND time <= ${__to}ms - 1m GROUP BY time(1m) fill(previous)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -1510,5 +1516,5 @@
   "timezone": "browser",
   "title": "Home Assistant",
   "uid": "bed1tc0o94ikga",
-  "version": 8
+  "version": 12
 }
