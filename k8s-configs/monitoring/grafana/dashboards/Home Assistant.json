@@ -877,6 +877,324 @@
         "type": "influxdb",
         "uid": "aegz2deoojz0gb"
       },
+      "description": "Total completed minutes the HVAC reported heating within the dashboard's selected time range.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "displayName": "Heat",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "dthms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 23
+      },
+      "id": 15,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "alias": "Heat",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "query": "SELECT count(\"state\") * 60 AS \"runtime_seconds\" FROM (SELECT last(\"hvac_action_str\") AS \"state\" FROM \"climate.main_floor\" WHERE time >= ${__from}ms - 24h AND time <= ${__to}ms - 1m GROUP BY time(1m) fill(previous)) WHERE time >= ${__from}ms AND time <= ${__to}ms AND \"state\" = 'heating'",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        },
+        {
+          "alias": "Heat",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "query": "SELECT count(\"state\") * 0 AS \"runtime_seconds\" FROM (SELECT last(\"hvac_action_str\") AS \"state\" FROM \"climate.main_floor\" WHERE time >= ${__from}ms - 24h AND time <= ${__to}ms - 1m GROUP BY time(1m) fill(previous)) WHERE time >= ${__from}ms AND time <= ${__to}ms",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "time_series"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "seriesToRows",
+          "options": {}
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Metric": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Value": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        }
+      ],
+      "title": "Heat Runtime",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aegz2deoojz0gb"
+      },
+      "description": "Total completed minutes the HVAC reported cooling within the dashboard's selected time range.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "displayName": "Cool",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "blue",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "dthms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 8,
+        "y": 23
+      },
+      "id": 16,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "alias": "Cool",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "query": "SELECT count(\"state\") * 60 AS \"runtime_seconds\" FROM (SELECT last(\"hvac_action_str\") AS \"state\" FROM \"climate.main_floor\" WHERE time >= ${__from}ms - 24h AND time <= ${__to}ms - 1m GROUP BY time(1m) fill(previous)) WHERE time >= ${__from}ms AND time <= ${__to}ms AND \"state\" = 'cooling'",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        },
+        {
+          "alias": "Cool",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "query": "SELECT count(\"state\") * 0 AS \"runtime_seconds\" FROM (SELECT last(\"hvac_action_str\") AS \"state\" FROM \"climate.main_floor\" WHERE time >= ${__from}ms - 24h AND time <= ${__to}ms - 1m GROUP BY time(1m) fill(previous)) WHERE time >= ${__from}ms AND time <= ${__to}ms",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "time_series"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "seriesToRows",
+          "options": {}
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Metric": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Value": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        }
+      ],
+      "title": "Cool Runtime",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aegz2deoojz0gb"
+      },
+      "description": "Total completed minutes the HVAC reported fan-only operation within the dashboard's selected time range.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "displayName": "Fan",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "purple",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "dthms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 23
+      },
+      "id": 17,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "alias": "Fan",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "query": "SELECT count(\"state\") * 60 AS \"runtime_seconds\" FROM (SELECT last(\"hvac_action_str\") AS \"state\" FROM \"climate.main_floor\" WHERE time >= ${__from}ms - 24h AND time <= ${__to}ms - 1m GROUP BY time(1m) fill(previous)) WHERE time >= ${__from}ms AND time <= ${__to}ms AND \"state\" = 'fan'",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        },
+        {
+          "alias": "Fan",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "query": "SELECT count(\"state\") * 0 AS \"runtime_seconds\" FROM (SELECT last(\"hvac_action_str\") AS \"state\" FROM \"climate.main_floor\" WHERE time >= ${__from}ms - 24h AND time <= ${__to}ms - 1m GROUP BY time(1m) fill(previous)) WHERE time >= ${__from}ms AND time <= ${__to}ms",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "time_series"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "seriesToRows",
+          "options": {}
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Metric": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Value": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        }
+      ],
+      "title": "Fan Runtime",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aegz2deoojz0gb"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -938,7 +1256,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 23
+        "y": 28
       },
       "id": 3,
       "options": {
@@ -1097,7 +1415,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 23
+        "y": 28
       },
       "id": 4,
       "options": {
@@ -1148,7 +1466,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 36
       },
       "id": 11,
       "panels": [],
@@ -1220,7 +1538,7 @@
         "h": 5,
         "w": 12,
         "x": 0,
-        "y": 32
+        "y": 37
       },
       "description": "Switch state over the selected time range. Queries one day before the visible range so the last known state can be carried forward; unchanged off periods no longer appear as missing data.",
       "id": 12,
@@ -1334,7 +1652,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 32
+        "y": 37
       },
       "id": 13,
       "options": {
@@ -1434,7 +1752,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 32
+        "y": 37
       },
       "id": 14,
       "options": {
@@ -1516,5 +1834,5 @@
   "timezone": "browser",
   "title": "Home Assistant",
   "uid": "bed1tc0o94ikga",
-  "version": 12
+  "version": 15
 }
