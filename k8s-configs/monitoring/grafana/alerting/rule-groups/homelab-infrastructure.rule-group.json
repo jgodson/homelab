@@ -362,7 +362,7 @@
       "orgID": 1,
       "folderUID": "afdvo8ju8txq8e",
       "ruleGroup": "Infrastructure",
-      "title": "VM Disk Usage Over 90 Percent",
+      "title": "VM Disk Usage Over 97 Percent",
       "condition": "C",
       "data": [
         {
@@ -378,6 +378,8 @@
               "type": "influxdb",
               "uid": "aegyydl2mv37kd"
             },
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
             "query": "SELECT max(\"used_percentage\") FROM \"vm_disk_usage\" WHERE $timeFilter",
             "rawQuery": true,
             "refId": "A",
@@ -421,7 +423,7 @@
               {
                 "evaluator": {
                   "params": [
-                    90
+                    97
                   ],
                   "type": "gt"
                 },
@@ -457,8 +459,8 @@
       "for": "10m",
       "keep_firing_for": "0s",
       "annotations": {
-        "summary": "A VM disk is above 90% usage.",
-        "description": "The vm_disk_usage measurement reports max used_percentage above 90 across monitored VMs."
+        "description": "The vm_disk_usage measurement reports max used_percentage above 97 across monitored VMs.",
+        "summary": "A VM disk is above 97% usage."
       },
       "labels": {
         "service": "homelab",
