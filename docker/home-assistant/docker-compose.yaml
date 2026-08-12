@@ -7,7 +7,7 @@ services:
     environment:
       - TZ=America/Edmonton
     volumes:
-      - ./homeassistant:/config
+      - ./docker/ha:/config
       - /run/dbus:/run/dbus:ro
     network_mode: host
     logging: 
@@ -21,3 +21,16 @@ services:
         mode: "non-blocking"
         max-size: "10m"
         max-file: "3"
+
+  esphome:
+    image: ghcr.io/esphome/esphome:2026.7
+    container_name: esphome
+    restart: unless-stopped
+    env_file:
+      - ./esphome-dashboard.env
+    environment:
+      - TZ=America/Edmonton
+    volumes:
+      - ./docker/esphome:/config
+      - /etc/localtime:/etc/localtime:ro
+    network_mode: host

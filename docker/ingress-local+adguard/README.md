@@ -80,6 +80,8 @@ In order to send logs or metrics to local hostnames, we need to use the internal
 ### Local Service Access
 - All configured local services will be accessible through their designated subdomains
 - SSL certificates are automatically managed by Caddy
+- ESPHome Device Builder is available at https://esphome.home.jasongodson.com
+  and proxies to `192.168.1.2:6052`.
 
 ## Maintenance
 

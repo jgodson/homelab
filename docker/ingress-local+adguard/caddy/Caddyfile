@@ -53,6 +53,12 @@
     }
   }
 
+  # ESPHome Device Builder
+  @esphome host esphome.{$DOMAIN}
+  handle @esphome {
+    reverse_proxy 192.168.1.2:6052
+  }
+
   # Frigate
   @frigate host frigate.{$DOMAIN}
   handle @frigate {
