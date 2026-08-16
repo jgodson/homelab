@@ -1,0 +1,16 @@
+- triggers:
+    - trigger: state
+      entity_id: sensor.backyard_pool_temperature_sensor_pool_water_temperature
+      not_to:
+        - unknown
+        - unavailable
+  sensor:
+    - name: Pool Water Temperature Last Valid
+      unique_id: pool_water_temperature_last_valid
+      state: "{{ trigger.to_state.state }}"
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      attributes:
+        last_valid_update: >-
+          {{ as_timestamp(trigger.to_state.last_reported) }}

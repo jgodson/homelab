@@ -1,0 +1,7 @@
+pool_temperature_sensor_ota_mode:
+  name: Pool Temperature Sensor OTA Mode
+  icon: mdi:progress-wrench
+
+pool_ready_mode:
+  name: Pool Ready Mode
+  icon: mdi:pool-thermometer

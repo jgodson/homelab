@@ -1,20 +1,42 @@
-- id: pool_heater_20_minutes_on_5_minutes_off
-  alias: Pool Heater - 20 minutes on, 5 minutes off
-  description: Runs a 25-minute cycle from 8:00 AM until 10:00 PM
+- id: "1785980294814"
+  alias: Pool Heater - temperature control with 20/5 cycle
+  description: >-
+    Maintains 78 F normally or 85 F in Ready Mode, using a 20-minute-on,
+    5-minute-off cycle from 8:00 AM until 10:00 PM.
+  initial_state: true
   triggers:
     - trigger: time_pattern
       minutes: "/1"
     - trigger: homeassistant
       event: start
+    - trigger: state
+      entity_id:
+        - input_boolean.pool_ready_mode
+        - sensor.pool_water_temperature_last_valid
   conditions: []
   actions:
     - variables:
+        pool_temperature_entity: >-
+          sensor.pool_water_temperature_last_valid
+        target_temperature_c: >-
+          {{ 29.444 if is_state('input_boolean.pool_ready_mode', 'on') else 25.556 }}
+        pool_temperature_c: >-
+          {{ states(pool_temperature_entity) | float(999) }}
+        temperature_is_fresh: >-
+          {% set last_valid_update =
+            state_attr(pool_temperature_entity, 'last_valid_update') | float(0) %}
+          {{
+            states(pool_temperature_entity) not in ['unknown', 'unavailable']
+            and (as_timestamp(now()) - last_valid_update) < 1500
+          }}
         should_be_on: >-
           {% set minute_of_day = now().hour * 60 + now().minute %}
           {% set minutes_since_8am = minute_of_day - 480 %}
           {{
             0 <= minutes_since_8am < 840
             and (minutes_since_8am % 25) < 20
+            and (temperature_is_fresh | bool)
+            and (pool_temperature_c | float) < (target_temperature_c | float)
           }}
     - choose:
         - conditions:
