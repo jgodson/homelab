@@ -43,6 +43,7 @@ homelab/
 ├── docs/                # General documentation
 ├── k8s-configs/         # Kubernetes manifests and Helm values
 ├── observability-config/# Monitoring and logging configurations
+├── projects/            # Hardware and microcontroller project configurations
 ├── VM/                  # Virtual machine only configurations (not using Docker)
 └── website/             # Personal website hosted on the homelab
 ```
@@ -62,6 +63,10 @@ homelab/
 - **Monitoring Stack**: Grafana, Prometheus, Loki, InfluxDB
 - **MetalLB**: Load balancer for bare-metal Kubernetes
 - **Traefik**: Ingress controller for Kubernetes
+
+### Hardware Projects
+
+- **ESP32**: Version-controlled ESPHome configurations and project notes, with local secrets excluded from Git
 
 ## Purpose
 

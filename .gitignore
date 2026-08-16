@@ -12,3 +12,4 @@ docker/home-assistant/esphome-dashboard.env
 
 # ESPHome contains Wi-Fi credentials, API keys, and generated build files
 docker/home-assistant/docker/esphome/
+projects/esp32/**/secrets.yaml

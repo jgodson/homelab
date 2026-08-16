@@ -1,0 +1,116 @@
+# Board: ESP32 DevKit V1 (Espressif)
+# Definition: definitions/boards/esp32-devkit-v1/manifest.yaml
+
+esphome:
+  name: pool-temperature-sensor
+  friendly_name: Pool Temperature Sensor
+  area: Backyard
+  on_boot:
+    priority: -100
+    then:
+      # Hold deep sleep while the Home Assistant helper state synchronizes.
+      # Otherwise a slow API/state handshake can race the 45-second timer.
+      - deep_sleep.prevent: pool_temperature_deep_sleep
+      - wait_until:
+          condition:
+            api.connected:
+          timeout: 20s
+      - wait_until:
+          condition:
+            lambda: return id(pool_temperature_sensor_ota_mode).has_state();
+          timeout: 30s
+      - component.update: pool_water_temperature
+      - component.update: outdoor_temperature
+      - component.update: pool_sensor_battery_voltage
+      - delay: 5s
+      - if:
+          condition:
+            binary_sensor.is_on: pool_temperature_sensor_ota_mode
+          then:
+            - logger.log: "OTA maintenance mode is on; remaining awake"
+          else:
+            - logger.log: "OTA maintenance mode is off or unavailable; deep sleep enabled"
+            - deep_sleep.allow: pool_temperature_deep_sleep
+
+esp32:
+  variant: esp32
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+
+logger:
+
+api:
+  # Leave room for Home Assistant even while dashboard/log clients are open.
+  listen_backlog: 10
+  max_connections: 10
+  # Required by ESPHome 2026.7+ for imported Home Assistant entity states.
+  homeassistant_states: true
+  encryption:
+    key: !secret pool_temperature_sensor_api_key
+
+ota:
+  - platform: esphome
+    password: !secret pool_temperature_sensor_ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: Pool Temperature Fallback Hotspot
+    password: !secret pool_temperature_sensor_fallback_password
+
+captive_portal:
+
+one_wire:
+  - platform: gpio
+    pin: GPIO4
+
+binary_sensor:
+  - platform: homeassistant
+    id: pool_temperature_sensor_ota_mode
+    entity_id: input_boolean.pool_temperature_sensor_ota_mode
+    internal: true
+    on_press:
+      - deep_sleep.prevent: pool_temperature_deep_sleep
+    on_release:
+      - deep_sleep.allow: pool_temperature_deep_sleep
+
+sensor:
+  - platform: dallas_temp
+    id: pool_water_temperature
+    name: Pool Water Temperature
+    address: 0xb0000000235efe28
+    # Normal operation sleeps before this interval; maintenance mode keeps
+    # publishing once per minute so the probes can be compared/calibrated.
+    update_interval: 60s
+    resolution: 12
+    filters:
+      - offset: -1.1
+
+  - platform: dallas_temp
+    id: outdoor_temperature
+    name: Outdoor Temperature
+    address: 0xae0000002292d128
+    update_interval: 60s
+    resolution: 12
+    filters:
+      - offset: -1.1
+
+  - platform: adc
+    id: pool_sensor_battery_voltage
+    name: Battery Voltage
+    pin: GPIO34
+    attenuation: 12db
+    update_interval: 15s
+    accuracy_decimals: 2
+    samples: 10
+    sampling_mode: avg
+    filters:
+      - multiply: 3.1396
+
+deep_sleep:
+  id: pool_temperature_deep_sleep
+  run_duration: 45s
+  sleep_duration: 10min
