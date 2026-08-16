@@ -511,7 +511,38 @@
           },
           "unit": "celsius"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -525,18 +556,18 @@
           "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": false
+          "showLegend": true
         },
         "tooltip": {
           "hideZeros": false,
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         }
       },
       "pluginVersion": "12.3.1",
       "targets": [
         {
-          "alias": "temperature",
+          "alias": "Forecast",
           "datasource": {
             "type": "influxdb",
             "uid": "aegz2deoojz0gb"
@@ -558,9 +589,20 @@
             ]
           ],
           "tags": []
+        },
+        {
+          "alias": "Actual",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "query": "SELECT mean(\"value\") AS \"temperature\" FROM \"°C\" WHERE \"entity_id\" = 'backyard_pool_temperature_sensor_outdoor_temperature' AND time >= ${__from}ms AND time <= ${__to}ms + 10m GROUP BY time(10m) fill(previous)",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "time_series"
         }
       ],
-      "title": "Forecast Temp",
+      "title": "Outdoor Temperature",
       "type": "timeseries"
     },
     {
@@ -1280,30 +1322,10 @@
             "type": "influxdb",
             "uid": "aegz2deoojz0gb"
           },
-          "groupBy": [
-            {
-              "params": [
-                "entity_id::tag"
-              ],
-              "type": "tag"
-            }
-          ],
-          "measurement": "°C",
-          "orderByTime": "ASC",
-          "policy": "default",
+          "query": "SELECT \"value\" FROM \"°C\" WHERE (\"entity_id\"::tag !~ /backyard_pool_temperature.*/ AND \"entity_id\"::tag != 'pool_water_temperature_last_valid') AND $timeFilter GROUP BY \"entity_id\"::tag",
+          "rawQuery": true,
           "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              }
-            ]
-          ],
-          "tags": []
+          "resultFormat": "time_series"
         },
         {
           "alias": "setpoint",
@@ -1337,7 +1359,7 @@
           ]
         }
       ],
-      "title": "Temperature",
+      "title": "Indoor Temperature",
       "transformations": [
         {
           "id": "renameByRegex",
@@ -1532,7 +1554,46 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "C"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "off": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "Normal"
+                      },
+                      "on": {
+                        "color": "yellow",
+                        "index": 1,
+                        "text": "Maintenance"
+                      },
+                      "unavailable": {
+                        "color": "red",
+                        "index": 3,
+                        "text": "Unavailable"
+                      },
+                      "unknown": {
+                        "color": "orange",
+                        "index": 2,
+                        "text": "Unknown"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 5,
@@ -1540,7 +1601,7 @@
         "x": 0,
         "y": 37
       },
-      "description": "Switch state over the selected time range. Queries one day before the visible range so the last known state can be carried forward; unchanged off periods no longer appear as missing data.",
+      "description": "Pool equipment and temperature-sensor operating mode over the selected time range. Queries one day before the visible range so the last known state can be carried forward.",
       "id": 12,
       "options": {
         "alignValue": "center",
@@ -1582,6 +1643,19 @@
           "query": "SELECT last(\"state\") AS \"state\" FROM \"switch.tp_link_smart_plug_e471_pool_pump\" WHERE time >= ${__from}ms - 24h AND time <= ${__to}ms GROUP BY time(1m) fill(previous)",
           "rawQuery": true,
           "refId": "B",
+          "resultFormat": "time_series",
+          "select": []
+        },
+        {
+          "alias": "Sensor Mode",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "hide": false,
+          "query": "SELECT last(\"state\") AS \"state\" FROM \"input_boolean.pool_temperature_sensor_ota_mode\" WHERE time >= ${__from}ms - 24h AND time <= ${__to}ms GROUP BY time(1m) fill(previous)",
+          "rawQuery": true,
+          "refId": "C",
           "resultFormat": "time_series",
           "select": []
         }
@@ -1823,7 +1897,7 @@
         "type": "influxdb",
         "uid": "aegz2deoojz0gb"
       },
-      "description": "Pool water temperature reported by the backyard ESPHome DS18B20 sensor.",
+      "description": "Pool water and ambient temperature reported by the backyard ESPHome DS18B20 sensors, with the 78 F standby or 85 F Ready Mode target.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1877,11 +1951,58 @@
           },
           "unit": "fahrenheit"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              },
+              {
+                "id": "custom.lineInterpolation",
+                "value": "stepAfter"
+              },
+              {
+                "id": "custom.showPoints",
+                "value": "never"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "C"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
-        "w": 24,
+        "w": 18,
         "x": 0,
         "y": 42
       },
@@ -1899,7 +2020,7 @@
         },
         "tooltip": {
           "hideZeros": false,
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         }
       },
@@ -1915,10 +2036,107 @@
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
+        },
+        {
+          "alias": "Temperature Target",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "query": "SELECT (last(\"value\") * 7) + 78 AS \"temperature\" FROM \"input_boolean.pool_ready_mode\" WHERE time >= ${__from}ms - 30d AND time <= ${__to}ms + 10m GROUP BY time(10m) fill(previous)",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "time_series"
+        },
+        {
+          "alias": "Ambient Temp",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "query": "SELECT (mean(\"value\") * 1.8) + 32 AS \"temperature\" FROM \"°C\" WHERE \"entity_id\" = 'backyard_pool_temperature_sensor_outdoor_temperature' AND time >= ${__from}ms AND time <= ${__to}ms + 10m GROUP BY time(10m) fill(previous)",
+          "rawQuery": true,
+          "refId": "C",
+          "resultFormat": "time_series"
         }
       ],
       "title": "Pool Water Temperature",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aegz2deoojz0gb"
+      },
+      "description": "Voltage of the two CR123A cells powering the backyard pool temperature sensor. Replace the cells below about 5.0 V.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "green",
+                "value": 5.4
+              }
+            ]
+          },
+          "unit": "volt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 42
+      },
+      "id": 19,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "alias": "Battery Voltage",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aegz2deoojz0gb"
+          },
+          "query": "SELECT last(\"value\") AS \"voltage\" FROM \"V\" WHERE \"entity_id\" = 'backyard_pool_temperature_sensor_battery_voltage' AND time >= ${__from}ms - 30d AND time <= ${__to}ms",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Sensor Battery",
+      "type": "stat"
     }
   ],
   "preload": false,
@@ -1936,5 +2154,5 @@
   "timezone": "browser",
   "title": "Home Assistant",
   "uid": "bed1tc0o94ikga",
-  "version": 18
+  "version": 24
 }
