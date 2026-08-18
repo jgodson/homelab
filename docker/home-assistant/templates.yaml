@@ -4,6 +4,16 @@
       not_to:
         - unknown
         - unavailable
+  conditions:
+    # A failed 0 C probe reading becomes -1.1 C after calibration. Keep the
+    # previous state unless the new value is plausible pool water temperature.
+    - condition: template
+      value_template: >-
+        {% set pool_temperature_c = trigger.to_state.state | float(none) %}
+        {{
+          pool_temperature_c is not none
+          and 4.4 < pool_temperature_c < 43.4
+        }}
   sensor:
     - name: Pool Water Temperature Last Valid
       unique_id: pool_water_temperature_last_valid

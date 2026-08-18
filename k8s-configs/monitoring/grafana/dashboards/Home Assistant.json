@@ -2032,7 +2032,7 @@
             "type": "influxdb",
             "uid": "aegz2deoojz0gb"
           },
-          "query": "SELECT (mean(\"value\") * 1.8) + 32 AS \"temperature\" FROM \"°C\" WHERE \"entity_id\" = 'backyard_pool_temperature_sensor_pool_water_temperature' AND time >= ${__from}ms AND time <= ${__to}ms + 10m GROUP BY time(10m) fill(previous)",
+          "query": "SELECT (mean(\"value\") * 1.8) + 32 AS \"temperature\" FROM \"°C\" WHERE \"entity_id\" = 'pool_water_temperature_last_valid' AND \"value\" > 4.4 AND \"value\" < 43.4 AND time >= ${__from}ms AND time <= ${__to}ms + 10m GROUP BY time(10m) fill(previous)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -2154,5 +2154,5 @@
   "timezone": "browser",
   "title": "Home Assistant",
   "uid": "bed1tc0o94ikga",
-  "version": 24
+  "version": 25
 }
