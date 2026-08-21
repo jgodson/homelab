@@ -2054,7 +2054,7 @@
             "type": "influxdb",
             "uid": "aegz2deoojz0gb"
           },
-          "query": "SELECT (mean(\"value\") * 1.8) + 32 AS \"temperature\" FROM \"°C\" WHERE \"entity_id\" = 'backyard_pool_temperature_sensor_outdoor_temperature' AND time >= ${__from}ms AND time <= ${__to}ms + 10m GROUP BY time(10m) fill(previous)",
+          "query": "SELECT (mean(\"value\") * 1.8) + 32 AS \"temperature\" FROM \"°C\" WHERE \"entity_id\" = 'backyard_pool_temperature_sensor_outdoor_temperature' AND \"value\" > -55 AND \"value\" < 60 AND (\"value\" < -1.15 OR \"value\" > -1.05) AND time >= ${__from}ms AND time <= ${__to}ms + 10m GROUP BY time(10m) fill(previous)",
           "rawQuery": true,
           "refId": "C",
           "resultFormat": "time_series"
@@ -2068,7 +2068,7 @@
         "type": "influxdb",
         "uid": "aegz2deoojz0gb"
       },
-      "description": "Hourly minimum, mean, and maximum voltage reported by the two CR123A cells. The graph stops when the sensor can no longer boot, so terminal voltage may continue falling after the final report.",
+      "description": "Hourly minimum, mean, and maximum voltage reported by the two CR123A cells. Below 5.0 V is critical, 5.0-5.2 V is a warning, and 5.2 V or higher is healthy. The graph stops when the sensor can no longer boot, so terminal voltage may continue falling after the final report.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2108,7 +2108,7 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "dashed"
             }
           },
           "decimals": 2,
@@ -2117,8 +2117,16 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "green",
+                "value": 5.2
               }
             ]
           },
@@ -2212,6 +2220,6 @@
   "timezone": "browser",
   "title": "Home Assistant",
   "uid": "bed1tc0o94ikga",
-  "version": 28,
+  "version": 29,
   "weekStart": ""
 }
