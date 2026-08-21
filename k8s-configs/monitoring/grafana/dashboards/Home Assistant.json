@@ -2068,11 +2068,48 @@
         "type": "influxdb",
         "uid": "aegz2deoojz0gb"
       },
-      "description": "Voltage of the two CR123A cells powering the backyard pool temperature sensor. Replace the cells below about 5.0 V.",
+      "description": "Hourly minimum, mean, and maximum voltage reported by the two CR123A cells. The graph stops when the sensor can no longer boot, so terminal voltage may continue falling after the final report.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 6.5,
+            "axisSoftMin": 3,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "decimals": 2,
           "mappings": [],
@@ -2080,22 +2117,45 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 5
-              },
-              {
                 "color": "green",
-                "value": 5.4
+                "value": 0
               }
             ]
           },
           "unit": "volt"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Minimum"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Maximum"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -2105,38 +2165,36 @@
       },
       "id": 19,
       "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
+        "legend": {
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "",
-          "values": false
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "showPercentChange": false,
-        "textMode": "value",
-        "wideLayout": true
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "asc"
+        }
       },
       "pluginVersion": "12.3.1",
       "targets": [
         {
-          "alias": "Battery Voltage",
+          "alias": "$col",
           "datasource": {
             "type": "influxdb",
             "uid": "aegz2deoojz0gb"
           },
-          "query": "SELECT last(\"value\") AS \"voltage\" FROM \"V\" WHERE \"entity_id\" = 'backyard_pool_temperature_sensor_battery_voltage' AND time >= ${__from}ms - 30d AND time <= ${__to}ms",
+          "query": "SELECT min(\"value\") AS \"Minimum\", mean(\"value\") AS \"Mean\", max(\"value\") AS \"Maximum\" FROM \"V\" WHERE \"entity_id\" = 'backyard_pool_temperature_sensor_battery_voltage' AND time >= ${__from}ms AND time <= ${__to}ms GROUP BY time(1h) fill(null)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
         }
       ],
       "title": "Sensor Battery",
-      "type": "stat"
+      "type": "timeseries"
     }
   ],
   "preload": false,
@@ -2154,5 +2212,6 @@
   "timezone": "browser",
   "title": "Home Assistant",
   "uid": "bed1tc0o94ikga",
-  "version": 25
+  "version": 28,
+  "weekStart": ""
 }
