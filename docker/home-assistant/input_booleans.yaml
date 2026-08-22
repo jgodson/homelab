@@ -5,3 +5,7 @@ pool_temperature_sensor_ota_mode:
 pool_ready_mode:
   name: Pool Ready Mode
   icon: mdi:pool-thermometer
+
+ecobee_fan_temperature_balancing:
+  name: Ecobee Fan Temperature Balancing
+  icon: mdi:fan-auto

@@ -116,3 +116,78 @@
               target:
                 entity_id: switch.tp_link_smart_plug_e471_pool_pump
   mode: single
+
+- id: ecobee_fan_temperature_balance_start
+  alias: Ecobee - Start fan for floor temperature imbalance
+  description: >-
+    Runs the furnace fan after the upstairs and downstairs temperatures differ
+    by more than 5 C for five minutes.
+  initial_state: true
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.ecobee_floor_temperature_imbalance
+      to: "on"
+    - trigger: time_pattern
+      minutes: "/1"
+    - trigger: homeassistant
+      event: start
+  conditions:
+    - condition: state
+      entity_id: binary_sensor.ecobee_floor_temperature_imbalance
+      state: "on"
+    - condition: state
+      entity_id: input_boolean.ecobee_fan_temperature_balancing
+      state: "off"
+    - condition: template
+      value_template: >-
+        {{ state_attr('climate.main_floor', 'fan_mode') != 'on' }}
+  actions:
+    - action: climate.set_fan_mode
+      target:
+        entity_id: climate.main_floor
+      data:
+        fan_mode: "on"
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.ecobee_fan_temperature_balancing
+  mode: single
+
+- id: ecobee_fan_temperature_balance_stop
+  alias: Ecobee - Stop fan after floor temperatures balance
+  description: >-
+    Returns the furnace fan to automatic operation after the temperature
+    difference remains below 4 C, or if either temperature sensor is lost.
+  initial_state: true
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.ecobee_floor_temperatures_balanced
+      to: "on"
+    - trigger: state
+      entity_id: binary_sensor.ecobee_floor_temperature_sensor_problem
+      to: "on"
+    - trigger: time_pattern
+      minutes: "/1"
+    - trigger: homeassistant
+      event: start
+  conditions:
+    - condition: state
+      entity_id: input_boolean.ecobee_fan_temperature_balancing
+      state: "on"
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: binary_sensor.ecobee_floor_temperatures_balanced
+          state: "on"
+        - condition: state
+          entity_id: binary_sensor.ecobee_floor_temperature_sensor_problem
+          state: "on"
+  actions:
+    - action: climate.set_fan_mode
+      target:
+        entity_id: climate.main_floor
+      data:
+        fan_mode: "auto"
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.ecobee_fan_temperature_balancing
+  mode: single

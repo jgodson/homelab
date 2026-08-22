@@ -24,3 +24,51 @@
       attributes:
         last_valid_update: >-
           {{ as_timestamp(trigger.to_state.last_reported) }}
+
+- binary_sensor:
+    - name: Ecobee Floor Temperature Imbalance
+      unique_id: ecobee_floor_temperature_imbalance
+      icon: mdi:home-thermometer-outline
+      availability: >-
+        {{
+          is_number(states('sensor.upstairs_temperature'))
+          and is_number(states('sensor.downstairs_temperature'))
+        }}
+      state: >-
+        {{
+          (
+            states('sensor.upstairs_temperature') | float
+            - states('sensor.downstairs_temperature') | float
+          ) | abs > 5
+        }}
+      delay_on:
+        minutes: 5
+
+    - name: Ecobee Floor Temperatures Balanced
+      unique_id: ecobee_floor_temperatures_balanced
+      icon: mdi:home-thermometer
+      availability: >-
+        {{
+          is_number(states('sensor.upstairs_temperature'))
+          and is_number(states('sensor.downstairs_temperature'))
+        }}
+      state: >-
+        {{
+          (
+            states('sensor.upstairs_temperature') | float
+            - states('sensor.downstairs_temperature') | float
+          ) | abs < 4
+        }}
+      delay_on:
+        minutes: 10
+
+    - name: Ecobee Floor Temperature Sensor Problem
+      unique_id: ecobee_floor_temperature_sensor_problem
+      icon: mdi:thermometer-alert
+      state: >-
+        {{
+          not is_number(states('sensor.upstairs_temperature'))
+          or not is_number(states('sensor.downstairs_temperature'))
+        }}
+      delay_on:
+        minutes: 15
