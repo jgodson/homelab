@@ -90,6 +90,32 @@ Important data to back up includes:
 - AdGuard configuration (`adguard/conf`)
 - Caddy data and configuration (`caddy/data` and `caddy/config`)
 
+### AdGuard History Retention
+
+The live `adguard/conf/AdGuardHome.yaml` contains installation-specific
+authentication and runtime state, so it is not stored in this repository.
+Configure retention through the AdGuard Home web interface and set both the
+query log and statistics retention periods to **7 days**.
+
+The resulting portions of `AdGuardHome.yaml` should be:
+
+```yaml
+querylog:
+  interval: 7d
+
+statistics:
+  interval: 7d
+```
+
+Keeping these values at seven days prevents the history files in
+`adguard/work/data` from filling the ingress VM's 32 GB root filesystem. After
+changing the settings, confirm the live values and available disk space:
+
+```bash
+grep -A4 -E '^(querylog|statistics):' adguard/conf/AdGuardHome.yaml
+df -h /
+```
+
 ### Updates
 To update the services:
 ```bash
