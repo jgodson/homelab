@@ -10,9 +10,13 @@ go2rtc:
     myq_keypad:
       - "ffmpeg:http://myq-video-pipe:8091/keypad.h264#video=copy#input=myq_h264"
     backyard:
-      - "rtsp://{FRIGATE_TAPO_LOCAL_USER}:{FRIGATE_TAPO_LOCAL_PASSWORD}@192.168.1.40:554/stream1#backchannel=0"
+      - "rtsp://{FRIGATE_TAPO_LOCAL_USER}:{FRIGATE_TAPO_LOCAL_PASSWORD}@{FRIGATE_TAPO_LOCAL_HOST}/stream1#backchannel=0"
     backyard_sub:
-      - "rtsp://{FRIGATE_TAPO_LOCAL_USER}:{FRIGATE_TAPO_LOCAL_PASSWORD}@192.168.1.40:554/stream2#backchannel=0"
+      - "rtsp://{FRIGATE_TAPO_LOCAL_USER}:{FRIGATE_TAPO_LOCAL_PASSWORD}@{FRIGATE_TAPO_LOCAL_HOST}/stream2#backchannel=0"
+    rv:
+      - "rtsp://{FRIGATE_TAPO_LOCAL_USER}:{FRIGATE_TAPO_LOCAL_PASSWORD}@{FRIGATE_TAPO_RV_HOST}/stream1#backchannel=0"
+    rv_sub:
+      - "rtsp://{FRIGATE_TAPO_LOCAL_USER}:{FRIGATE_TAPO_LOCAL_PASSWORD}@{FRIGATE_TAPO_RV_HOST}/stream2#backchannel=0"
     wyze_cam2:
       - "rtsp://{FRIGATE_WYZE_CAM2_USER}:{FRIGATE_WYZE_CAM2_PASSWORD}@192.168.1.226/live#backchannel=0"
 
@@ -96,6 +100,28 @@ cameras:
       streams:
         Main: backyard
         Sub: backyard_sub
+
+  rv:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/rv_sub
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+        - path: rtsp://127.0.0.1:8554/rv
+          input_args: preset-rtsp-restream
+          roles:
+            - record
+    detect:
+      enabled: true
+      width: 640
+      height: 360
+      fps: 5
+    live:
+      streams:
+        Main: rv
+        Sub: rv_sub
 
 record:
   enabled: true

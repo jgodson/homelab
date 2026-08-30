@@ -6,7 +6,8 @@ This directory backs up the working Frigate configuration for the host at `192.1
 
 - `myq_opener`: 1280x720 H.264, detection at 10 FPS
 - `myq_keypad`: 1152x864 H.264, detection at 10 FPS
-- `backyard`: Tapo C120 at `192.168.1.40`; main stream records and the substream detects at 5 FPS
+- `backyard`: local Tapo C120; main stream records and the substream detects at 5 FPS
+- `rv`: remote Tapo C120 through the RV Pi's tailnet-only RTSP proxy; main stream records and the substream detects at 5 FPS
 - `wyze_cam2`: 1920x1080 H.264 at `192.168.1.226`; recording at source quality and detecting at 960x540/5 FPS
 - `person` creates an alert review item
 - `dog` and `cat` create detection review items
@@ -18,8 +19,10 @@ This directory backs up the working Frigate configuration for the host at `192.1
 Camera credentials are supplied through the untracked `frigate.env` file. Copy
 `frigate.env.example` to `frigate.env` and replace the placeholder values before
 starting Frigate. The `set-tapo-credentials.sh` helper securely prompts for and
-URL-encodes the Tapo values. The address `192.168.1.40` must remain reserved for
-MAC address `3c:6a:d2:92:7f:d8`.
+URL-encodes the Tapo values. Camera and proxy endpoints are supplied through
+`FRIGATE_TAPO_LOCAL_HOST` and `FRIGATE_TAPO_RV_HOST` in that same private file.
+The RV camera currently uses the same Camera Account credentials as the local
+camera.
 
 Frigate uses eleven OpenVINO CPU detector processes and the bundled SSD MobileNet v2 model. Multiple workers consume a shared detection queue across all cameras.
 
@@ -30,6 +33,7 @@ config/config.yml                 Frigate and go2rtc configuration
 docker-compose.yml                Frigate plus the private H.264 pipe service
 set-tapo-credentials.sh           Secure local Tapo credential prompt
 myq-bridge/                       ReDroid, systemd, and H.264 bridge source
+rv-pi/                            RV Tapo-to-Tailscale gateway recovery files
 ```
 
 The MyQ bridge runs the official Android app in ReDroid. A host systemd service attaches to the app's installed video SDK, writes the two encoded H.264 streams to private FIFOs, and `myq-video-pipe` exposes them only on Frigate's Docker network. The bridge automatically relaunches the app and dismisses its Google Play Services compatibility dialog when the video session expires.
@@ -108,6 +112,12 @@ docker exec frigate wget -qO- http://127.0.0.1:1984/api/streams
 ```
 
 The bridge health check requires recent bytes from both cameras, so a stalled feed no longer appears healthy.
+
+The remote RV camera gateway is documented separately in
+[`rv-pi/README.md`](rv-pi/README.md). Its RTSP proxy is tailnet-only; never
+advertise the RV subnet because it overlaps the home subnet. The Frigate host
+and `rv-pi` gateway join the same tailnet, while their deployment-specific
+addresses remain in the untracked environment file.
 
 ## References
 
