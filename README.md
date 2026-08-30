@@ -67,6 +67,7 @@ homelab/
 ### Hardware Projects
 
 - **ESP32**: Version-controlled ESPHome configurations and project notes, with local secrets excluded from Git
+- **RV Gateway**: Raspberry Pi camera and Jellyfin proxies over Tailscale
 
 ## Purpose
 

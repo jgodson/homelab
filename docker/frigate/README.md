@@ -33,7 +33,6 @@ config/config.yml                 Frigate and go2rtc configuration
 docker-compose.yml                Frigate plus the private H.264 pipe service
 set-tapo-credentials.sh           Secure local Tapo credential prompt
 myq-bridge/                       ReDroid, systemd, and H.264 bridge source
-rv-pi/                            RV camera and Jellyfin gateway recovery files
 ```
 
 The MyQ bridge runs the official Android app in ReDroid. A host systemd service attaches to the app's installed video SDK, writes the two encoded H.264 streams to private FIFOs, and `myq-video-pipe` exposes them only on Frigate's Docker network. The bridge automatically relaunches the app and dismisses its Google Play Services compatibility dialog when the video session expires.
@@ -114,10 +113,10 @@ docker exec frigate wget -qO- http://127.0.0.1:1984/api/streams
 The bridge health check requires recent bytes from both cameras, so a stalled feed no longer appears healthy.
 
 The remote RV camera gateway is documented separately in
-[`rv-pi/README.md`](rv-pi/README.md). Its RTSP proxy is tailnet-only; never
-advertise the RV subnet because it overlaps the home subnet. The Frigate host
-and `rv-pi` gateway join the same tailnet, while their deployment-specific
-addresses remain in the untracked environment file.
+[`projects/rv-gateway`](../../projects/rv-gateway/README.md). Its RTSP proxy is
+tailnet-only; never advertise the RV subnet because it overlaps the home subnet.
+The Frigate host and `rv-pi` gateway join the same tailnet, while their
+deployment-specific addresses remain in the untracked environment file.
 
 ## References
 

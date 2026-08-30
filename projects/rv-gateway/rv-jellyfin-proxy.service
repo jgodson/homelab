@@ -1,5 +1,5 @@
 [Unit]
-Description=Forward RV Jellyfin traffic over Tailscale
+Description=Forward RV Jellyfin traffic to the home server over Tailscale
 After=tailscaled.service
 Requires=tailscaled.service
 

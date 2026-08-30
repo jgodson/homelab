@@ -46,6 +46,9 @@ Jellyfin also publishes UDP `7359` for local app discovery. If a client still
 does not auto-discover the server, add the private Jellyfin domain or host-local
 address manually.
 
+Roku clients on the RV network reach Jellyfin through the shared
+[`projects/rv-gateway`](../../projects/rv-gateway/README.md) Raspberry Pi proxy.
+
 And Immich:
 
 ```text

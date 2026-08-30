@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Install the RV camera-to-tailnet RTSP proxy.
 set -euo pipefail
 
 camera_ip="${1:-${RV_CAMERA_IP:-}}"

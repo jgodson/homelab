@@ -1,8 +1,9 @@
-# RV camera gateway
+# RV network gateway
 
-The RV Raspberry Pi 3 proxies the remote Tapo C120 to Frigate through Tailscale.
-It deliberately does not advertise the RV subnet because the home and RV LANs
-use overlapping private address ranges.
+The RV Raspberry Pi 3 bridges devices that cannot run Tailscale themselves. It
+proxies the remote Tapo C120 to Frigate and presents home Jellyfin to Roku
+clients on the RV LAN. It deliberately does not advertise the RV subnet because
+the home and RV LANs use overlapping private address ranges.
 
 Keep the following deployment-specific values outside Git:
 

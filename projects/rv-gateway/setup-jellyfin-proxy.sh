@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Install the RV LAN-to-tailnet Jellyfin proxy.
 set -euo pipefail
 
 jellyfin_target="${1:-${JELLYFIN_TARGET:-}}"

@@ -1,5 +1,5 @@
 [Unit]
-Description=RV LAN socket for the home Jellyfin proxy
+Description=RV LAN socket for the Jellyfin gateway
 After=network-online.target tailscaled.service
 Wants=network-online.target
 Requires=tailscaled.service
