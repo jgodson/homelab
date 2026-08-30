@@ -33,7 +33,7 @@ config/config.yml                 Frigate and go2rtc configuration
 docker-compose.yml                Frigate plus the private H.264 pipe service
 set-tapo-credentials.sh           Secure local Tapo credential prompt
 myq-bridge/                       ReDroid, systemd, and H.264 bridge source
-rv-pi/                            RV Tapo-to-Tailscale gateway recovery files
+rv-pi/                            RV camera and Jellyfin gateway recovery files
 ```
 
 The MyQ bridge runs the official Android app in ReDroid. A host systemd service attaches to the app's installed video SDK, writes the two encoded H.264 streams to private FIFOs, and `myq-video-pipe` exposes them only on Frigate's Docker network. The bridge automatically relaunches the app and dismisses its Google Play Services compatibility dialog when the video session expires.

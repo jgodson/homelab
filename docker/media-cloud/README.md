@@ -38,17 +38,19 @@ sudo docker compose up -d
 Then open Jellyfin:
 
 ```text
-http://192.168.1.4:8096
-https://media.home.jasongodson.com
+http://<MEDIA_CLOUD_HOST>:8096
+https://<MEDIA_DOMAIN>
 ```
 
-Jellyfin also publishes UDP `7359` for local app discovery. If a client still does not auto-discover the server, add `https://media.home.jasongodson.com` or `http://192.168.1.4:8096` manually.
+Jellyfin also publishes UDP `7359` for local app discovery. If a client still
+does not auto-discover the server, add the private Jellyfin domain or host-local
+address manually.
 
 And Immich:
 
 ```text
-http://192.168.1.4:2283
-https://photos.home.jasongodson.com
+http://<MEDIA_CLOUD_HOST>:2283
+https://<PHOTOS_DOMAIN>
 ```
 
 ## Media Uploads
@@ -73,8 +75,8 @@ The private automation repo configures Samba on `media-cloud` and advertises it 
 Shares:
 
 ```text
-smb://192.168.1.4/documents
-smb://192.168.1.4/media
+smb://<MEDIA_CLOUD_HOST>/documents
+smb://<MEDIA_CLOUD_HOST>/media
 ```
 
 Use the `manager` username. The Samba password is generated host-locally by automation.
@@ -83,4 +85,4 @@ Discovery:
 
 - macOS/Finder should discover `media-cloud` via Bonjour.
 - Windows should discover `media-cloud` via WS-Discovery.
-- DNS is still the stable access path if configured: `smb://files.home.jasongodson.com/media`.
+- DNS is still the stable access path if configured: `smb://<FILES_DOMAIN>/media`.

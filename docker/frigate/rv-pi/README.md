@@ -9,7 +9,7 @@ Keep the following deployment-specific values outside Git:
 - RV Wi-Fi SSID and password
 - Pi and camera LAN addresses
 - camera MAC address
-- Pi and Frigate Tailscale addresses or MagicDNS names
+- Pi, Frigate, and media server Tailscale addresses or MagicDNS names
 - Tapo Camera Account credentials
 
 ## Restore
@@ -79,6 +79,36 @@ tailscale status
 nc -vz <RV_PI_TAILSCALE_IP> 8554
 ```
 
-The same Pi can later present a LAN-facing Jellyfin proxy for Roku clients, but
-that requires the home Jellyfin host's private Tailscale address. The Pi should
-proxy the existing Jellyfin stream and must not perform transcoding.
+## Jellyfin for Roku
+
+Roku clients cannot join the tailnet directly. The Pi therefore listens on its
+RV LAN port `8096` and forwards raw TCP traffic to the existing Jellyfin server
+over Tailscale. The Pi does not terminate TLS, inspect media, or transcode.
+
+First join the Jellyfin host to the same tailnet. Then copy this directory to the
+Pi and provide the Jellyfin host's private Tailscale address or MagicDNS name at
+runtime:
+
+```bash
+sudo ./setup-jellyfin-proxy.sh <JELLYFIN_TAILSCALE_HOST>:8096
+```
+
+The installer writes that private target to the root-only
+`/etc/rv-jellyfin-proxy.env`, installs the socket-activated proxy, and enables it
+at boot. Test it on the Pi:
+
+```bash
+curl http://127.0.0.1:8096/health
+systemctl status rv-jellyfin-proxy.socket --no-pager
+```
+
+In the Jellyfin Roku app, manually add:
+
+```text
+http://<RV_PI_LAN_IP>:8096
+```
+
+Jellyfin UDP discovery on port `7359` is not forwarded, so automatic discovery
+is not expected. Keep the Pi's RV LAN address stable; if it changes, update the
+manual server address in the Roku app. Transcoding remains the responsibility
+of the home Jellyfin host.

@@ -1,0 +1,13 @@
+[Unit]
+Description=RV LAN socket for the home Jellyfin proxy
+After=network-online.target tailscaled.service
+Wants=network-online.target
+Requires=tailscaled.service
+
+[Socket]
+ListenStream=0.0.0.0:8096
+NoDelay=true
+KeepAlive=true
+
+[Install]
+WantedBy=sockets.target

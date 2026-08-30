@@ -1,0 +1,14 @@
+[Unit]
+Description=Forward RV Jellyfin traffic over Tailscale
+After=tailscaled.service
+Requires=tailscaled.service
+
+[Service]
+EnvironmentFile=/etc/rv-jellyfin-proxy.env
+ExecStart=/lib/systemd/systemd-socket-proxyd --exit-idle-time=5min ${JELLYFIN_TARGET}
+DynamicUser=true
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+RestrictAddressFamilies=AF_INET AF_INET6
