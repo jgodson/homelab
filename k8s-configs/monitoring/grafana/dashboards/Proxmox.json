@@ -24,7 +24,7 @@
   "description": "Display data from the Proxmox host and hosted VM's and Containers.",
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": 3,
   "links": [],
   "panels": [
@@ -67,8 +67,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -105,7 +104,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -165,8 +164,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -203,7 +201,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -263,8 +261,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -301,7 +298,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -365,8 +362,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#73BF69",
-                "value": null
+                "color": "#73BF69"
               },
               {
                 "color": "rgba(237, 129, 40, 0.89)",
@@ -405,7 +401,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -486,8 +482,7 @@
             "mode": "percentage",
             "steps": [
               {
-                "color": "#73BF69",
-                "value": null
+                "color": "#73BF69"
               },
               {
                 "color": "rgba(237, 129, 40, 0.89)",
@@ -526,7 +521,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -620,8 +615,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#73BF69",
-                "value": null
+                "color": "#73BF69"
               },
               {
                 "color": "rgba(237, 129, 40, 0.89)",
@@ -660,7 +654,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -741,8 +735,7 @@
             "mode": "percentage",
             "steps": [
               {
-                "color": "#73BF69",
-                "value": null
+                "color": "#73BF69"
               },
               {
                 "color": "rgba(237, 129, 40, 0.89)",
@@ -781,7 +774,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -842,12 +835,8 @@
     },
     {
       "datasource": {
-        "type": "influxdb",
-        "uid": "aegyydl2mv37kd"
-      },
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
       },
       "gridPos": {
         "h": 3,
@@ -904,10 +893,23 @@
           "zoneFormat": "offsetAbbv"
         }
       },
-      "pluginVersion": "2.1.8",
+      "pluginVersion": "2.1.9",
       "targets": [
         {
-          "refId": "A"
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "grafana_build_timestamp",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
         }
       ],
       "title": "Time",
@@ -939,8 +941,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -977,7 +978,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -1040,8 +1041,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1078,7 +1078,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -1140,8 +1140,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1237,7 +1236,7 @@
           }
         ]
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -1319,8 +1318,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1410,7 +1408,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -1533,8 +1531,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1619,7 +1616,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_host CPU Usage",
@@ -1828,8 +1825,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1866,7 +1862,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_host",
@@ -1972,8 +1968,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2007,7 +2002,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_host ($tag_nodename)",
@@ -2130,8 +2125,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2165,7 +2159,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_host ($tag_nodename)",
@@ -2317,7 +2311,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_host ($tag_nodename)",
@@ -2474,7 +2468,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_host ($tag_nodename)",
@@ -2604,7 +2598,7 @@
               }
             ]
           },
-          "unit": "bps"
+          "unit": "Bps"
         },
         "overrides": []
       },
@@ -2630,7 +2624,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_host ($tag_nodename)",
@@ -2676,8 +2670,10 @@
                 "type": "mean"
               },
               {
-                "params": [],
-                "type": "non_negative_difference"
+                "params": [
+                  "1s"
+                ],
+                "type": "non_negative_derivative"
               }
             ]
           ],
@@ -2755,7 +2751,7 @@
               }
             ]
           },
-          "unit": "bps"
+          "unit": "Bps"
         },
         "overrides": []
       },
@@ -2781,7 +2777,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_host ($tag_nodename)",
@@ -2827,8 +2823,10 @@
                 "type": "mean"
               },
               {
-                "params": [],
-                "type": "non_negative_difference"
+                "params": [
+                  "1s"
+                ],
+                "type": "non_negative_derivative"
               }
             ]
           ],
@@ -2906,7 +2904,7 @@
               }
             ]
           },
-          "unit": "bps"
+          "unit": "Bps"
         },
         "overrides": []
       },
@@ -2932,7 +2930,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_host ($tag_nodename)",
@@ -2978,8 +2976,10 @@
                 "type": "mean"
               },
               {
-                "params": [],
-                "type": "non_negative_difference"
+                "params": [
+                  "1s"
+                ],
+                "type": "non_negative_derivative"
               }
             ]
           ],
@@ -3057,7 +3057,7 @@
               }
             ]
           },
-          "unit": "bps"
+          "unit": "Bps"
         },
         "overrides": []
       },
@@ -3083,7 +3083,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_host ($tag_nodename)",
@@ -3129,8 +3129,10 @@
                 "type": "mean"
               },
               {
-                "params": [],
-                "type": "non_negative_difference"
+                "params": [
+                  "1s"
+                ],
+                "type": "non_negative_derivative"
               }
             ]
           ],
@@ -3219,7 +3221,7 @@
               }
             ]
           },
-          "unit": "bps"
+          "unit": "Bps"
         },
         "overrides": []
       },
@@ -3272,7 +3274,6 @@
           "measurement": "nics",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT non_negative_derivative(mean(\"receive\"), 10s) AS \"Rx\", non_negative_derivative(mean(\"receive\"), 10s) AS \"Tx\" FROM \"nics\" WHERE (\"host\" =~ /^$server$/ AND \"instance\" = 'enp2s0') AND $timeFilter GROUP BY time($__interval) fill(null)",
           "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
@@ -3289,8 +3290,10 @@
                 "type": "mean"
               },
               {
-                "params": [],
-                "type": "non_negative_difference"
+                "params": [
+                  "1s"
+                ],
+                "type": "non_negative_derivative"
               },
               {
                 "params": [
@@ -3301,6 +3304,11 @@
             ]
           ],
           "tags": [
+            {
+              "key": "host",
+              "operator": "=~",
+              "value": "/^$server$/"
+            },
             {
               "condition": "AND",
               "key": "instance",
@@ -3344,15 +3352,22 @@
               },
               {
                 "params": [],
-                "type": "max"
+                "type": "mean"
               },
               {
-                "params": [],
-                "type": "non_negative_difference"
+                "params": [
+                  "1s"
+                ],
+                "type": "non_negative_derivative"
               }
             ]
           ],
           "tags": [
+            {
+              "key": "host",
+              "operator": "=~",
+              "value": "/^$server$/"
+            },
             {
               "condition": "AND",
               "key": "instance",
@@ -3371,7 +3386,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 92
+        "y": 98
       },
       "id": 41,
       "panels": [],
@@ -3434,7 +3449,7 @@
               }
             ]
           },
-          "unit": "bps"
+          "unit": "Bps"
         },
         "overrides": []
       },
@@ -3442,7 +3457,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 93
+        "y": 99
       },
       "id": 82,
       "options": {
@@ -3460,7 +3475,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_instance ($tag_host)",
@@ -3497,7 +3512,6 @@
           "measurement": "nics",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT non_negative_derivative(mean(\"receive\"), 10s) FROM \"nics\" WHERE (\"host\" =~ /^$server$/ AND (\"instance\" =~ /^vmbr*/ OR \"instance\" = 'enp2s0')) AND $timeFilter GROUP BY time($__interval), \"instance\" fill(null)",
           "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
@@ -3514,8 +3528,10 @@
                 "type": "mean"
               },
               {
-                "params": [],
-                "type": "non_negative_difference"
+                "params": [
+                  "1s"
+                ],
+                "type": "non_negative_derivative"
               }
             ]
           ],
@@ -3528,19 +3544,13 @@
             {
               "condition": "AND",
               "key": "instance",
-              "operator": "!=",
-              "value": "veth350i0"
-            },
-            {
-              "condition": "AND",
-              "key": "instance",
-              "operator": "!=",
-              "value": "fwln300i0"
+              "operator": "=~",
+              "value": "/^vmbr.*$/"
             }
           ]
         }
       ],
-      "title": "Network In",
+      "title": "Bridge Traffic In",
       "type": "timeseries"
     },
     {
@@ -3599,7 +3609,7 @@
               }
             ]
           },
-          "unit": "bps"
+          "unit": "Bps"
         },
         "overrides": []
       },
@@ -3607,7 +3617,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 99
+        "y": 105
       },
       "id": 83,
       "options": {
@@ -3625,7 +3635,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_instance ($tag_host)",
@@ -3662,7 +3672,6 @@
           "measurement": "nics",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT non_negative_derivative(mean(\"transmit\"), 10s) FROM \"nics\" WHERE (\"host\" =~ /^$server$/ AND (\"instance\" =~ /^vmbr*/ OR \"instance\" = 'enp2s0')) AND $timeFilter GROUP BY time($__interval), \"instance\" fill(null)",
           "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
@@ -3670,7 +3679,7 @@
             [
               {
                 "params": [
-                  "receive"
+                  "transmit"
                 ],
                 "type": "field"
               },
@@ -3679,8 +3688,10 @@
                 "type": "mean"
               },
               {
-                "params": [],
-                "type": "non_negative_difference"
+                "params": [
+                  "1s"
+                ],
+                "type": "non_negative_derivative"
               }
             ]
           ],
@@ -3689,11 +3700,17 @@
               "key": "host",
               "operator": "=~",
               "value": "/^$server$/"
+            },
+            {
+              "condition": "AND",
+              "key": "instance",
+              "operator": "=~",
+              "value": "/^vmbr.*$/"
             }
           ]
         }
       ],
-      "title": "Network Out",
+      "title": "Bridge Traffic Out",
       "type": "timeseries"
     },
     {
@@ -3752,7 +3769,7 @@
               }
             ]
           },
-          "unit": "bps"
+          "unit": "Bps"
         },
         "overrides": []
       },
@@ -3760,7 +3777,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 105
+        "y": 111
       },
       "id": 47,
       "options": {
@@ -3778,7 +3795,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_host ($tag_nodename)",
@@ -3830,8 +3847,10 @@
                 "type": "mean"
               },
               {
-                "params": [],
-                "type": "non_negative_difference"
+                "params": [
+                  "1s"
+                ],
+                "type": "non_negative_derivative"
               }
             ]
           ],
@@ -3909,7 +3928,7 @@
               }
             ]
           },
-          "unit": "bps"
+          "unit": "Bps"
         },
         "overrides": []
       },
@@ -3917,7 +3936,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 105
+        "y": 111
       },
       "id": 49,
       "options": {
@@ -3935,7 +3954,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_host ($tag_nodename)",
@@ -3987,8 +4006,10 @@
                 "type": "mean"
               },
               {
-                "params": [],
-                "type": "non_negative_difference"
+                "params": [
+                  "1s"
+                ],
+                "type": "non_negative_derivative"
               }
             ]
           ],
@@ -4066,7 +4087,7 @@
               }
             ]
           },
-          "unit": "bps"
+          "unit": "Bps"
         },
         "overrides": []
       },
@@ -4074,7 +4095,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 111
+        "y": 117
       },
       "id": 48,
       "options": {
@@ -4092,7 +4113,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_host ($tag_nodename)",
@@ -4144,8 +4165,10 @@
                 "type": "mean"
               },
               {
-                "params": [],
-                "type": "non_negative_difference"
+                "params": [
+                  "1s"
+                ],
+                "type": "non_negative_derivative"
               }
             ]
           ],
@@ -4164,7 +4187,7 @@
           ]
         }
       ],
-      "title": "LCXs Traffic In",
+      "title": "LXCs Traffic In",
       "type": "timeseries"
     },
     {
@@ -4223,7 +4246,7 @@
               }
             ]
           },
-          "unit": "bps"
+          "unit": "Bps"
         },
         "overrides": []
       },
@@ -4231,7 +4254,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 111
+        "y": 117
       },
       "id": 50,
       "options": {
@@ -4249,7 +4272,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "alias": "$tag_host ($tag_nodename)",
@@ -4302,7 +4325,7 @@
               },
               {
                 "params": [
-                  "10s"
+                  "1s"
                 ],
                 "type": "non_negative_derivative"
               }
@@ -4332,7 +4355,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 117
+        "y": 123
       },
       "id": 52,
       "panels": [],
@@ -4387,7 +4410,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 118
+        "y": 124
       },
       "id": 55,
       "maxDataPoints": 100,
@@ -4463,7 +4486,7 @@
   ],
   "preload": false,
   "refresh": "10s",
-  "schemaVersion": 40,
+  "schemaVersion": 42,
   "tags": [],
   "templating": {
     "list": [
@@ -4565,6 +4588,6 @@
   "timezone": "",
   "title": "Proxmox",
   "uid": "kxQQuHRZk",
-  "version": 2,
+  "version": 10,
   "weekStart": ""
 }
