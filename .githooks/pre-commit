@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+staged_images=()
+while IFS= read -r -d '' candidate_file; do
+  case "$candidate_file" in
+    website/src/assets/images/*.jpg|website/src/assets/images/*.JPG|website/src/assets/images/*.jpeg|website/src/assets/images/*.JPEG)
+      staged_images+=("$candidate_file")
+      ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+if [[ "${#staged_images[@]}" -eq 0 ]]; then
+  exit 0
+fi
+
+for image_file in "${staged_images[@]}"; do
+  if ! git diff --quiet -- "$image_file"; then
+    echo "Cannot normalize partially staged image: $image_file" >&2
+    echo "Stage or discard its remaining working-tree changes, then commit again." >&2
+    exit 1
+  fi
+done
+
+"$repo_root/scripts/normalize-image-metadata.sh" "${staged_images[@]}"
+git add -- "${staged_images[@]}"
