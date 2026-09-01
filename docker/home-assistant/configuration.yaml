@@ -10,6 +10,7 @@ script: !include scripts.yaml
 scene: !include scenes.yaml
 input_boolean: !include input_booleans.yaml
 template: !include templates.yaml
+rest: !include rest.yaml
 
 # Metrics export
 influxdb:

@@ -48,6 +48,25 @@ contains only the additional YAML options that Home Assistant still supports.
 Configure HTTP and reverse proxy settings under **Settings > System > Network**.
 The HTTP integration is UI-managed and must not be added to `configuration.yaml`.
 
+### Govee RV temperature sensor
+
+The RV Govee H5179 is polled through Govee's OpenAPI every five minutes. One
+request supplies temperature, humidity, and connectivity entities through
+`rest.yaml`. The API key and device-specific request payload remain only in the
+live Home Assistant `secrets.yaml`; neither belongs in Git.
+
+Install the helper on the Home Assistant host and run it interactively:
+
+```bash
+scp set-govee-api-key.sh manager@home-assistant:/home/manager/
+ssh -t manager@home-assistant /home/manager/set-govee-api-key.sh
+```
+
+The helper validates the key, discovers the single H5179 attached to the Govee
+account, and writes both required secret values with mode `0600`. Input is
+hidden while entering the API key. Run the same command again to replace a
+rotated API key without creating duplicate YAML keys.
+
 ### 3. DNS Configuration
 
 In order to send logs or metrics to local hostnames, we need to use the internal DNS server. Follow [these instructions](docs/dns-config-ubuntu.md) to configure DNS for Ubuntu if it has not already been set to use the DNS server.

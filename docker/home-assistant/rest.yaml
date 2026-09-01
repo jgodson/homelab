@@ -1,0 +1,51 @@
+- resource: https://openapi.api.govee.com/router/api/v1/device/state
+  method: POST
+  headers:
+    Content-Type: application/json
+    Govee-API-Key: !secret govee_api_key
+  payload: !secret govee_h5179_state_payload
+  scan_interval: 300
+  timeout: 20
+  sensor:
+    - name: RV Temperature
+      unique_id: rv_govee_h5179_temperature
+      device_class: temperature
+      state_class: measurement
+      unit_of_measurement: "°F"
+      value_template: >-
+        {{ value_json.payload.capabilities
+          | selectattr('instance', 'eq', 'sensorTemperature')
+          | map(attribute='state.value')
+          | first }}
+      availability: >-
+        {{ value_json.code == 200 and
+          (value_json.payload.capabilities
+            | selectattr('instance', 'eq', 'online')
+            | map(attribute='state.value')
+            | first) == true }}
+    - name: RV Humidity
+      unique_id: rv_govee_h5179_humidity
+      device_class: humidity
+      state_class: measurement
+      unit_of_measurement: "%"
+      value_template: >-
+        {{ value_json.payload.capabilities
+          | selectattr('instance', 'eq', 'sensorHumidity')
+          | map(attribute='state.value')
+          | first }}
+      availability: >-
+        {{ value_json.code == 200 and
+          (value_json.payload.capabilities
+            | selectattr('instance', 'eq', 'online')
+            | map(attribute='state.value')
+            | first) == true }}
+  binary_sensor:
+    - name: RV Govee Connectivity
+      unique_id: rv_govee_h5179_connectivity
+      device_class: connectivity
+      value_template: >-
+        {{ value_json.payload.capabilities
+          | selectattr('instance', 'eq', 'online')
+          | map(attribute='state.value')
+          | first }}
+      availability: "{{ value_json.code == 200 }}"

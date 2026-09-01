@@ -9,6 +9,8 @@ scripts/issues
 # Local Docker Compose environment files
 docker/**/.env
 docker/home-assistant/esphome-dashboard.env
+docker/home-assistant/secrets.yaml
+docker/home-assistant/govee-devices.json
 
 # ESPHome contains Wi-Fi credentials, API keys, and generated build files
 docker/home-assistant/docker/esphome/
