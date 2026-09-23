@@ -131,6 +131,7 @@ def agent_source(suffix: str) -> str:
     return rf"""
 var cameraFiles={{{camera_entries}}};
 var managers=[];
+var cameraHandles={{}};
 var outputs={{}};
 var stats={{}};
 var started=false;
@@ -215,8 +216,10 @@ function startCamera(id,index,VI,CI,SDK) {{
   }});
   var manager=SDK.getInstance().videoCallManagerWithDeviceId(id,Listener.$new(),null);
   if(manager===null)throw new Error('No video manager for '+id);
+  var completion=Completion.$new();
   managers.push(manager);
-  manager.connect(Completion.$new());
+  cameraHandles[id]={{manager:manager,completion:completion}};
+  manager.connect(completion);
 }}
 
 rpc.exports={{
@@ -232,6 +235,18 @@ rpc.exports={{
       started=true;
       resolve(snapshot());
     }} catch(e) {{resolve({{started:false,error:String(e)}});}}
+  }});}});}},
+  retrycamera:function(id){{return new Promise(function(resolve){{Java.perform(function(){{
+    try {{
+      var handle=cameraHandles[id];
+      if(!handle)throw new Error('No video manager for '+id);
+      try {{ handle.manager.disconnect(null); }} catch(e) {{}}
+      closeOutput(id);
+      stats[id].connected=false;
+      stats[id].error='';
+      handle.manager.connect(handle.completion);
+      resolve({{ok:true}});
+    }} catch(e) {{resolve({{ok:false,error:String(e)}});}}
   }});}});}},
   stats:function(){{return new Promise(function(resolve){{Java.perform(function(){{resolve(snapshot());}});}});}},
   stop:function(){{return new Promise(function(resolve){{Java.perform(function(){{
@@ -293,27 +308,51 @@ def run_agent(address: str) -> None:
             )
         LOG.info("Both Android camera sessions requested")
 
-        last_counts: dict[str, int] = {}
-        stalled_checks = 0
+        last_counts = {
+            device_id: int(result.get("cameras", {}).get(device_id, {}).get("frames", 0))
+            for device_id in CAMERAS
+        }
+        stalled_checks = {device_id: 0 for device_id in CAMERAS}
+        retry_counts = {device_id: 0 for device_id in CAMERAS}
         while not STOP and not detached:
             time.sleep(15)
             current = script.exports_sync.stats()
             cameras = current.get("cameras", {})
             summary = []
-            advancing = True
+            stalled = []
             for device_id in CAMERAS:
                 details = cameras.get(device_id, {})
                 count = int(details.get("frames", 0))
-                advancing = advancing and count > last_counts.get(device_id, -1)
+                if count > last_counts[device_id]:
+                    stalled_checks[device_id] = 0
+                    retry_counts[device_id] = 0
+                else:
+                    stalled_checks[device_id] += 1
+                    stalled.append(device_id)
                 last_counts[device_id] = count
                 summary.append(
                     f"{device_id}:{details.get('width', 0)}x{details.get('height', 0)} "
-                    f"frames={count}"
+                    f"connected={details.get('connected', False)} frames={count} "
+                    f"error={details.get('error', '')}"
                 )
             LOG.info("; ".join(summary))
-            stalled_checks = 0 if advancing else stalled_checks + 1
-            if stalled_checks >= 4:
-                raise RuntimeError("One or more camera streams stopped advancing")
+            if len(stalled) == len(CAMERAS) and all(
+                stalled_checks[device_id] >= 4 for device_id in stalled
+            ):
+                raise RuntimeError("All camera streams stopped advancing")
+            for device_id in stalled:
+                if stalled_checks[device_id] < 4:
+                    continue
+                if retry_counts[device_id] >= 3:
+                    raise RuntimeError(f"Camera {device_id} did not recover after retries")
+                retry_counts[device_id] += 1
+                stalled_checks[device_id] = 0
+                LOG.warning("Retrying stalled camera %s", device_id)
+                retry = script.exports_sync.retrycamera(device_id)
+                if not retry.get("ok"):
+                    raise RuntimeError(
+                        f"Camera {device_id} retry failed: {retry.get('error', 'unknown error')}"
+                    )
 
         if detached and not STOP:
             raise RuntimeError("Frida session detached")
@@ -358,6 +397,8 @@ def main() -> int:
                 restart_markers = (
                     "video session did not become ready",
                     "camera streams stopped advancing",
+                    "did not recover after retries",
+                    "retry failed",
                     "android video start failed",
                     "script has been destroyed",
                     "frida session detached",

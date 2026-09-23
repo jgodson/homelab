@@ -1,7 +1,7 @@
 [Unit]
 Description=MyQ Android H.264 bridge
 After=systemd-modules-load.service snap.docker.dockerd.service network-online.target
-Requires=snap.docker.dockerd.service
+Wants=snap.docker.dockerd.service
 RequiresMountsFor=/home/manager/myq-android/android-data /home/manager/myq-frigate-bridge
 
 [Service]

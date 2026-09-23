@@ -38,10 +38,13 @@ myq-bridge/                       ReDroid, systemd, and H.264 bridge source
 The MyQ bridge runs the official Android app in ReDroid. A host systemd service attaches to the app's installed video SDK, writes the two encoded H.264 streams to private FIFOs, and `myq-video-pipe` exposes them only on Frigate's Docker network. The bridge automatically relaunches the app and dismisses its Google Play Services compatibility dialog when the video session expires.
 
 Each bridge cycle disconnects its SDK managers and detaches its Frida session,
-including error paths. If either camera stops advancing for four consecutive
-15-second checks, or the Android process destroys/detaches the injected script,
-the bridge force-restarts the MyQ app before requesting fresh sessions. This
-prevents stale SDK sessions from accumulating during repeated recoveries.
+including error paths. If one camera stops advancing for four consecutive
+15-second checks, the bridge retries that camera without interrupting the other.
+After three failed retries, or if both cameras stop advancing, the bridge
+force-restarts the MyQ app before requesting fresh sessions. The Android process
+destroying or detaching the injected script also starts a fresh bridge cycle.
+The systemd service starts after Docker but stays active through Docker restarts,
+so it can reconnect when the Android container returns.
 
 MyQ Internet access is still required. This repository does not contain an authenticated Android data directory, the MyQ APK, or the Frida server binary.
 
