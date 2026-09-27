@@ -26,10 +26,12 @@ The infrastructure is designed to provide a lab environment for experimenting wi
 - Hosts all the VMs that make up the rest of the infrastructure
 
 ### Kubernetes
-- 3 node Kubernetes cluster running as VMs on Proxmox
-- MetalLB for load balancing
-- Traefik for ingress controller
-- Variety of self-hosted applications and services
+- [Talos Linux](talos-configs/README.md) cluster running as VMs on Proxmox: 3 control plane nodes behind a VIP and 1 worker
+- Cilium CNI (replacing Flannel) for NetworkPolicy enforcement
+- MetalLB for load balancing and Traefik as the ingress controller
+- Ceph CSI (RBD) for persistent volumes backed by the Proxmox Ceph cluster
+- CloudNativePG for a shared PostgreSQL cluster
+- Gitea with Actions runners for Git hosting, CI/CD, and the container registry
 
 ### Docker
 - Multiple standalone Docker hosts for various services
@@ -39,11 +41,15 @@ The infrastructure is designed to provide a lab environment for experimenting wi
 
 ```
 homelab/
+├── .githooks/           # Versioned Git hooks (image metadata stripping)
 ├── docker/              # Docker Compose services configuration
 ├── docs/                # General documentation
 ├── k8s-configs/         # Kubernetes manifests and Helm values
-├── observability-config/# Monitoring and logging configurations
+├── llm-context/         # Context and prompt templates for AI assistants
+├── observability-config/# Promtail setup for non-Kubernetes hosts
 ├── projects/            # Hardware and microcontroller project configurations
+├── scripts/             # Utility scripts (remote builds, issue creation, image metadata)
+├── talos-configs/       # Redacted Talos machine configs and sync/recovery scripts
 ├── VM/                  # Virtual machine only configurations (not using Docker)
 └── website/             # Personal website hosted on the homelab
 ```
@@ -52,21 +58,29 @@ homelab/
 
 ### Docker Services
 
-- **AI Tools**: Self-hosted AI tooling
-- **Frigate**: NVR with object detection
-- **Home Assistant**: Home automation platform
-- **Ingress (Local & Public)**: Reverse proxy setups with Caddy
-- **MinIO**: S3-compatible object storage
+- **AI Tools**: Ollama, Open WebUI, n8n, Flowise, and supporting services
+- **Frigate**: NVR with object detection, including a MyQ camera bridge and a remote RV camera
+- **Home Assistant**: Home automation platform with ESPHome
+- **Local Ingress + AdGuard**: Caddy reverse proxy with AdGuard Home for local DNS and ad blocking
+- **Public Ingress**: Caddy behind a Cloudflare Tunnel with CrowdSec
+- **Media Cloud**: Jellyfin for video and Immich for photo backup
+- **MinIO**: S3-compatible object storage for backups and Loki
 
 ### Kubernetes Applications
 
-- **Monitoring Stack**: Grafana, Prometheus, Loki, InfluxDB
-- **MetalLB**: Load balancer for bare-metal Kubernetes
-- **Traefik**: Ingress controller for Kubernetes
+- **Networking**: Cilium, MetalLB, Traefik
+- **Storage & Data**: Ceph CSI RBD, CloudNativePG
+- **Gitea**: Git hosting, Actions runners, and scheduled backups to MinIO
+- **Monitoring Stack**: Prometheus, Grafana (with alerting), Loki, Tempo, Alloy, Promtail, Telegraf, InfluxDB2, Uptime Kuma, and metrics-server
+
+### Virtual Machines
+
+- **Cloudflared**: Standalone Cloudflare Tunnel connector
+- **Ubuntu Desktop**: General-purpose desktop VM
 
 ### Hardware Projects
 
-- **ESP32**: Version-controlled ESPHome configurations and project notes, with local secrets excluded from Git
+- **ESP32**: Version-controlled ESPHome configurations and project notes (such as the pool temperature sensor), with local secrets excluded from Git
 - **RV Gateway**: Raspberry Pi camera and Jellyfin proxies over Tailscale
 
 ## Purpose
@@ -77,16 +91,16 @@ This repository primarily serves as:
 2. **Backup** - Version-controlled backup of important configs
 3. **Knowledge Sharing** - A resource for others interested in similar setups
 
-Rather than being meant for direct cloning and use, the configurations here can be used as examples or starting points. Each deployment is tailored to my specific environment and needs so you will likey see references to my own ip addresses or domains that will not be directly transferrable to your own setup.
+Rather than being meant for direct cloning and use, the configurations here can be used as examples or starting points. Each deployment is tailored to my specific environment and needs so you will likely see references to my own ip addresses or domains that will not be directly transferrable to your own setup.
 
 ## Website
 
 The personal website in this repository is hosted directly on the homelab infrastructure, demonstrating the capability to self-host web applications. It features:
 
-- A clean, responsive design
+- A static site built with Eleventy, including a blog with pre-rendered Mermaid diagrams
 - Information about my skills and projects
 - Links to social profiles
-- Build and deployment automation
+- A Docker image deployed to the Kubernetes cluster
 
 ## Contributing
 
