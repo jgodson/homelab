@@ -3,6 +3,55 @@
    Inspired by Franco-Belgian Bande Dessinée & Indie Graphic Novels
    ========================================================================== */
 
+/* --- Self-hosted fonts (latin subset) --- */
+@font-face {
+  font-family: 'Permanent Marker';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/permanent-marker.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Special Elite';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/special-elite.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Space Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/space-mono-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Space Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/assets/fonts/space-mono-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Space Mono';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/space-mono-400-italic.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Space Mono';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/assets/fonts/space-mono-700-italic.woff2') format('woff2');
+}
+
 /* --- CSS Variables --- */
 :root {
   --bg-paper: #faf7f0;
@@ -19,7 +68,7 @@
   --shadow-comic: 3px 3px 0px #18181b;
   --shadow-comic-lg: 4px 4px 0px #18181b;
   --shadow-comic-sm: 2px 2px 0px #18181b;
-  --font-marker: 'Permanent Marker', cursive, sans-serif;
+  --font-marker: 'Permanent Marker', 'Marker Felt', 'Chalkboard SE', 'Comic Sans MS', sans-serif;
   --font-mono: 'Space Mono', monospace, -apple-system, BlinkMacSystemFont, monospace;
   --max-width: 1140px;
 }
