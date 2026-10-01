@@ -9,7 +9,7 @@ tags:
   - multiplayer
   - godot
   - backend
-  - infrastucture
+  - infrastructure
 layout: post.njk
 ---
 

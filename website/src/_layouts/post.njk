@@ -2,24 +2,40 @@
 layout: base.njk
 ---
 
-<article class="blog-post">
-  <header class="blog-header">
-    <h1>{{ title }}</h1>
-    <div class="meta">
-      <time datetime="{{ page.date | dateToISO }}">{{ page.date | dateToFormat('MMMM d, yyyy') }}</time>
+<div class="comic-article-wrap">
+  <div class="comic-article-back">
+    <a href="/blog/" class="comic-back-link">← Back to all notes</a>
+  </div>
+
+  <article class="comic-article">
+
+  <header class="comic-article-header">
+    <h1 class="comic-article-title">{{ title }}</h1>
+    <div class="comic-article-meta">
+      <time class="comic-date" datetime="{{ page.date | dateToISO }}">{{ page.date | dateToNoteFormat }}</time>
       {% if tags %}
-      <div class="tags">
+      <div class="comic-tag-list">
         {% for tag in tags %}
           {% if tag != "blog" %}
-          <a href="/blog/tags/{{ tag | slug }}/" class="tag">{{ tag }}</a>
+          <a href="/blog/tags/{{ tag | slug }}/" class="comic-tag-pill">#{{ tag }}</a>
           {% endif %}
         {% endfor %}
       </div>
       {% endif %}
     </div>
+    <div class="comic-divider sm"></div>
   </header>
   
-  <div class="blog-content">
+  <div class="comic-article-content">
     {{ content | safe }}
   </div>
+
+  <footer class="comic-article-footer">
+    <div class="comic-divider sm"></div>
+    <div class="comic-article-footer-nav">
+      <a href="/blog/" class="comic-btn">← ALL NOTES</a>
+      <a href="/about/" class="comic-secondary-btn">ABOUT THE AUTHOR →</a>
+    </div>
+  </footer>
 </article>
+</div>

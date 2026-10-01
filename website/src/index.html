@@ -1,29 +1,115 @@
 ---
 layout: base.njk
+title: Jason Godson | Notes on software, side projects, and useful experiments
+description: Ideas, build logs, and lessons from a curious maker.
 ---
 
-<div class="section">
-  <h2>🧔🏻‍♂️ About Me</h2>
-  <p>I have been writing and maintaining scalable front-end and back-end software for over 8 years in a professional capacity. I thrive when given new challenges, diving into logs and debugging issues, working with new languages, and solving interesting problems. My focus is on architecting scalable infrastructure, crafting efficient developer tools, and building platforms.</p>
-</div>
+{# Hero Banner #}
+<section class="comic-hero-banner">
+  <div class="comic-hero-text">
+    <h1 class="comic-hero-title">
+      NOTES ON SOFTWARE, SIDE PROJECTS, AND USEFUL EXPERIMENTS.
+      <span class="hero-marker-underline"></span>
+    </h1>
+    <p class="comic-hero-subtitle">
+      Ideas, build logs, and lessons from a curious maker.
+    </p>
+  </div>
+  <div class="comic-hero-graphic">
+    <img src="/assets/images/comic-hero-banner.jpg" alt="A curious maker overlooking a desert canyon and distant celestial planet" class="comic-hero-img" />
+  </div>
+</section>
 
-<div class="section">
-  <h2>🛠️ Tech Savvy</h2>
-  <p>Proficient in front-end technologies such as TypeScript, GraphQL, and React, I bring a wealth of experience to any project. Additionally, I am very capable of writing back-end software in languages such as TypeScript (Node.js, serverless applications) and Ruby on Rails. My versatility extends beyond that, as I am happy to pick up new languages and work on whatever brings value to the company. I've delved into CLI tools, managed infrastructure with NGINX and Kubernetes, orchestrated CI/CD pipelines, and dabbled in Rust and Go for efficient solutions.</p>
-</div>
+<div class="comic-divider"></div>
 
-<div class="section">
-  <h2>🔧 Tech Explorations</h2>
-  <p>Beyond my professional work, I immerse myself in various tech-related pursuits. These include CAD (Fusion 360), 3D printing, and exploring the intersection of hardware and software by wiring up circuits with Arduino or Raspberry Pi for control. These projects enhance my holistic understanding of technology and allow me to approach problems creatively.</p>
-</div>
+{# Latest two notes side by side with cover images #}
+<section class="comic-latest">
+  <div class="comic-recent-header-row">
+    <div class="comic-section-heading-wrap">
+      <h2 class="comic-section-heading">LATEST NOTES</h2>
+      <span class="comic-marker-underline"></span>
+    </div>
+  </div>
 
-<div class="section">
-  <h2>🚀 Side Projects</h2>
-  <p>Among my notable achievements is the <strong>Shopify Script Creator</strong> — a user-friendly tool designed with React. This "no-code" application allows users to easily generate customized Ruby scripts tailored to unique needs. The generated script facilitates dynamic modifications to cart contents and checkout processes including discounts, item removal, and shipping adjustments.</p>
-  
-  <p>I've also developed a custom <strong>Budget Application</strong> to address my specific financial management needs. This personalized solution offers features that fit my needs, providing me with a way to track spending patterns.</p>
-  
-  <p>I maintain a personal <strong>Homelab</strong> environment where I experiment with self-hosted services, Kubernetes, Docker containers, and networking configurations. This provides a practical sandbox for exploring infrastructure concepts and automating home systems. In fact, this website itself is hosted on my homelab infrastructure, showcasing my ability to deploy and maintain web applications in a self-hosted environment.</p>
-  
-  <p>Other projects include various <strong>CLI utilities</strong> to streamline development workflows, custom <strong>browser extensions</strong> that enhance productivity, and occasional contributions to open-source projects that align with my interests.</p>
-</div>
+  <div class="comic-lead-grid">
+    {% for post in collections.blog.slice(0, 2) %}
+    <article class="comic-lead-card">
+      <div class="comic-lead-media">
+        {% if post.data.cover %}
+          {% cover post.data.cover, post.data.coverAlt or post.data.title %}
+        {% else %}
+          {% include "cover-art.njk" %}
+        {% endif %}
+        <time class="comic-date" datetime="{{ post.date | dateToISO }}">{{ post.date | dateToNoteFormat }}</time>
+      </div>
+      <div class="comic-lead-body">
+        <h3 class="comic-lead-title">
+          <a href="{{ post.url }}">{{ post.data.title }}</a>
+        </h3>
+        {% if post.data.description %}
+        <p class="comic-lead-desc">{{ post.data.description }}</p>
+        {% endif %}
+        <span class="comic-read-link">Read note →</span>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+{# The rest as horizontal cards #}
+<section class="comic-recent-col">
+  <div class="comic-recent-header-row">
+    <div class="comic-section-heading-wrap">
+      <h2 class="comic-section-heading">MORE NOTES</h2>
+      <span class="comic-marker-underline"></span>
+    </div>
+    <a href="/blog/" class="comic-view-all-link">VIEW ALL →</a>
+  </div>
+
+  <div class="comic-recent-list">
+    {% for post in collections.blog.slice(2, 7) %}
+    <article class="comic-recent-entry">
+      <div class="comic-recent-title-row">
+        <h3 class="comic-recent-entry-title">
+          <a href="{{ post.url }}">{{ post.data.title }}</a>
+        </h3>
+        <time class="comic-date" datetime="{{ post.date | dateToISO }}">{{ post.date | dateToNoteFormat }}</time>
+      </div>
+      {% if post.data.description %}
+      <p class="comic-recent-entry-desc">{{ post.data.description }}</p>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="comic-divider"></div>
+
+{# Bottom Section: About #}
+<section id="about" class="comic-about-section">
+  <div class="comic-about-container">
+    <div class="comic-about-left">
+      <div class="comic-section-heading-wrap">
+        <h2 class="comic-section-heading">ABOUT</h2>
+        <span class="comic-marker-underline"></span>
+      </div>
+      
+      <div class="comic-about-profile">
+        <div class="comic-avatar-box">
+          <img src="/assets/images/jason-comic-portrait.jpg" alt="Jason Godson - comic portrait" class="comic-avatar-img" />
+        </div>
+        <div class="comic-about-text">
+          <p class="comic-about-lead">I'm Jason — a software engineer, maker, and lifelong tinkerer.</p>
+          <p class="comic-about-body">I write about side projects, useful tools, and whatever I'm learning along the way.</p>
+          <p class="comic-about-cta">
+            <a href="/about/" class="comic-arrow-link">More about me →</a>
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="comic-about-right" aria-hidden="true">
+      <img src="/assets/images/comic-mountains.png" alt="" class="comic-mountains-art" />
+    </div>
+  </div>
+</section>

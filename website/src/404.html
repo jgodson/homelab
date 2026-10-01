@@ -1,20 +1,24 @@
 ---
 layout: base.njk
-title: 404 - Page Not Found | Jason Godson
+title: 404 - Note Not Found | Jason Godson
 ---
 
-<div class="section not-found">
-  <h2>🚧 Page Not Found</h2>
-  <p>
-    Looks like the page you're looking for doesn't exist. But hey, no
-    worries — you can head back home and keep exploring!
+<div class="comic-not-found-section">
+  <div class="comic-section-heading-wrap center">
+    <h1 class="comic-section-heading">404 - LOST IN THE CANYON</h1>
+    <span class="comic-marker-underline"></span>
+  </div>
+  
+  <p class="comic-not-found-desc">
+    Looks like the note or page you're searching for doesn't exist or has wandered off into the desert.
   </p>
 
-  <div class="not-found-image">
+  <div class="comic-not-found-image">
     {% image "./src/assets/images/404.png", "404 illustration", "(min-width: 600px) 400px, 100vw" %}
   </div>
 
-  <a href="/" class="home-button">
-    🏡 Go back home
-  </a>
+  <div class="comic-not-found-actions">
+    <a href="/" class="comic-btn">🏕️ BACK TO BASECAMP</a>
+    <a href="/blog/" class="comic-secondary-btn">BROWSE ALL NOTES →</a>
+  </div>
 </div>

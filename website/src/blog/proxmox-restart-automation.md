@@ -8,7 +8,7 @@ tags:
   - automation
   - gitea
   - homelab
-  - infrasturcture
+  - infrastructure
 layout: post.njk
 ---
 

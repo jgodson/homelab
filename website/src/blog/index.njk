@@ -1,78 +1,86 @@
 ---
 layout: base.njk
-title: Blog | Jason Godson
-description: Blog posts about technology, software development, and homelab projects by Jason Godson
+title: Notes & Articles | Jason Godson
+description: Blog posts and notes about technology, software development, side projects, and homelab experiments by Jason Godson.
 pagination:
   data: collections.blog
   size: 10
   alias: posts
 ---
 
-<div class="section">
-  <h2>📝 Blog Posts</h2>
-  <p>Thoughts, tutorials, and explorations in tech, development, and homelab projects.</p>
-  {% if collections.blog.length > 10 %}
-    <p class="browse-tags-link"><a href="/blog/tags/">Browse posts by tag →</a></p>
-  {% endif %}
+<div class="comic-page-header">
+  <div class="comic-section-heading-wrap">
+    <h1 class="comic-section-heading">NOTES & LOGS</h1>
+    <span class="comic-marker-underline"></span>
+  </div>
+  <p class="comic-page-subtitle">Ideas, build logs, and technical explorations from a curious maker.</p>
+  <div class="comic-filter-bar">
+    <a href="/blog/tags/" class="comic-secondary-btn">Browse all tags & topics →</a>
+  </div>
 </div>
 
-<div class="blog-list">
+<div class="comic-notes-list">
   {% for post in pagination.items %}
-    <article class="blog-preview">
-      <h3><a href="{{ post.url }}">{{ post.data.title }}</a></h3>
-      <div class="post-meta">
-        <time datetime="{{ post.date | dateToISO }}">{{ post.date | dateToFormat('MMMM d, yyyy') }}</time>
-        
-        {% if post.data.tags %}
-        <div class="post-tags">
-          {% for tag in post.data.tags %}
-            {% if tag != "blog" %}
-            <a href="/blog/tags/{{ tag | slug }}/" class="tag">{{ tag }}</a>
-            {% endif %}
-          {% endfor %}
-        </div>
-        {% endif %}
+    <article class="comic-note-card">
+      <div class="comic-note-card-header">
+        <h2 class="comic-note-card-title">
+          <a href="{{ post.url }}">{{ post.data.title }}</a>
+        </h2>
+        <time class="comic-date" datetime="{{ post.date | dateToISO }}">{{ post.date | dateToNoteFormat }}</time>
       </div>
+
+      {% if post.data.tags %}
+      <div class="comic-tag-list">
+        {% for tag in post.data.tags %}
+          {% if tag != "blog" %}
+          <a href="/blog/tags/{{ tag | slug }}/" class="comic-tag-pill">#{{ tag }}</a>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
       
       {% if post.data.description %}
-        <p>{{ post.data.description }}</p>
+        <p class="comic-note-card-desc">{{ post.data.description }}</p>
       {% endif %}
-      <a href="{{ post.url }}" class="read-more">Read more →</a>
+      
+      <div class="comic-note-card-footer">
+        <a href="{{ post.url }}" class="comic-read-link">Read note →</a>
+      </div>
     </article>
   {% endfor %}
 
   {% if collections.blog.length === 0 %}
-    <p>No blog posts yet. Check back soon!</p>
+    <p class="comic-empty-msg">No notes published yet. Check back soon!</p>
   {% endif %}
   
   {# Pagination controls #}
   {% if pagination.pages.length > 1 %}
-    <div class="pagination">
-        <div class="pagination-previous">
+    <nav class="comic-pagination" aria-label="Pagination">
+        <div class="comic-pagination-prev">
         {% if pagination.href.previous %}
-            <a href="{{ pagination.href.previous }}">← Previous</a>
+            <a href="{{ pagination.href.previous }}" class="comic-page-btn">← Previous</a>
         {% else %}
-            <span class="disabled">← Previous</span>
+            <span class="comic-page-btn disabled">← Previous</span>
         {% endif %}
         </div>
         
-        <div class="pagination-numbers">
+        <div class="comic-pagination-numbers">
         {% for pageNumber in pagination.pages %}
             {% if loop.index == pagination.pageNumber + 1 %}
-            <span class="current-page">{{ loop.index }}</span>
+            <span class="comic-page-btn current">{{ loop.index }}</span>
             {% else %}
-            <a href="{{ pagination.hrefs[loop.index0] }}">{{ loop.index }}</a>
+            <a href="{{ pagination.hrefs[loop.index0] }}" class="comic-page-btn">{{ loop.index }}</a>
             {% endif %}
         {% endfor %}
         </div>
         
-        <div class="pagination-next">
+        <div class="comic-pagination-next">
         {% if pagination.href.next %}
-            <a href="{{ pagination.href.next }}">Next →</a>
+            <a href="{{ pagination.href.next }}" class="comic-page-btn">Next →</a>
         {% else %}
-            <span class="disabled">Next →</span>
+            <span class="comic-page-btn disabled">Next →</span>
         {% endif %}
         </div>
-    </div>
+    </nav>
   {% endif %}
 </div>

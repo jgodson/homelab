@@ -9,7 +9,7 @@ tags:
   - telegraf
   - homelab
   - ssh
-  - infrastucture
+  - infrastructure
 layout: post.njk
 ---
 

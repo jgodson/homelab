@@ -11,6 +11,8 @@ tags:
   - ai
   - 3dprinting
   - grafana
+cover: ./src/assets/images/featured-note-pool.jpg
+coverAlt: Backyard above-ground pool with its cover on and pool toys resting on top
 layout: post.njk
 ---
 

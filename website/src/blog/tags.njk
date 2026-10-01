@@ -6,31 +6,42 @@ pagination:
 permalink: /blog/tags/{{ tag | slug }}/
 layout: base.njk
 eleventyComputed:
-  title: "Tag: {{ tag }} | Jason Godson"
-  description: "Blog posts tagged with '{{ tag }}'"
+  title: "Tag: #{{ tag }} | Jason Godson"
+  description: "Notes and writeups tagged with '{{ tag }}'"
 ---
 
-<div class="section">
-  <h2>Posts tagged with "{{ tag }}"</h2>
-  <p>All blog posts related to {{ tag }}</p>
+<div class="comic-page-header">
+  <div class="comic-section-heading-wrap">
+    <h1 class="comic-section-heading">TAG: #{{ tag }}</h1>
+    <span class="comic-marker-underline"></span>
+  </div>
+  <p class="comic-page-subtitle">All notes and writeups categorized under <code>#{{ tag }}</code></p>
+  <div class="comic-filter-bar">
+    <a href="/blog/tags/" class="comic-secondary-btn">← View all topics</a>
+  </div>
 </div>
 
-<div class="blog-list">
-  {% set tagList = collections[tag] %}
+<div class="comic-notes-list">
   {% for post in collections.blog %}
     {% if tag in post.data.tags %}
-      <article class="blog-preview">
-        <h3><a href="{{ post.url }}">{{ post.data.title }}</a></h3>
-        <time datetime="{{ post.date | dateToISO }}">{{ post.date | dateToFormat }}</time>
+      <article class="comic-note-card">
+        <div class="comic-note-card-header">
+          <h2 class="comic-note-card-title">
+            <a href="{{ post.url }}">{{ post.data.title }}</a>
+          </h2>
+          <time class="comic-date" datetime="{{ post.date | dateToISO }}">{{ post.date | dateToNoteFormat }}</time>
+        </div>
         {% if post.data.description %}
-          <p>{{ post.data.description }}</p>
+          <p class="comic-note-card-desc">{{ post.data.description }}</p>
         {% endif %}
-        <a href="{{ post.url }}" class="read-more">Read more →</a>
+        <div class="comic-note-card-footer">
+          <a href="{{ post.url }}" class="comic-read-link">Read note →</a>
+        </div>
       </article>
     {% endif %}
   {% endfor %}
 
-  <p class="back-link">
-    <a href="/blog/">← Back to all posts</a>
-  </p>
+  <div class="comic-back-center">
+    <a href="/blog/" class="comic-btn">← Back to all notes</a>
+  </div>
 </div>

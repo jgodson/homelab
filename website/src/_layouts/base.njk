@@ -3,22 +3,28 @@
   <head>
       <meta charset="UTF-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <meta name="description" content="{% if description %}{{ description }}{% else %}Jason Godson - Full Stack Developer with expertise in TypeScript, React, GraphQL, and infrastructure. Passionate about building scalable platforms and developer tools.{% endif %}">
+      <meta name="description" content="{% if description %}{{ description }}{% else %}Jason Godson - Full Stack Developer & Maker. Notes on software, side projects, and useful experiments.{% endif %}">
       <meta name="author" content="Jason Godson">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       
-      <meta property="og:title" content="{% if title %}{{ title }}{% else %}Jason Godson - Full Stack Developer{% endif %}">
-      <meta property="og:description" content="{% if description %}{{ description }}{% else %}Full Stack Developer with expertise in TypeScript, React, GraphQL, and infrastructure. Passionate about building scalable platforms and developer tools.{% endif %}">
+      <meta property="og:title" content="{% if title %}{{ title }}{% else %}Jason Godson | Notes on software, side projects, and useful experiments{% endif %}">
+      <meta property="og:description" content="{% if description %}{{ description }}{% else %}Ideas, build logs, and lessons from a curious maker.{% endif %}">
       <meta property="og:type" content="website">
       <meta property="og:url" content="https://jasongodson.com{% if page.url %}{{ page.url }}{% endif %}">
       
-      <meta name="twitter:card" content="summary">
-      <meta name="twitter:title" content="{% if title %}{{ title }}{% else %}Jason Godson - Full Stack Developer{% endif %}">
-      <meta name="twitter:description" content="{% if description %}{{ description }}{% else %}Full Stack Developer with expertise in TypeScript, React, GraphQL, and infrastructure.{% endif %}">
+      <meta name="twitter:card" content="summary_large_image">
+      <meta name="twitter:title" content="{% if title %}{{ title }}{% else %}Jason Godson{% endif %}">
+      <meta name="twitter:description" content="{% if description %}{{ description }}{% else %}Ideas, build logs, and lessons from a curious maker.{% endif %}">
     
-      <title>{% if title %}{{ title }}{% else %}Full Stack Developer | Jason Godson{% endif %}</title>
+      <title>{% if title %}{{ title }}{% else %}Jason Godson | Notes on software, side projects, and useful experiments{% endif %}</title>
     
       <link rel="icon" href="/assets/images/favicon.png" type="image/png">
+      
+      <!-- Google Fonts -->
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Special+Elite&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+      
       <link rel="stylesheet" href="/assets/css/styles.css">
       <link rel="stylesheet" href="/assets/css/all.min.css">
       <link rel="stylesheet" href="/assets/css/prism.css">
@@ -28,57 +34,63 @@
       <script src="/assets/js/slideshow.js" defer></script>
       <script src="/assets/js/lightbox.js" defer></script>
   </head>
-  <body>
-    <header>
-      <h1><a href="/">Jason Godson</a></h1>
-      <p>Passionate Full Stack Developer | Platform & Infrastructure Enthusiast</p>
-      <nav>
-        <ul>
-          <li><a href="/" {% if page.url == "/" %}class="active"{% endif %}>Home</a></li>
-          <li><a href="/blog/" {% if page.url.startsWith("/blog/") %}class="active"{% endif %}>Blog</a></li>
-          <li><a href="https://play.jasongodson.com" target="_blank" rel="noopener">Games</a></li>
-        </ul>
-      </nav>
+  <body class="comic-body">
+    <header class="comic-header">
+      <div class="comic-header-inner">
+        <a href="/" class="comic-logo">
+          <span class="comic-logo-text">JASON GODSON</span>
+          <span class="comic-logo-stroke"></span>
+        </a>
+        <nav class="comic-nav">
+          <a href="/blog/" class="comic-nav-link{% if page.url and page.url.startsWith('/blog/') and not page.url.startsWith('/blog/tags/') %} active{% endif %}">Notes</a>
+          <a href="/blog/tags/" class="comic-nav-link{% if page.url and page.url.startsWith('/blog/tags/') %} active{% endif %}">Topics</a>
+          <a href="/about/" class="comic-nav-link{% if page.url == '/about/' %} active{% endif %}">About</a>
+          <span class="comic-nav-sep" aria-hidden="true">|</span>
+          <a href="http://wildcatprojects.com" class="comic-nav-btn" target="_blank" rel="noopener">Wildcat<span class="comic-nav-btn-extra"> Projects</span> ↗</a>
+        </nav>
+      </div>
     </header>
 
-    <main>
+    <main class="comic-main-content">
       {{ content | safe }}
     </main>
 
-    <div id="footer">
-      <p>Find me in these other places!</p>
-      <div class="social-icons">
-        <a href="https://x.com/jgodson88" title="X (formerly Twitter)">
-          <img src="/assets/images/x.svg" alt="X (formerly Twitter)" class="custom-icon" />
-          <span class="tooltip-text">X.com</span>
-        </a>
-        <a href="https://github.com/jgodson" title="GitHub">
-          <i class="fab fa-github"></i>
-          <span class="tooltip-text">GitHub</span>
-        </a>
-        <a href="https://ca.linkedin.com/in/jason-godson-677b048a" title="LinkedIn">
-          <i class="fab fa-linkedin"></i>
-          <span class="tooltip-text">LinkedIn</span>
-        </a>
-        <a href="https://stackoverflow.com/users/5206878/jason-godson" title="Stack Overflow">
-          <i class="fab fa-stack-overflow"></i>
-          <span class="tooltip-text">Stack Overflow</span>
-        </a>
-        <a href="https://www.youtube.com/@JasonGodson" title="YouTube">
-          <i class="fab fa-youtube"></i>
-          <span class="tooltip-text">YouTube</span>
-        </a>
-        <a href="https://www.printables.com/@jgodson_191191" title="Printables">
-          <i class="far fa-cube"></i>
-          <span class="tooltip-text">Printables</span>
-        </a>
-        <a href="/feed.xml" title="Subscribe to my Atom Feed">
-          <i class="fas fa-rss"></i>
-          <span class="tooltip-text">Atom Feed</span>
-        </a>
-      </div>      
-      <p>© 2026 Jason Godson</p>
-    </div>
+    <footer class="comic-footer">
+      <div class="comic-footer-inner">
+        <p class="comic-footer-tagline">Find me in these other places!</p>
+        <div class="comic-social-links">
+          <a href="https://x.com/jgodson88" title="X (formerly Twitter)" target="_blank" rel="noopener">
+            <img src="/assets/images/x.svg" alt="X (formerly Twitter)" class="comic-custom-social-icon" />
+            <span class="comic-tooltip">X.com</span>
+          </a>
+          <a href="https://github.com/jgodson" title="GitHub" target="_blank" rel="noopener">
+            <i class="fab fa-github"></i>
+            <span class="comic-tooltip">GitHub</span>
+          </a>
+          <a href="https://ca.linkedin.com/in/jason-godson-677b048a" title="LinkedIn" target="_blank" rel="noopener">
+            <i class="fab fa-linkedin"></i>
+            <span class="comic-tooltip">LinkedIn</span>
+          </a>
+          <a href="https://stackoverflow.com/users/5206878/jason-godson" title="Stack Overflow" target="_blank" rel="noopener">
+            <i class="fab fa-stack-overflow"></i>
+            <span class="comic-tooltip">Stack Overflow</span>
+          </a>
+          <a href="https://www.youtube.com/@JasonGodson" title="YouTube" target="_blank" rel="noopener">
+            <i class="fab fa-youtube"></i>
+            <span class="comic-tooltip">YouTube</span>
+          </a>
+          <a href="https://www.printables.com/@jgodson_191191" title="Printables" target="_blank" rel="noopener">
+            <i class="far fa-cube"></i>
+            <span class="comic-tooltip">Printables</span>
+          </a>
+          <a href="/feed.xml" title="Subscribe to Atom Feed">
+            <i class="fas fa-rss"></i>
+            <span class="comic-tooltip">Atom Feed</span>
+          </a>
+        </div>      
+        <p class="comic-copyright">© 2026 Jason Godson</p>
+      </div>
+    </footer>
 
     <!-- Lightbox -->
     <div id="lightbox" class="lightbox">

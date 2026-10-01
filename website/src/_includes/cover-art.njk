@@ -1,0 +1,67 @@
+{# Generated cover art for posts without a `cover` image. Expects `post` in scope. #}
+{% set tags = post.data.tags or [] %}
+{% if 'gamedev' in tags or 'gaming' in tags or 'godot' in tags or 'multiplayer' in tags or 'roblox' in tags %}
+  {% set motif = 'controller' %}
+{% elif 'hardware' in tags or 'esp32' in tags or '3dprinting' in tags %}
+  {% set motif = 'chip' %}
+{% elif 'ai' in tags or 'llm' in tags %}
+  {% set motif = 'chip-ai' %}
+{% elif 'monitoring' in tags or 'grafana' in tags %}
+  {% set motif = 'graph' %}
+{% elif 'finance' in tags or 'spendseer' in tags or 'saas' in tags or 'business' in tags %}
+  {% set motif = 'chart' %}
+{% elif 'kubernetes' in tags or 'homelab' in tags or 'proxmox' in tags or 'talos' in tags or 'infrastructure' in tags or 'docker' in tags or 'gitea' in tags or 'cloudflare' in tags %}
+  {% set motif = 'rack' %}
+{% elif 'rails' in tags or 'rust' in tags or 'backend' in tags or 'frontend' in tags or 'database' in tags or 'scripting' in tags or 'website' in tags %}
+  {% set motif = 'code' %}
+{% else %}
+  {% set motif = 'note' %}
+{% endif %}
+{% set labelTag = '' %}
+{% for t in tags %}{% if t != 'blog' and labelTag == '' %}{% set labelTag = t %}{% endif %}{% endfor %}
+<div class="comic-cover-art" aria-hidden="true">
+  <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false">
+    <circle cx="320" cy="180" r="128" fill="#ffedd5" stroke="#18181b" stroke-width="4" stroke-dasharray="2 12" stroke-linecap="round"/>
+    <g class="comic-cover-motif" stroke="#18181b" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+    {% if motif == 'rack' %}
+      <rect x="210" y="62" width="220" height="58" rx="6" fill="#fffef9"/>
+      <rect x="210" y="130" width="220" height="58" rx="6" fill="#eb5e28"/>
+      <rect x="210" y="198" width="220" height="58" rx="6" fill="#fffef9"/>
+      <g fill="#18181b" stroke="none"><circle cx="236" cy="91" r="6"/><circle cx="256" cy="91" r="6"/><circle cx="236" cy="159" r="6"/><circle cx="256" cy="159" r="6"/><circle cx="236" cy="227" r="6"/><circle cx="256" cy="227" r="6"/></g>
+      <path d="M320 80h90M320 100h90M320 148h90M320 168h90M320 216h90M320 236h90" stroke-width="4"/>
+    {% elif motif == 'chip' or motif == 'chip-ai' %}
+      <path d="M272 64v28M304 64v28M336 64v28M368 64v28M272 268v28M304 268v28M336 268v28M368 268v28M224 112h28M224 144h28M224 176h28M224 208h28M388 112h28M388 144h28M388 176h28M388 208h28" stroke-width="9"/>
+      <rect x="244" y="88" width="152" height="184" rx="14" fill="#eb5e28"/>
+      <rect x="268" y="116" width="104" height="128" rx="8" fill="#fffef9" stroke-width="4"/>
+      {% if motif == 'chip-ai' %}<text x="320" y="204" text-anchor="middle" font-family="'Permanent Marker', cursive" font-size="64" fill="#18181b" stroke="none">AI</text>{% else %}<path d="M290 150h40v20h24M290 190h24M334 190v30M290 220h12" stroke-width="4" fill="none"/>{% endif %}
+    {% elif motif == 'controller' %}
+      <path d="M222 156C222 112 252 100 284 106H356C388 100 418 112 418 156L430 232C433 262 400 266 384 242L368 222H272L256 242C240 266 207 262 210 232Z" fill="#fffef9"/>
+      <path d="M268 140v40M248 160h40" stroke-width="12"/>
+      <circle cx="372" cy="146" r="13" fill="#eb5e28"/><circle cx="398" cy="170" r="13" fill="#eb5e28"/>
+      <path d="M316 150h8M316 168h8" stroke-width="6"/>
+    {% elif motif == 'graph' %}
+      <rect x="196" y="76" width="248" height="184" rx="8" fill="#fffef9"/>
+      <path d="M216 236h208" stroke-width="3"/>
+      <path d="M216 216 256 178 292 198 332 128 368 158 424 100" fill="none" stroke-width="16"/>
+      <path d="M216 216 256 178 292 198 332 128 368 158 424 100" fill="none" stroke="#eb5e28" stroke-width="7"/>
+      <circle cx="332" cy="128" r="9" fill="#fffef9"/><circle cx="424" cy="100" r="9" fill="#fffef9"/>
+    {% elif motif == 'chart' %}
+      <path d="M212 258h226" stroke-width="6"/>
+      <rect x="234" y="196" width="48" height="62" fill="#fffef9"/>
+      <rect x="298" y="150" width="48" height="108" fill="#eb5e28"/>
+      <rect x="362" y="104" width="48" height="154" fill="#fffef9"/>
+      <circle cx="252" cy="120" r="34" fill="#eb5e28"/>
+      <text x="252" y="136" text-anchor="middle" font-family="'Permanent Marker', cursive" font-size="44" fill="#18181b" stroke="none">$</text>
+    {% elif motif == 'code' %}
+      <g fill="none"><path d="M270 112 214 180 270 248" stroke-width="30"/><path d="M370 112 426 180 370 248" stroke-width="30"/><path d="M346 96 294 264" stroke-width="30"/>
+      <path d="M270 112 214 180 270 248" stroke="#eb5e28" stroke-width="16"/><path d="M370 112 426 180 370 248" stroke="#eb5e28" stroke-width="16"/><path d="M346 96 294 264" stroke="#fffef9" stroke-width="16"/></g>
+    {% else %}
+      <rect x="226" y="68" width="188" height="224" rx="6" fill="#fffef9"/>
+      <rect x="226" y="68" width="188" height="36" rx="6" fill="#eb5e28"/>
+      <path d="M252 138h136M252 170h136M252 202h136M252 234h86" stroke-width="3"/>
+      <path d="M404 232l30-70 22 10-30 70-26 10z" fill="#ffedd5"/>
+    {% endif %}
+    </g>
+  </svg>
+  {% if labelTag %}<span class="comic-cover-tag">#{{ labelTag }}</span>{% endif %}
+</div>

@@ -7,7 +7,7 @@ tags:
   - postgresql
   - database
   - homelab
-  - infrastucture
+  - infrastructure
 layout: post.njk
 ---
 

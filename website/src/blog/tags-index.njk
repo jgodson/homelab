@@ -1,30 +1,38 @@
 ---
 layout: base.njk
-title: Blog Tags | Jason Godson
-description: Browse blog posts by topic and interest
+title: Topics | Jason Godson
+description: Browse notes and articles by topic, project, and tags.
 permalink: /blog/tags/
 ---
 
-<div class="section">
-  <h2>Browse Posts by Tag</h2>
-  <p>Find blog posts by topic and interest</p>
+<div class="comic-page-header">
+  <div class="comic-section-heading-wrap">
+    <h1 class="comic-section-heading">TOPICS</h1>
+    <span class="comic-marker-underline"></span>
+  </div>
+  <p class="comic-page-subtitle">Explore notes, guides, and experiments grouped by topic.</p>
 </div>
 
-<div class="tags-page">
+<div class="comic-tags-container">
   {% if collections.tagList.length %}
-    <div class="tags-cloud">
-      {% for tag in collections.tagList %}
-        <a href="/blog/tags/{{ tag | slug }}/" class="tag-cloud-item">
-          <span class="tag">{{ tag }}</span>
-          <span class="tag-count">{{ collections.blog | getPostsByTag(tag) | length }}</span>
-        </a>
-      {% endfor %}
-    </div>
+    {% for group in collections.tagList | groupTags(collections.blog, tagGroups) %}
+      <section class="comic-tag-group">
+        <h2 class="comic-tag-group-title">{{ group.title }}</h2>
+        <div class="comic-tag-cloud">
+          {% for tag in group.tags %}
+            <a href="/blog/tags/{{ tag.name | slug }}/" class="comic-tag-bubble">
+              <span class="comic-tag-label">#{{ tag.name }}</span>
+              <span class="comic-tag-count">{{ tag.count }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      </section>
+    {% endfor %}
   {% else %}
-    <p>No tags found.</p>
+    <p class="comic-empty-msg">No tags found.</p>
   {% endif %}
   
-  <p class="back-link">
-    <a href="/blog/">← Back to all posts</a>
-  </p>
+  <div class="comic-back-center">
+    <a href="/blog/" class="comic-btn">← Back to all notes</a>
+  </div>
 </div>

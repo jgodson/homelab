@@ -10,7 +10,7 @@ tags:
   - monitoring
   - caddy
   - cloudflare
-  - infrastucture
+  - infrastructure
 layout: post.njk
 ---
 

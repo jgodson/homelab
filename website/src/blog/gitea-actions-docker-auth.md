@@ -8,7 +8,7 @@ tags:
   - docker
   - ci-cd
   - homelab
-  - infrastucture
+  - infrastructure
 layout: post.njk
 ---
 

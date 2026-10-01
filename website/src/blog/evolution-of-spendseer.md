@@ -7,6 +7,8 @@ tags:
   - product
   - spendseer
   - rails
+cover: ./src/assets/images/spendseer-evolution-dashboard-overview.png
+coverAlt: SpendSeer dashboard overview with yearly, monthly, and upcoming payment sections
 layout: post.njk
 spendseerTourYoutubeId: "ts9x8yIC0r4"
 ---
@@ -23,7 +25,7 @@ I went back through the commits for this because it is easy to remember the curr
 
 ## Launch Baseline: The Yearly View
 
-At launch, SpendSeer already had the SaaS wrapper around it: accounts, workspaces, billing, a public demo, imports, budgets, categories, rules, loans, goals, and the infrastucture it needed.
+At launch, SpendSeer already had the SaaS wrapper around it: accounts, workspaces, billing, a public demo, imports, budgets, categories, rules, loans, goals, and the infrastructure it needed.
 
 But the main screen was not the dashboard hub it has now. The dashboard route was the yearly overview: one big annual view with charts, category rows, budget amounts, monthly actuals, and totals.
 

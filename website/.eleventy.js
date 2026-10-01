@@ -53,6 +53,11 @@ module.exports = function(eleventyConfig) {
     "'": "&#39;"
   }[character]));
 
+  // Shared "taped-in figure" frame used by single images and slideshows.
+  // Keep the markup on one line so Markdown does not inject paragraphs.
+  const figureBar = (caption, label) =>
+    `<figcaption class="comic-figure-bar"><span class="comic-figure-check" aria-hidden="true">&#10003;</span><span class="comic-figure-caption">${escapeHtml(caption)}</span><span class="comic-figure-label" data-fig-label="${escapeHtml(label)}"></span></figcaption>`;
+
   // Simplified image shortcode focusing on WebP optimization
   eleventyConfig.addShortcode("image", async function(src, alt, sizes = "100vw", maxWidth = null) {
     if (!src) {
@@ -110,12 +115,41 @@ module.exports = function(eleventyConfig) {
       class: "responsive-image"
     };
     
-    // Add style attribute for max-width and centering if maxWidth is provided
-    if (maxWidth) {
-      imageAttributes.style = `max-width: ${maxWidth}; display: block; margin: 0 auto;`;
+    const figureStyle = maxWidth ? ` style="max-width: ${maxWidth};"` : "";
+    const pageTitle = (this.page && this.ctx && this.ctx.title) || "";
+
+    return `<figure class="comic-figure"${figureStyle}><div class="comic-figure-media">${Image.generateHTML(metadata, imageAttributes)}</div>${figureBar(alt, pageTitle)}</figure>`;
+  });
+
+  // Card cover image (optional `cover` front matter). Cropped to 16:9 by CSS.
+  eleventyConfig.addShortcode("cover", async function(src, alt) {
+    if (!src || !alt) {
+      throw new Error(`cover shortcode needs a source and alt text`);
     }
-    
-    return Image.generateHTML(metadata, imageAttributes);
+
+    const metadata = await Image(src, {
+      widths: [480, 720, 1000],
+      formats: ["webp", "jpeg"],
+      outputDir: "./src_site/assets/images/",
+      urlPath: "/assets/images/",
+      concurrency: imageConcurrency,
+      cacheOptions: {
+        duration: "1d",
+        directory: imageCacheDir
+      },
+      filenameFormat: function(_, imageSrc, width, format) {
+        const name = path.basename(imageSrc, path.extname(imageSrc));
+        return `${name}-cover-${width}w.${format}`;
+      }
+    });
+
+    return Image.generateHTML(metadata, {
+      alt,
+      sizes: "(min-width: 900px) 520px, 100vw",
+      loading: "lazy",
+      decoding: "async",
+      class: "comic-lead-img"
+    });
   });
 
   eleventyConfig.addPairedShortcode("slideshow", async function(content) {
@@ -181,7 +215,9 @@ module.exports = function(eleventyConfig) {
       }
     }
     
-    return `<div class="slideshow-container" id="${slideshowId}" tabindex="0" aria-label="Image Slideshow">${slidesHtml}<a class="prev">&#10094;</a><a class="next">&#10095;</a></div>`;
+    const pageTitle = (this.page && this.ctx && this.ctx.title) || "";
+
+    return `<figure class="comic-figure comic-figure--slideshow"><div class="comic-figure-media"><div class="slideshow-container" id="${slideshowId}" tabindex="0" aria-label="Image Slideshow">${slidesHtml}<a class="prev">&#10094;</a><a class="next">&#10095;</a></div></div>${figureBar("", pageTitle)}</figure>`;
   });
 
   eleventyConfig.addShortcode("youtubeEmbed", function(videoId, title = "YouTube video", caption = "") {
@@ -243,6 +279,31 @@ module.exports = function(eleventyConfig) {
     return [...tagSet].sort();
   });
 
+  // Group tags (with post counts) into the curated topic groups; leftovers go in "More"
+  eleventyConfig.addFilter("groupTags", function(tags, posts, groups) {
+    const countFor = (tag) => posts.filter((post) => post.data.tags && post.data.tags.includes(tag)).length;
+    const available = new Set(tags);
+    const placed = new Set();
+
+    const build = (title, names) => ({
+      title,
+      tags: names
+        .filter((name) => available.has(name))
+        .map((name) => ({ name, count: countFor(name) }))
+        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+    });
+
+    const grouped = groups.map((group) => {
+      group.tags.forEach((name) => placed.add(name));
+      return build(group.title, group.tags);
+    });
+
+    const leftovers = tags.filter((name) => !placed.has(name));
+    if (leftovers.length) grouped.push(build("More", leftovers));
+
+    return grouped.filter((group) => group.tags.length);
+  });
+
   // Add filter to get posts by tag
   eleventyConfig.addFilter("getPostsByTag", function(posts, tag) {
     return posts.filter((post) => {
@@ -261,6 +322,22 @@ module.exports = function(eleventyConfig) {
     ));
     const options = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' };
     return utcDate.toLocaleDateString('en-US', options);
+  });
+
+  eleventyConfig.addFilter("dateToNoteFormat", function(date) {
+    if (!date) return '';
+
+    const dateObj = date instanceof Date ? date : new Date(date);
+    const utcDate = new Date(Date.UTC(
+      dateObj.getUTCFullYear(),
+      dateObj.getUTCMonth(),
+      dateObj.getUTCDate()
+    ));
+    const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    const month = months[utcDate.getUTCMonth()];
+    const day = utcDate.getUTCDate();
+    const year = utcDate.getUTCFullYear();
+    return `${month} ${day}, ${year}`;
   });
 
   eleventyConfig.addFilter("dateToISO", function(date) {

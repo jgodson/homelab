@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
       slides[0].style.display = 'block';
     }
     
+    updateFigureBar(slideshow);
+
     // Attach event listeners
     const prev = slideshow.querySelector('.prev');
     const next = slideshow.querySelector('.next');
@@ -58,4 +60,21 @@ function changeSlide(slideshow, n) {
   
   // Show new slide
   slides[newIndex].style.display = 'block';
+  updateFigureBar(slideshow);
+}
+
+// Show the active slide's caption and position in the figure's caption bar
+function updateFigureBar(slideshow) {
+  const figure = slideshow.closest('.comic-figure');
+  if (!figure) return;
+
+  const slides = Array.from(slideshow.querySelectorAll('.mySlides'));
+  const index = slides.findIndex((slide) => slide.style.display === 'block');
+  if (index === -1) return;
+
+  const text = slides[index].querySelector('.text');
+  const caption = figure.querySelector('.comic-figure-caption');
+  const label = figure.querySelector('.comic-figure-label');
+  if (caption) caption.textContent = text ? text.textContent : '';
+  if (label) label.dataset.figLabel = `${index + 1}/${slides.length}`;
 }
