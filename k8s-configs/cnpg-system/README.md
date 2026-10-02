@@ -102,7 +102,7 @@ Backup is already configured in `cluster.yaml` (continuous WAL archiving + barma
 ### What's Backed Up
 
 - **Continuous WAL archiving**: Every WAL segment is compressed (gzip) and uploaded to MinIO as it's produced. Enables point-in-time recovery.
-- **Daily base backups**: Full base backup at 3:00 AM daily, compressed with gzip, 30-day retention.
+- **Daily base backups**: Full base backup at 3:00 AM daily, compressed with gzip, 7-day retention.
 - **Offsite replication**: rclone syncs the `cnpg-backups` bucket every 6 hours.
 - **Storage**: MinIO bucket `cnpg-backups` at `http://192.168.1.252:9000`
 
@@ -363,7 +363,7 @@ kubectl exec -i postgresql-pg-1 -n postgresql -- \
 ### Automated Backups
 
 Automated backups are configured - see [Backup Configuration](#backup-configuration) above for details.
-Continuous WAL archiving + daily base backups to MinIO with 30-day retention.
+Continuous WAL archiving + daily base backups to MinIO with 7-day retention.
 
 ## Troubleshooting
 

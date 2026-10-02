@@ -58,6 +58,7 @@ services:
           rclone sync minio:$$bucket gdrive:homelab-backups/$$bucket \
             --transfers 4 \
             --checkers 8 \
+            --drive-use-trash=false \
             --log-level INFO \
             --stats 30s \
             2>&1 || echo "Warning: sync failed for $$bucket"

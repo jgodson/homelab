@@ -76,7 +76,7 @@ spec:
                   timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
                   mc alias set backup "${MINIO_ENDPOINT}" "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}"
                   mc cp /backup/gitea-data.zip "backup/gitea-backups/gitea-data-${timestamp}.zip"
-                  mc rm --recursive --force --older-than 30d backup/gitea-backups/
+                  mc rm --recursive --force --older-than 7d backup/gitea-backups/
               env:
                 - name: MINIO_ENDPOINT
                   value: http://192.168.1.252:9000

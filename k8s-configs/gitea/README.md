@@ -210,7 +210,7 @@ kubectl create secret generic gitea-minio-credentials \
 kubectl apply -f backup-cronjob.yaml
 ```
 
-The CronJob runs daily at `04:00` and retains 30 days in the `gitea-backups` bucket. MinIO's existing rclone service then copies that bucket to offsite storage.
+The CronJob runs daily at `04:00` and retains 7 days in the `gitea-backups` bucket. MinIO's existing rclone service then copies that bucket to offsite storage.
 
 Run and verify an immediate backup:
 

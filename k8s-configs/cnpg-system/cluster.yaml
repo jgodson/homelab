@@ -59,7 +59,7 @@ spec:
         maxParallel: 2
       data:
         compression: gzip
-    retentionPolicy: "30d"
+    retentionPolicy: "7d"
 
   # PostgreSQL configuration
   postgresql:
