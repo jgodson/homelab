@@ -57,6 +57,46 @@ services:
     networks:
       - proxy-network
 
+  # Privacy-friendly web analytics. Only the tracker script and collect endpoint
+  # are exposed publicly (via Caddy); the dashboard is LAN-only on :8081.
+  # Secrets live in ./umami.env (not in git), see README.
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    <<: *default-logging
+    container_name: umami
+    restart: unless-stopped
+    env_file:
+      - ./umami.env
+    environment:
+      # Non-default names so ad blockers' generic "umami" rules don't match
+      - TRACKER_SCRIPT_NAME=u.js
+      - COLLECT_API_ENDPOINT=/api/u
+      - DISABLE_TELEMETRY=1
+    ports:
+      - "8081:3000"
+    depends_on:
+      umami-db:
+        condition: service_healthy
+    networks:
+      - proxy-network
+
+  umami-db:
+    image: postgres:17-alpine
+    <<: *default-logging
+    container_name: umami-db
+    restart: unless-stopped
+    env_file:
+      - ./umami.env
+    volumes:
+      - umami-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - proxy-network
+
   crowdsec:
     image: crowdsecurity/crowdsec:latest
     <<: *default-logging
@@ -75,6 +115,9 @@ services:
       - ./caddy/logs:/var/log/caddy:ro
     networks:
       - proxy-network
+
+volumes:
+  umami-db-data:
 
 networks:
   proxy-network:

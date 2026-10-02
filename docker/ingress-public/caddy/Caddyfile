@@ -79,6 +79,17 @@
     log_key
   }
 
+  # Umami tracker script + collect endpoint. Served same-origin so the CSP stays
+  # 'self' (wildcatprojects.com loads it cross-origin), and never cached so
+  # Cloudflare can't swallow views.
+  @umami path /u.js /api/u
+  handle @umami {
+    header Cache-Control "no-store"
+    reverse_proxy umami:3000 {
+      header_up X-Forwarded-For {client_ip}
+    }
+  }
+
   handle {
     # Proxy to Traefik directly
     reverse_proxy 192.168.1.35:80 {

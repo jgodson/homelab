@@ -215,6 +215,10 @@ The website is hosted on the Kubernetes cluster. Caddy is configured to reverse 
 
 For more details on building and deploying the website, see the [website README](../../website/README.md).
 
+### Page View Analytics (Umami)
+
+Views are counted client-side so Cloudflare caching doesn't hide them. Umami runs alongside Caddy, which exposes only its tracker script and collect endpoint publicly; the dashboard is LAN-only. Secrets go in an untracked `umami.env` (`POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `DATABASE_URL`, `APP_SECRET`). `umami-backup.sh` dumps the database nightly via cron.
+
 ### Security Monitoring
 
 Monitor CrowdSec for security events:
