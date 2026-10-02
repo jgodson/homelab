@@ -1,0 +1,201 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: grafana-backup
+  namespace: monitoring
+spec:
+  schedule: "30 4 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: grafana-backup
+        spec:
+          restartPolicy: Never
+          securityContext:
+            fsGroup: 472
+          # The data volume is ReadWriteOnce, so run on the same node as the app
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/instance: grafana
+                      app.kubernetes.io/name: grafana
+                  topologyKey: kubernetes.io/hostname
+          initContainers:
+            - name: create-archive
+              image: busybox:1.37
+              command: ["/bin/sh", "-ec"]
+              args:
+                - |
+                  tar czf /backup/grafana.tar.gz -C /data --exclude=./plugins --exclude=./lost+found .
+                  test -s /backup/grafana.tar.gz
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 472
+                runAsGroup: 472
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              volumeMounts:
+                - name: data
+                  mountPath: /data
+                  readOnly: true
+                - name: backup
+                  mountPath: /backup
+          containers:
+            - name: upload
+              image: minio/mc:latest
+              imagePullPolicy: IfNotPresent
+              command: ["/bin/sh", "-ec"]
+              args:
+                - |
+                  timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+                  mc alias set backup "${MINIO_ENDPOINT}" "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}"
+                  mc cp /backup/grafana.tar.gz "backup/k8s-app-backups/grafana/grafana-${timestamp}.tar.gz"
+                  mc rm --recursive --force --older-than 7d "backup/k8s-app-backups/grafana/"
+              env:
+                - name: MINIO_ENDPOINT
+                  value: http://192.168.1.252:9000
+                - name: MINIO_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: k8s-app-backups-minio-credentials
+                      key: MINIO_ACCESS_KEY
+                - name: MINIO_SECRET_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: k8s-app-backups-minio-credentials
+                      key: MINIO_SECRET_KEY
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+                  readOnly: true
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: grafana
+            - name: backup
+              emptyDir: {}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: uptime-kuma-backup
+  namespace: monitoring
+spec:
+  schedule: "45 4 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: uptime-kuma-backup
+        spec:
+          restartPolicy: Never
+          securityContext:
+            fsGroup: 1000
+          # The data volume is ReadWriteOnce, so run on the same node as the app
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app: uptime-kuma
+                  topologyKey: kubernetes.io/hostname
+          initContainers:
+            - name: create-archive
+              image: busybox:1.37
+              command: ["/bin/sh", "-ec"]
+              args:
+                - |
+                  tar czf /backup/uptime-kuma.tar.gz -C /data .
+                  test -s /backup/uptime-kuma.tar.gz
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 1000
+                runAsGroup: 1000
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              volumeMounts:
+                - name: data
+                  mountPath: /data
+                  readOnly: true
+                  subPath: uptime-kuma
+                - name: backup
+                  mountPath: /backup
+          containers:
+            - name: upload
+              image: minio/mc:latest
+              imagePullPolicy: IfNotPresent
+              command: ["/bin/sh", "-ec"]
+              args:
+                - |
+                  timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+                  mc alias set backup "${MINIO_ENDPOINT}" "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}"
+                  mc cp /backup/uptime-kuma.tar.gz "backup/k8s-app-backups/uptime-kuma/uptime-kuma-${timestamp}.tar.gz"
+                  mc rm --recursive --force --older-than 7d "backup/k8s-app-backups/uptime-kuma/"
+              env:
+                - name: MINIO_ENDPOINT
+                  value: http://192.168.1.252:9000
+                - name: MINIO_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: k8s-app-backups-minio-credentials
+                      key: MINIO_ACCESS_KEY
+                - name: MINIO_SECRET_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: k8s-app-backups-minio-credentials
+                      key: MINIO_SECRET_KEY
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+                  readOnly: true
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: uptime-kuma-data
+            - name: backup
+              emptyDir: {}

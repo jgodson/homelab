@@ -53,7 +53,7 @@ services:
       - -c
       - |
         echo "Starting rclone sync to Google Drive at $$(date)"
-        for bucket in cnpg-backups docker-backups etcd-backups gitea-backups tofu-state; do
+        for bucket in cnpg-backups docker-backups etcd-backups gitea-backups tofu-state k8s-app-backups; do
           echo "Syncing $$bucket..."
           rclone sync minio:$$bucket gdrive:homelab-backups/$$bucket \
             --transfers 4 \
