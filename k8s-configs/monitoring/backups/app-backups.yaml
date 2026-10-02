@@ -59,24 +59,30 @@ spec:
                   mountPath: /backup
           containers:
             - name: upload
-              image: minio/mc:latest
+              image: rclone/rclone:latest
               imagePullPolicy: IfNotPresent
               command: ["/bin/sh", "-ec"]
               args:
                 - |
                   timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
-                  mc alias set backup "${MINIO_ENDPOINT}" "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}"
-                  mc cp /backup/grafana.tar.gz "backup/k8s-app-backups/grafana/grafana-${timestamp}.tar.gz"
-                  mc rm --recursive --force --older-than 7d "backup/k8s-app-backups/grafana/"
+                  rclone copyto /backup/grafana.tar.gz "backup:k8s-app-backups/grafana/grafana-${timestamp}.tar.gz"
+                  rclone delete --min-age 7d "backup:k8s-app-backups/grafana"
               env:
-                - name: MINIO_ENDPOINT
+                - name: RCLONE_CONFIG_BACKUP_TYPE
+                  value: s3
+                - name: RCLONE_CONFIG_BACKUP_PROVIDER
+                  value: Minio
+                - name: RCLONE_CONFIG_BACKUP_ENDPOINT
                   value: http://192.168.1.252:9000
-                - name: MINIO_ACCESS_KEY
+                # The credentials can't create buckets
+                - name: RCLONE_CONFIG_BACKUP_NO_CHECK_BUCKET
+                  value: "true"
+                - name: RCLONE_CONFIG_BACKUP_ACCESS_KEY_ID
                   valueFrom:
                     secretKeyRef:
                       name: k8s-app-backups-minio-credentials
                       key: MINIO_ACCESS_KEY
-                - name: MINIO_SECRET_KEY
+                - name: RCLONE_CONFIG_BACKUP_SECRET_ACCESS_KEY
                   valueFrom:
                     secretKeyRef:
                       name: k8s-app-backups-minio-credentials
@@ -160,24 +166,30 @@ spec:
                   mountPath: /backup
           containers:
             - name: upload
-              image: minio/mc:latest
+              image: rclone/rclone:latest
               imagePullPolicy: IfNotPresent
               command: ["/bin/sh", "-ec"]
               args:
                 - |
                   timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
-                  mc alias set backup "${MINIO_ENDPOINT}" "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}"
-                  mc cp /backup/uptime-kuma.tar.gz "backup/k8s-app-backups/uptime-kuma/uptime-kuma-${timestamp}.tar.gz"
-                  mc rm --recursive --force --older-than 7d "backup/k8s-app-backups/uptime-kuma/"
+                  rclone copyto /backup/uptime-kuma.tar.gz "backup:k8s-app-backups/uptime-kuma/uptime-kuma-${timestamp}.tar.gz"
+                  rclone delete --min-age 7d "backup:k8s-app-backups/uptime-kuma"
               env:
-                - name: MINIO_ENDPOINT
+                - name: RCLONE_CONFIG_BACKUP_TYPE
+                  value: s3
+                - name: RCLONE_CONFIG_BACKUP_PROVIDER
+                  value: Minio
+                - name: RCLONE_CONFIG_BACKUP_ENDPOINT
                   value: http://192.168.1.252:9000
-                - name: MINIO_ACCESS_KEY
+                # The credentials can't create buckets
+                - name: RCLONE_CONFIG_BACKUP_NO_CHECK_BUCKET
+                  value: "true"
+                - name: RCLONE_CONFIG_BACKUP_ACCESS_KEY_ID
                   valueFrom:
                     secretKeyRef:
                       name: k8s-app-backups-minio-credentials
                       key: MINIO_ACCESS_KEY
-                - name: MINIO_SECRET_KEY
+                - name: RCLONE_CONFIG_BACKUP_SECRET_ACCESS_KEY
                   valueFrom:
                     secretKeyRef:
                       name: k8s-app-backups-minio-credentials
