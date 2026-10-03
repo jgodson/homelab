@@ -11,10 +11,16 @@
       <meta property="og:description" content="{% if description %}{{ description }}{% else %}Ideas, build logs, and lessons from a curious maker.{% endif %}">
       <meta property="og:type" content="website">
       <meta property="og:url" content="https://jasongodson.com{% if page.url %}{{ page.url }}{% endif %}">
-      
+      <meta property="og:site_name" content="Jason Godson">
+      {# Share image: the post's `cover` if it has one, otherwise the site banner #}
+      {% set shareImage = cover | replace("./src/", "/") if cover else "/assets/images/comic-hero-banner.jpg" %}
+      <meta property="og:image" content="https://jasongodson.com{{ shareImage }}">
+      <meta property="og:image:alt" content="{{ coverAlt if cover and coverAlt else 'Jason Godson' }}">
+
       <meta name="twitter:card" content="summary_large_image">
       <meta name="twitter:title" content="{% if title %}{{ title }}{% else %}Jason Godson{% endif %}">
       <meta name="twitter:description" content="{% if description %}{{ description }}{% else %}Ideas, build logs, and lessons from a curious maker.{% endif %}">
+      <meta name="twitter:image" content="https://jasongodson.com{{ shareImage }}">
     
       <title>{% if title %}{{ title }}{% else %}Jason Godson | Notes on software, side projects, and useful experiments{% endif %}</title>
     
