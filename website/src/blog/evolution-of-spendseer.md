@@ -13,6 +13,11 @@ layout: post.njk
 spendseerTourYoutubeId: "ts9x8yIC0r4"
 ---
 
+<aside class="comic-update-note">
+  <p class="comic-update-note-label">Update · October 2026</p>
+  <p>SpendSeer has a new look since this post. <a href="/blog/spendseer-paper-redesign/">Read about the redesign and watch the new tour</a>.</p>
+</aside>
+
 When I wrote about launching SpendSeer in April, one line was more true than I probably realized at the time: the post was late because I kept adding features.
 
 This post is basically the longer version of that.
