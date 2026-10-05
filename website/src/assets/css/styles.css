@@ -1388,6 +1388,56 @@ p {
   margin-bottom: 0;
 }
 
+/* An update added to an older post: a sticky note taped onto the page */
+.comic-update-note {
+  position: relative;
+  width: fit-content;
+  max-width: min(100%, 30rem);
+  margin: 2.25rem auto;
+  padding: 1.4rem 1.4rem 1.2rem;
+  background:
+    linear-gradient(225deg, rgba(0, 0, 0, 0.1) 0, rgba(0, 0, 0, 0) 16px, transparent 16px),
+    #fff0a0;
+  color: #3a3418;
+  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.14), 0 1px 2px rgba(0, 0, 0, 0.08);
+  transform: rotate(-1.2deg);
+}
+
+/* Tape strip holding the note up, like the note cards */
+.comic-update-note::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  margin-left: -36px;
+  width: 72px;
+  height: 20px;
+  background: rgba(235, 222, 195, 0.85);
+  border: 1px dashed rgba(160, 145, 120, 0.5);
+  border-radius: 1px;
+  transform: rotate(3deg);
+  pointer-events: none;
+}
+
+.comic-update-note p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.comic-update-note .comic-update-note-label {
+  margin-bottom: 0.4rem;
+  font-family: 'Special Elite', var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b5d1a;
+}
+
+.comic-update-note a {
+  color: var(--accent-orange);
+  font-weight: 700;
+}
+
 .comic-article-content img {
   max-width: 100%;
   height: auto;
