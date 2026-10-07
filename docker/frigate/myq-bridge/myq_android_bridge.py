@@ -136,9 +136,10 @@ var outputs={{}};
 var stats={{}};
 var started=false;
 var stopped=false;
+var skippedPlacesCards=0;
 
 function snapshot() {{
-  var out={{started:started,stopped:stopped,sessionLength:0,cameras:{{}}}};
+  var out={{started:started,stopped:stopped,sessionLength:0,skippedPlacesCards:skippedPlacesCards,cameras:{{}}}};
   try {{ out.sessionLength=String(Java.use('com.seedonk.im.ServerManager').getSessionId()).length; }} catch(e) {{}}
   Object.keys(stats).forEach(function(id) {{ out.cameras[id]=Object.assign({{}},stats[id]); }});
   return out;
@@ -180,7 +181,7 @@ function outputFor(id) {{
   return outputs[id];
 }}
 
-function startCamera(id,index,VI,CI,SDK) {{
+function startCamera(id,index,VI,AI,CI,SDK) {{
   stats[id]={{connected:false,frames:0,bytes:0,width:0,height:0,keyframes:0,lastFrameAt:0,error:''}};
   var Listener=Java.registerClass({{
     name:'com.openai.MyQVideoListener_{suffix}_'+index,
@@ -214,24 +215,60 @@ function startCamera(id,index,VI,CI,SDK) {{
     implements:[CI],
     methods:{{completed:function(e){{if(e!==null)stats[id].error=String(e);}}}}
   }});
-  var manager=SDK.getInstance().videoCallManagerWithDeviceId(id,Listener.$new(),null);
+  // The SDK calls audio callbacks during disconnect even for a video-only feed.
+  var AudioListener=Java.registerClass({{
+    name:'com.openai.MyQAudioListener_{suffix}_'+index,
+    implements:[AI],
+    methods:{{
+      onAudioConnectFailed:function(e){{}},
+      onAudioConnected:function(){{}},
+      onAudioDataReceived:function(samples,data,size,flag){{}},
+      onAudioDisconnected:function(e){{}},
+      onDataReceiveTimedOut:function(v){{}},
+      onFirstAudioDataReceived:function(){{}}
+    }}
+  }});
+  var listener=Listener.$new();
+  var audioListener=AudioListener.$new();
+  var manager=SDK.getInstance().videoCallManagerWithDeviceId(id,listener,audioListener);
   if(manager===null)throw new Error('No video manager for '+id);
   var completion=Completion.$new();
   managers.push(manager);
-  cameraHandles[id]={{manager:manager,completion:completion}};
+  cameraHandles[id]={{manager:manager,completion:completion,listener:listener,audioListener:audioListener}};
   manager.connect(completion);
 }}
 
 rpc.exports={{
+  prepare:function(){{return new Promise(function(resolve){{Java.perform(function(){{
+    try {{
+      var Card=Java.use('com.chamberlain.myq.features.places.view.o1$b');
+      var bind=Card.P.overload('myq.sdk.data.model.firebase_remote_config.j');
+      bind.implementation=function(config){{
+        try {{return bind.call(this,config);}}
+        catch(error){{
+          var message=String(error);
+          if(message.indexOf('java.lang.NullPointerException') !== -1 &&
+             message.indexOf('myq.sdk.data.model.firebase_remote_config.f.a()') !== -1){{
+            skippedPlacesCards++;
+            if(skippedPlacesCards === 1)send({{type:'places-card-skipped'}});
+            return;
+          }}
+          throw error;
+        }}
+      }};
+      resolve({{installed:true}});
+    }} catch(error){{resolve({{installed:false,error:String(error)}});}}
+  }});}});}},
   dismisscompatibility:function(){{return dismissCompatibilityDialog();}},
   sessionlength:function(){{return new Promise(function(resolve){{Java.perform(function(){{try{{resolve(String(Java.use('com.seedonk.im.ServerManager').getSessionId()).length);}}catch(e){{resolve(0);}}}});}});}},
   start:function(){{return new Promise(function(resolve){{Java.perform(function(){{
     if(started)return resolve(snapshot());
     try {{
       var VI=Java.use('com.seedonk.mobilesdk.VideoConnectionManager$VideoConnectionListener');
+      var AI=Java.use('com.seedonk.mobilesdk.AudioConnectionManager$AudioConnectionListener');
       var CI=Java.use('com.seedonk.mobilesdk.VideoCallManager$ConnectCompletion');
       var SDK=Java.use('com.seedonk.mobilesdk.SdkConfig');
-      Object.keys(cameraFiles).forEach(function(id,index){{startCamera(id,index,VI,CI,SDK);}});
+      Object.keys(cameraFiles).forEach(function(id,index){{startCamera(id,index,VI,AI,CI,SDK);}});
       started=true;
       resolve(snapshot());
     }} catch(e) {{resolve({{started:false,error:String(e)}});}}
@@ -244,6 +281,10 @@ rpc.exports={{
       closeOutput(id);
       stats[id].connected=false;
       stats[id].error='';
+      var SDK=Java.use('com.seedonk.mobilesdk.SdkConfig');
+      handle.manager=SDK.getInstance().videoCallManagerWithDeviceId(id,handle.listener,handle.audioListener);
+      if(handle.manager===null)throw new Error('No replacement video manager for '+id);
+      managers.push(handle.manager);
       handle.manager.connect(handle.completion);
       resolve({{ok:true}});
     }} catch(e) {{resolve({{ok:false,error:String(e)}});}}
@@ -283,8 +324,21 @@ def run_agent(address: str) -> None:
     session.on("detached", on_detached)
     suffix = f"{pid}_{int(time.time())}".replace("-", "_")
     script = session.create_script(agent_source(suffix))
+
+    def on_message(message, _data) -> None:
+        if message.get("type") == "send" and message.get("payload") == {
+            "type": "places-card-skipped"
+        }:
+            LOG.warning("Skipped Places card with missing Firebase remote config")
+
+    script.on("message", on_message)
     try:
         script.load()
+        guard = script.exports_sync.prepare()
+        if guard.get("installed"):
+            LOG.info("Places card null-config guard installed")
+        else:
+            LOG.warning("Places card guard unavailable: %s", guard.get("error"))
 
         for _ in range(60):
             if STOP:
@@ -323,7 +377,7 @@ def run_agent(address: str) -> None:
             for device_id in CAMERAS:
                 details = cameras.get(device_id, {})
                 count = int(details.get("frames", 0))
-                if count > last_counts[device_id]:
+                if count > last_counts[device_id] and details.get("connected"):
                     stalled_checks[device_id] = 0
                     retry_counts[device_id] = 0
                 else:

@@ -14,7 +14,9 @@ RestartSec=5
 TimeoutStopSec=30
 User=root
 Group=root
-PrivateTmp=true
+# Snap's AppArmor parser probe fails in a PrivateTmp mount namespace, causing
+# every Docker call to regenerate security profiles and rewrite snapd state.
+PrivateTmp=false
 
 [Install]
 WantedBy=multi-user.target

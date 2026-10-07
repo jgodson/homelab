@@ -10,6 +10,9 @@ services:
       - "127.0.0.1:5555:5555"
     volumes:
       - ./android-data:/data
+    # Android 11's emulated process accounting must not accumulate in overlayfs.
+    tmpfs:
+      - /acct:rw,nosuid,nodev,noexec,size=64m,mode=0755
     command:
       - androidboot.redroid_gpu_mode=guest
       - androidboot.use_memfd=true

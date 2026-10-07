@@ -7,7 +7,6 @@ This directory backs up the working Frigate configuration for the host at `192.1
 - `myq_opener`: 1280x720 H.264, detection at 10 FPS
 - `myq_keypad`: 1152x864 H.264, detection at 10 FPS
 - `backyard`: local Tapo C120; main stream records and the substream detects at 5 FPS
-- `rv`: remote Tapo C120 through the RV Pi's tailnet-only RTSP proxy; main stream records and the substream detects at 5 FPS
 - `wyze_cam2`: 1920x1080 H.264 at `192.168.1.226`; recording at source quality and detecting at 960x540/5 FPS
 - `person` creates an alert review item
 - `dog` and `cat` create detection review items
@@ -19,10 +18,9 @@ This directory backs up the working Frigate configuration for the host at `192.1
 Camera credentials are supplied through the untracked `frigate.env` file. Copy
 `frigate.env.example` to `frigate.env` and replace the placeholder values before
 starting Frigate. The `set-tapo-credentials.sh` helper securely prompts for and
-URL-encodes the Tapo values. Camera and proxy endpoints are supplied through
-`FRIGATE_TAPO_LOCAL_HOST` and `FRIGATE_TAPO_RV_HOST` in that same private file.
-The RV camera currently uses the same Camera Account credentials as the local
-camera.
+URL-encodes the Tapo values. The local camera endpoint is supplied through
+`FRIGATE_TAPO_LOCAL_HOST` in that same private file. The RV camera has been
+removed from Frigate; its gateway configuration remains available separately.
 
 Frigate uses eleven OpenVINO CPU detector processes and the bundled SSD MobileNet v2 model. Multiple workers consume a shared detection queue across all cameras.
 
@@ -45,6 +43,17 @@ force-restarts the MyQ app before requesting fresh sessions. The Android process
 destroying or detaching the injected script also starts a fresh bridge cycle.
 The systemd service starts after Docker but stays active through Docker restarts,
 so it can reconnect when the Android container returns.
+The tested app's Places card renderer crashes when Firebase remote configuration
+is missing. A narrow Frida guard skips that card only for the observed null
+reference, leaving SDK camera sessions active and rethrowing other errors.
+The guard logs its installation and the first skipped card in each app process;
+if an app update changes the renderer, it logs that the guard is unavailable.
+The bridge also supplies the SDK's audio listener callbacks for these video-only
+feeds. Passing a null listener caused an SDK exception during camera disconnects
+and prevented stream retries from recovering reliably.
+Retries replace the SDK video manager. The retry limit resets only when frames
+advance on a connected session, so a brief burst from a failed connection cannot
+prevent the app-session recovery fallback.
 
 MyQ Internet access is still required. This repository does not contain an authenticated Android data directory, the MyQ APK, or the Frida server binary.
 
@@ -114,6 +123,24 @@ docker exec frigate wget -qO- http://127.0.0.1:1984/api/streams
 ```
 
 The bridge health check requires recent bytes from both cameras, so a stalled feed no longer appears healthy.
+
+Keep `PrivateTmp=false` in the bridge's systemd unit when using Snap Docker.
+With a private temporary/mount namespace, Snap's AppArmor parser feature probe
+returned no features, triggering a security-profile regeneration on every
+Docker command. The resulting repeated writes to `/var/lib/snapd/state.json`
+caused heavy disk I/O and bridge timeouts. After changing an installed unit,
+run `sudo systemctl daemon-reload` and restart `myq-android-bridge.service`.
+
+The Android compose file mounts `/acct` as a 64 MB tmpfs. On this cgroup v2 host,
+Android 11 left stale process-accounting directories in the container's writable
+layer; more than 30,000 directories for the MyQ UID made boot cleanup stall on
+disk I/O. These runtime files should reset on container restart. Apply this
+mount change by recreating the Android container, preserving its bind-mounted
+`android-data` directory and MyQ login.
+
+If all cameras are slow, check `free -m`, `vmstat 1 3`, and the memory use of
+Frigate/go2rtc as well as the MyQ bridge logs. A healthy container alone does
+not establish that frames and recordings are advancing.
 
 The remote RV camera gateway is documented separately in
 [`projects/rv-gateway`](../../projects/rv-gateway/README.md). Its RTSP proxy is
