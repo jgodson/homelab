@@ -47,6 +47,12 @@ smtp:
 
 envFromSecret: grafana-influxdb-token
 
+envValueFrom:
+  GF_SMTP_FROM_ADDRESS:
+    secretKeyRef:
+      name: grafana-email
+      key: from_address
+
 grafana.ini:
   analytics:
     # Grafana reads this from [analytics]; at the top level it's ignored.
