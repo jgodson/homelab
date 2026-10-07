@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-mcp
+  namespace: monitoring
+  labels:
+    app: grafana-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-mcp
+  template:
+    metadata:
+      labels:
+        app: grafana-mcp
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: grafana-mcp
+          image: grafana/mcp-grafana:2.0.1
+          # The image entrypoint hardcodes the SSE transport, so replace it.
+          command: ["/app/mcp-grafana"]
+          args:
+            - --transport=streamable-http
+            - --address=0.0.0.0:8000
+            - --healthz-address=0.0.0.0:8080
+            - --allowed-hosts=grafana-mcp.home.jasongodson.com
+            - --disable-write
+            - --usage-stats=disabled
+          env:
+            - name: GRAFANA_URL
+              value: http://grafana.monitoring.svc.cluster.local
+            # Read on every request, so a rotated token is picked up without a restart.
+            - name: GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE
+              value: /var/run/secrets/grafana/token
+            # Bearer token MCP clients must send. Created by setup-secret.sh, not stored in git.
+            - name: MCP_GRAFANA_SERVER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-mcp
+                  key: server-token
+          ports:
+            - name: http
+              containerPort: 8000
+            - name: healthz
+              containerPort: 8080
+          volumeMounts:
+            - name: grafana-token
+              mountPath: /var/run/secrets/grafana
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: grafana-token
+          secret:
+            secretName: grafana-mcp
+            items:
+              - key: grafana-token
+                path: token
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-mcp
+  namespace: monitoring
+  labels:
+    app: grafana-mcp
+spec:
+  selector:
+    app: grafana-mcp
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
