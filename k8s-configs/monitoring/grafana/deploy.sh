@@ -4,21 +4,13 @@ NAMESPACE="monitoring"
 RELEASE_NAME="grafana"
 CHART_NAME="grafana/grafana"
 EMAIL_SECRET_NAME="grafana-email"
-EMAIL_KEY="from_address"
 
-# Pull from_address from the Kubernetes Secret
-FROM_EMAIL=$(kubectl get secret "$EMAIL_SECRET_NAME" \
-  -n "$NAMESPACE" \
-  -o "jsonpath={.data.${EMAIL_KEY}}" | base64 --decode)
-
-if [ -z "$FROM_EMAIL" ]; then
-  echo "❌ Could not retrieve from_address from secret '$EMAIL_SECRET_NAME'"
+# Grafana reads the alert from_address from this secret (GF_SMTP_FROM_ADDRESS in values.yaml).
+if ! kubectl get secret "$EMAIL_SECRET_NAME" -n "$NAMESPACE" >/dev/null 2>&1; then
+  echo "❌ Secret '$EMAIL_SECRET_NAME' with key 'from_address' not found in namespace '$NAMESPACE'"
   exit 1
 fi
 
-echo "📧 Using from_address: $FROM_EMAIL"
-
 helm upgrade --install "$RELEASE_NAME" "$CHART_NAME" \
   -n "$NAMESPACE" \
-  -f values.yaml \
-  --set "grafana.grafana.ini.smtp.from_address=${FROM_EMAIL}"
+  -f values.yaml
