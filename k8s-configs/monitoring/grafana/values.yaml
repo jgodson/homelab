@@ -9,6 +9,11 @@ persistence:
   storageClassName: ceph-rbd
   size: 10Gi
 
+# The ceph-rbd volume is ReadWriteOnce, so a rolling update deadlocks when the new pod
+# lands on another node. Stop the old pod first.
+deploymentStrategy:
+  type: Recreate
+
 ingress:
   enabled: true
   ingressClassName: traefik
@@ -43,7 +48,9 @@ smtp:
 envFromSecret: grafana-influxdb-token
 
 grafana.ini:
-  reporting_enabled: false
+  analytics:
+    # Grafana reads this from [analytics]; at the top level it's ignored.
+    reporting_enabled: false
   smtp:
     enabled: true
     host: smtp.gmail.com:587

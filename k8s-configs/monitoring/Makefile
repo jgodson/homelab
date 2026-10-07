@@ -1,14 +1,17 @@
 NAMESPACE := monitoring
 
-.PHONY: deploy-all deploy-alloy deploy-grafana deploy-influxdb deploy-loki deploy-prometheus deploy-promtail deploy-telegraf deploy-tempo deploy-uptime-kuma
+.PHONY: deploy-all deploy-alloy deploy-grafana deploy-grafana-mcp deploy-influxdb deploy-loki deploy-prometheus deploy-promtail deploy-telegraf deploy-tempo deploy-uptime-kuma
 
-deploy-all: deploy-prometheus deploy-loki deploy-tempo deploy-promtail deploy-telegraf deploy-influxdb deploy-grafana deploy-alloy deploy-uptime-kuma
+deploy-all: deploy-prometheus deploy-loki deploy-tempo deploy-promtail deploy-telegraf deploy-influxdb deploy-grafana deploy-alloy deploy-uptime-kuma deploy-grafana-mcp
 
 deploy-alloy:
 	helm upgrade --install alloy grafana/alloy -f ./alloy/values.yaml -n $(NAMESPACE)
 
 deploy-grafana:
 	cd grafana && ./deploy.sh
+
+deploy-grafana-mcp:
+	kubectl apply -f ./grafana-mcp/
 
 deploy-influxdb:
 	helm upgrade --install influxdb influxdata/influxdb2 -f ./influxdb2/values.yaml -n $(NAMESPACE)
