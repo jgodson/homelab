@@ -514,8 +514,8 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum by(host) (cf_http_requests_window{zone=~\"$zone\",host=~\"$host\"})",
-          "legendFormat": "{{host}}",
+          "expr": "sum by(zone_name, host) (cf_http_requests_window{zone_name=~\"$zone\",host=~\"$host\"})",
+          "legendFormat": "{{zone_name}} • {{host}}",
           "range": true,
           "refId": "A"
         }
@@ -609,8 +609,8 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum by(zone) (cf_http_requests_window{zone=~\"$zone\",host=~\"$host\"})",
-          "legendFormat": "{{zone}}",
+          "expr": "sum by(zone_name) (cf_http_requests_window{zone_name=~\"$zone\",host=~\"$host\"})",
+          "legendFormat": "{{zone_name}}",
           "range": true,
           "refId": "A"
         }
@@ -704,7 +704,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum by(status_class) (cf_http_status_requests_window{zone=~\"$zone\",host=~\"$host\"})",
+          "expr": "sum by(status_class) (cf_http_status_requests_window{zone_name=~\"$zone\",host=~\"$host\"})",
           "legendFormat": "{{status_class}}",
           "range": true,
           "refId": "A"
@@ -807,7 +807,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(cf_http_cached_requests_window{zone=~\"$zone\",host=~\"$host\"}) / clamp_min(sum(cf_http_requests_window{zone=~\"$zone\",host=~\"$host\"}), 1)",
+          "expr": "sum(cf_http_cached_requests_window{zone_name=~\"$zone\",host=~\"$host\"}) / clamp_min(sum(cf_http_requests_window{zone_name=~\"$zone\",host=~\"$host\"}), 1)",
           "legendFormat": "cache_ratio",
           "range": true,
           "refId": "A"
@@ -902,8 +902,8 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum by(host) (cf_http_edge_response_bytes_window{zone=~\"$zone\",host=~\"$host\"})",
-          "legendFormat": "{{host}}",
+          "expr": "sum by(zone_name, host) (cf_http_edge_response_bytes_window{zone_name=~\"$zone\",host=~\"$host\"})",
+          "legendFormat": "{{zone_name}} • {{host}}",
           "range": true,
           "refId": "A"
         }
@@ -1229,15 +1229,15 @@
           "type": "prometheus",
           "uid": "${DS_PROMETHEUS}"
         },
-        "definition": "label_values(cf_http_requests_window, zone)",
+        "definition": "label_values(cf_http_requests_window, zone_name)",
         "includeAll": true,
-        "label": "zone",
+        "label": "Zone",
         "multi": true,
         "name": "zone",
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(cf_http_requests_window, zone)",
+          "query": "label_values(cf_http_requests_window, zone_name)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -1252,7 +1252,7 @@
           "type": "prometheus",
           "uid": "${DS_PROMETHEUS}"
         },
-        "definition": "label_values(cf_http_requests_window{zone=~\"$zone\"}, host)",
+        "definition": "label_values(cf_http_requests_window{zone_name=~\"$zone\"}, host)",
         "includeAll": true,
         "label": "host",
         "multi": true,
@@ -1260,7 +1260,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(cf_http_requests_window{zone=~\"$zone\"}, host)",
+          "query": "label_values(cf_http_requests_window{zone_name=~\"$zone\"}, host)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
