@@ -80,13 +80,29 @@
   }
 
   # Umami tracker script + collect endpoint. Served same-origin so the CSP stays
-  # 'self' (wildcatprojects.com loads it cross-origin), and never cached so
-  # Cloudflare can't swallow views.
+  # 'self', and never cached so Cloudflare can't swallow views.
+  #
+  # wildcatprojects.com relays these paths through its Cloudflare Worker, whose
+  # subrequests arrive with the Worker's IP and location in Cf-Connecting-Ip and
+  # Cf-Ipcountry. The Worker sends the visitor's IP and location in
+  # X-Umami-Visitor-* headers with a shared key (UMAMI_RELAY_KEY in caddy/.env);
+  # only then are they passed to Umami, as True-Client-IP (which Umami reads
+  # first) and Cloudflare's location headers. Anyone else's True-Client-IP is
+  # dropped so it can't be spoofed.
   @umami path /u.js /api/u
   handle @umami {
     header Cache-Control "no-store"
-    reverse_proxy umami:3000 {
-      header_up X-Forwarded-For {client_ip}
+    @umami_relay expression `{header.X-Umami-Relay-Key} == "{$UMAMI_RELAY_KEY}" && "{$UMAMI_RELAY_KEY}" != ""`
+    route {
+      request_header -True-Client-IP
+      request_header @umami_relay True-Client-IP {header.X-Umami-Visitor-Ip}
+      request_header @umami_relay Cf-Ipcountry {header.X-Umami-Visitor-Country}
+      request_header @umami_relay Cf-Region-Code {header.X-Umami-Visitor-Region}
+      request_header @umami_relay Cf-Ipcity {header.X-Umami-Visitor-City}
+      reverse_proxy umami:3000 {
+        header_up X-Forwarded-For {client_ip}
+        header_up -X-Umami-*
+      }
     }
   }
 
