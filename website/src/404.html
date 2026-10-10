@@ -3,22 +3,51 @@ layout: base.njk
 title: 404 - Note Not Found | Jason Godson
 ---
 
-<div class="comic-not-found-section">
-  <div class="comic-section-heading-wrap center">
-    <h1 class="comic-section-heading">404 - LOST IN THE CANYON</h1>
+<div class="comic-page-header">
+  <div class="comic-section-heading-wrap">
+    <h1 class="comic-section-heading">404 - LOST IN THE FOREST</h1>
     <span class="comic-marker-underline"></span>
   </div>
-  
-  <p class="comic-not-found-desc">
-    Looks like the note or page you're searching for doesn't exist or has wandered off into the desert.
-  </p>
+  <p class="comic-page-subtitle">The note or page you're looking for doesn't exist, or it wandered off into the woods.</p>
+</div>
 
-  <div class="comic-not-found-image">
-    {% image "./src/assets/images/404.png", "404 illustration", "(min-width: 600px) 400px, 100vw" %}
+<div class="comic-not-found-grid">
+  <div class="comic-not-found-art">
+    <figure class="comic-figure">
+      <div class="comic-figure-media">{% include "lost-forest.svg" %}</div>
+      <figcaption class="comic-figure-bar"><span class="comic-figure-check" aria-hidden="true">&#10003;</span><span class="comic-figure-caption">Last known location</span><span class="comic-figure-label" data-fig-label=""></span></figcaption>
+    </figure>
+    <p class="comic-not-found-sticky" aria-hidden="true">MISSING: 1 page.<br>If found, return to basecamp.</p>
   </div>
 
-  <div class="comic-not-found-actions">
-    <a href="/" class="comic-btn">🏕️ BACK TO BASECAMP</a>
-    <a href="/blog/" class="comic-secondary-btn">BROWSE ALL NOTES →</a>
+  <div class="comic-not-found-body">
+    <div class="comic-not-found-actions">
+      <a href="/" class="comic-btn">🏕️ Back to basecamp</a>
+      <a href="/blog/tags/" class="comic-secondary-btn">Browse topics →</a>
+    </div>
+
+    <div class="comic-recent-header-row">
+      <div class="comic-section-heading-wrap">
+        <h2 class="comic-section-heading">MAYBE YOU WANTED…</h2>
+        <span class="comic-marker-underline"></span>
+      </div>
+      <a href="/blog/" class="comic-view-all-link">ALL NOTES →</a>
+    </div>
+
+    <div class="comic-recent-list">
+      {% for post in collections.blog.slice(0, 3) %}
+      <article class="comic-recent-entry">
+        <div class="comic-recent-title-row">
+          <h3 class="comic-recent-entry-title">
+            <a href="{{ post.url }}">{{ post.data.title }}</a>
+          </h3>
+          <time class="comic-date" datetime="{{ post.date | dateToISO }}">{{ post.date | dateToNoteFormat }}</time>
+        </div>
+        {% if post.data.description %}
+        <p class="comic-recent-entry-desc">{{ post.data.description }}</p>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
   </div>
 </div>

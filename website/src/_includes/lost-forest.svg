@@ -1,0 +1,86 @@
+<svg class="comic-lost-forest" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="lost-forest-title">
+  <title id="lost-forest-title">A trail sign reading 404 in the middle of a pine forest, pointing to where the trail ends</title>
+  <defs>
+    <filter id="lost-forest-wash" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.025" numOctaves="3" seed="7"/>
+      <feDisplacementMap in="SourceGraphic" scale="22"/>
+    </filter>
+    <g id="lost-forest-pine">
+      <path d="M0 0L-18 30H-9L-26 58H-14L-34 90H34L14 58H26L9 30H18Z"/>
+      <path d="M4 12l6 12M8 40l9 14M14 66l12 18M22 70l7 12" fill="none" stroke-width="1.5"/>
+      <rect x="-4" y="90" width="8" height="12"/>
+    </g>
+  </defs>
+
+  <rect width="400" height="400" fill="#faf7f0"/>
+
+  <!-- Watercolour wash behind the trees -->
+  <path d="M40 150C40 70 140 40 210 50C300 62 370 90 362 170C356 240 290 262 200 258C110 254 40 230 40 150Z" fill="#cfe0c6" opacity="0.75" filter="url(#lost-forest-wash)"/>
+  <path d="M250 70C290 60 330 80 325 110C320 135 280 130 262 118C244 106 228 76 250 70Z" fill="#bcd6e3" opacity="0.6" filter="url(#lost-forest-wash)"/>
+
+  <!-- Birds -->
+  <path d="M62 64q7-7 14 0q7-7 14 0M100 44q5-5 10 0q5-5 10 0" fill="none" stroke="#18181b" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Far row of pines -->
+  <g fill="#f3efe4" stroke="#18181b" stroke-width="2.5" stroke-linejoin="round" opacity="0.4">
+    <use href="#lost-forest-pine" transform="translate(60 189) scale(0.55)"/>
+    <use href="#lost-forest-pine" transform="translate(88 189) scale(0.55)"/>
+    <use href="#lost-forest-pine" transform="translate(116 189) scale(0.55)"/>
+    <use href="#lost-forest-pine" transform="translate(144 189) scale(0.55)"/>
+    <use href="#lost-forest-pine" transform="translate(172 189) scale(0.55)"/>
+    <use href="#lost-forest-pine" transform="translate(200 189) scale(0.55)"/>
+    <use href="#lost-forest-pine" transform="translate(228 189) scale(0.55)"/>
+    <use href="#lost-forest-pine" transform="translate(256 189) scale(0.55)"/>
+    <use href="#lost-forest-pine" transform="translate(284 189) scale(0.55)"/>
+    <use href="#lost-forest-pine" transform="translate(312 189) scale(0.55)"/>
+    <use href="#lost-forest-pine" transform="translate(340 189) scale(0.55)"/>
+  </g>
+
+  <!-- Back row of pines -->
+  <g fill="#f3efe4" stroke="#18181b" stroke-width="2" stroke-linejoin="round" opacity="0.7">
+    <use href="#lost-forest-pine" transform="translate(112 168) scale(0.85)"/>
+    <use href="#lost-forest-pine" transform="translate(150 150) scale(1.05)"/>
+    <use href="#lost-forest-pine" transform="translate(255 158) scale(0.95)"/>
+    <use href="#lost-forest-pine" transform="translate(292 172) scale(0.8)"/>
+    <use href="#lost-forest-pine" transform="translate(84 163) scale(0.9)"/>
+    <use href="#lost-forest-pine" transform="translate(322 158) scale(0.95)"/>
+  </g>
+
+  <!-- Ground -->
+  <path d="M0 292C70 280 130 286 200 290C270 294 330 282 400 288V400H0Z" fill="#f2ede2"/>
+  <path d="M0 292C70 280 130 286 200 290C270 294 330 282 400 288" fill="none" stroke="#18181b" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Front pines framing the scene -->
+  <g fill="#fffef9" stroke="#18181b" stroke-width="3" stroke-linejoin="round">
+    <use href="#lost-forest-pine" transform="translate(38 86) scale(2.2)"/>
+    <use href="#lost-forest-pine" transform="translate(366 108) scale(2)"/>
+  </g>
+
+  <!-- The trail, which just... stops -->
+  <path d="M188 400C178 370 236 352 226 328C220 314 196 312 204 300" fill="none" stroke="#eb5e28" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 13"/>
+  <g fill="#e4ddcd" stroke="#18181b" stroke-width="2">
+    <ellipse cx="248" cy="352" rx="10" ry="6"/>
+    <ellipse cx="162" cy="338" rx="7" ry="4.5"/>
+  </g>
+
+  <!-- Grass tufts -->
+  <path d="M126 316l-4-10M130 316l1-12M134 316l5-9M270 330l-4-10M274 330l1-12M278 330l5-9M300 306l-3-8M303 306l1-10M306 306l4-7" fill="none" stroke="#18181b" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Signpost -->
+  <g stroke="#18181b" stroke-width="3" stroke-linejoin="round">
+    <rect x="193" y="160" width="14" height="138" fill="#e9c9a0"/>
+    <path d="M196 200v20M201 240v30M203 175v12" fill="none" stroke-width="1.5"/>
+    <path d="M128 168H262L284 190L262 212H128Z" fill="#fffef9" transform="rotate(-3 206 190)"/>
+    <path d="M276 228H136L116 248L136 268H276Z" fill="#eb5e28" transform="rotate(2 196 248)"/>
+  </g>
+  <g fill="#18181b" text-anchor="middle">
+    <text x="204" y="203" font-family="'Permanent Marker', 'Marker Felt', sans-serif" font-size="34" transform="rotate(-3 206 190)">404</text>
+    <text x="206" y="254" font-family="'Space Mono', monospace" font-weight="700" font-size="14" letter-spacing="1" transform="rotate(2 196 248)">TRAIL ENDS</text>
+  </g>
+
+  <!-- Confused question marks -->
+  <g fill="#18181b" font-family="'Permanent Marker', 'Marker Felt', sans-serif" text-anchor="middle">
+    <text x="290" y="150" font-size="36" transform="rotate(12 290 150)">?</text>
+    <text x="268" y="128" font-size="22" transform="rotate(-8 268 128)">?</text>
+  </g>
+</svg>
