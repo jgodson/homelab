@@ -1589,30 +1589,76 @@ h4:hover .direct-link {
 }
 
 /* --- 404 Page --- */
-.comic-not-found-section {
-  text-align: center;
-  max-width: 650px;
-  margin: 3rem auto;
+.comic-not-found-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+  gap: 3rem;
+  align-items: start;
 }
 
-.comic-not-found-desc {
-  font-size: 1.05rem;
-  color: var(--text-muted);
-  margin-top: 1rem;
-  margin-bottom: 2rem;
+.comic-not-found-art {
+  position: relative;
+  transform: rotate(-1.2deg);
 }
 
-.comic-not-found-image {
-  margin: 2rem auto;
-  max-width: 380px;
+.comic-not-found-art .comic-figure {
+  margin: 0.5rem 0 0;
+}
+
+.comic-lost-forest {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.comic-not-found-art .comic-figure .comic-figure-label::before {
+  content: "FIG. 404";
+}
+
+/* Sticky note slapped on the photo's empty bottom-left corner */
+.comic-not-found-sticky {
+  position: absolute;
+  left: -1.5rem;
+  bottom: 4.5rem;
+  z-index: 4;
+  max-width: 9rem;
+  margin: 0;
+  font-family: 'Special Elite', var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  letter-spacing: 0.03em;
+  color: #4a4320;
+  padding: 0.6rem 0.8rem 0.65rem;
+  background:
+    linear-gradient(225deg, rgba(0, 0, 0, 0.1) 0, rgba(0, 0, 0, 0) 14px, transparent 14px),
+    #fff0a0;
+  box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.18);
+  transform: rotate(-5deg);
 }
 
 .comic-not-found-actions {
   display: flex;
   gap: 1rem;
-  justify-content: center;
+  align-items: center;
   flex-wrap: wrap;
-  margin-top: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (max-width: 800px) {
+  .comic-not-found-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+
+  .comic-not-found-art {
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+  }
+
+  .comic-not-found-sticky {
+    left: -0.5rem;
+  }
 }
 
 /* --- YouTube Embed Frame --- */
