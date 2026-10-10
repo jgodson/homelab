@@ -32,7 +32,6 @@ spec:
             - --address=0.0.0.0:8000
             - --healthz-address=0.0.0.0:8080
             - --allowed-hosts=grafana-mcp.home.jasongodson.com
-            - --disable-write
             - --usage-stats=disabled
           env:
             - name: GRAFANA_URL
