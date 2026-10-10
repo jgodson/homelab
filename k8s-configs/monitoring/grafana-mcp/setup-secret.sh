@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Stores the Grafana MCP server's credentials and registers it with Claude Code.
 #
-# Before running: in Grafana, create a service account with the Viewer role
+# Before running: in Grafana, create a service account with the Editor role
 # (Administration > Users and access > Service accounts), add a token, and copy it.
 # The script reads the token from the clipboard, or asks for it at a hidden prompt,
 # so it never appears on screen.
