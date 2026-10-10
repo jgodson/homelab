@@ -219,6 +219,8 @@ For more details on building and deploying the website, see the [website README]
 
 Views are counted client-side so Cloudflare caching doesn't hide them. Umami runs alongside Caddy, which exposes only its tracker script and collect endpoint publicly; the dashboard is LAN-only. Secrets go in an untracked `umami.env` (`POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `DATABASE_URL`, `APP_SECRET`). `umami-backup.sh` dumps the database nightly via cron.
 
+Sites hosted elsewhere relay `/u.js` and `/api/u` to Umami through their own domain. wildcatprojects.com does this with its Cloudflare Worker, which sends the visitor's IP and location in `X-Umami-Visitor-*` headers. Caddy only passes these to Umami when the request also carries `UMAMI_RELAY_KEY` from the untracked `caddy/.env`, and the same key is stored as the Worker's `UMAMI_RELAY_KEY` secret. After changing `caddy/.env`, recreate the container (`docker compose up -d --force-recreate caddy`), since a reload doesn't re-read environment variables.
+
 ### Security Monitoring
 
 Monitor CrowdSec for security events:
