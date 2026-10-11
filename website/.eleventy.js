@@ -255,6 +255,7 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addCollection("blog", function(collection) {
     // Get all blog posts, collect tags, and sort by date in a single pass
     const sortedPosts = collection.getFilteredByGlob("src/blog/*.md")
+      .filter(post => !post.data.draft)
       .map(post => {
         // While processing each post, collect its tags
         if (post.data.tags) {
