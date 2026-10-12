@@ -5,6 +5,7 @@ src_site
 no-commit
 helm-actions
 scripts/issues
+.claude
 
 # Local Docker Compose environment files
 docker/**/.env
