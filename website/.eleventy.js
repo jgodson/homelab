@@ -122,7 +122,7 @@ module.exports = function(eleventyConfig) {
   });
 
   // Card cover image (optional `cover` front matter). Cropped to 16:9 by CSS.
-  eleventyConfig.addShortcode("cover", async function(src, alt) {
+  eleventyConfig.addShortcode("cover", async function(src, alt, sizes = "(min-width: 900px) 520px, 100vw") {
     if (!src || !alt) {
       throw new Error(`cover shortcode needs a source and alt text`);
     }
@@ -145,7 +145,7 @@ module.exports = function(eleventyConfig) {
 
     return Image.generateHTML(metadata, {
       alt,
-      sizes: "(min-width: 900px) 520px, 100vw",
+      sizes,
       loading: "lazy",
       decoding: "async",
       class: "comic-lead-img"

@@ -22,29 +22,38 @@ pagination:
 <div class="comic-notes-list">
   {% for post in pagination.items %}
     <article class="comic-note-card">
-      <div class="comic-note-card-header">
-        <h2 class="comic-note-card-title">
-          <a href="{{ post.url }}">{{ post.data.title }}</a>
-        </h2>
-        <time class="comic-date" datetime="{{ post.date | dateToISO }}">{{ post.date | dateToNoteFormat }}</time>
+      <div class="comic-thumb">
+        {% if post.data.cover %}
+          {% cover post.data.cover, post.data.coverAlt or post.data.title, "(min-width: 600px) 240px, 100vw" %}
+        {% else %}
+          {% include "cover-art.njk" %}
+        {% endif %}
       </div>
+      <div class="comic-note-card-body">
+        <div class="comic-note-card-header">
+          <h2 class="comic-note-card-title">
+            <a href="{{ post.url }}">{{ post.data.title }}</a>
+          </h2>
+          <time class="comic-date" datetime="{{ post.date | dateToISO }}">{{ post.date | dateToNoteFormat }}</time>
+        </div>
 
-      {% if post.data.tags %}
-      <div class="comic-tag-list">
-        {% for tag in post.data.tags %}
-          {% if tag != "blog" %}
-          <a href="/blog/tags/{{ tag | slug }}/" class="comic-tag-pill">#{{ tag }}</a>
-          {% endif %}
-        {% endfor %}
-      </div>
-      {% endif %}
+        {% if post.data.tags %}
+        <div class="comic-tag-list">
+          {% for tag in post.data.tags %}
+            {% if tag != "blog" %}
+            <a href="/blog/tags/{{ tag | slug }}/" class="comic-tag-pill">#{{ tag }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
       
-      {% if post.data.description %}
-        <p class="comic-note-card-desc">{{ post.data.description }}</p>
-      {% endif %}
+        {% if post.data.description %}
+          <p class="comic-note-card-desc">{{ post.data.description }}</p>
+        {% endif %}
       
-      <div class="comic-note-card-footer">
-        <a href="{{ post.url }}" class="comic-read-link">Read note →</a>
+        <div class="comic-note-card-footer">
+          <a href="{{ post.url }}" class="comic-read-link">Read note →</a>
+        </div>
       </div>
     </article>
   {% endfor %}

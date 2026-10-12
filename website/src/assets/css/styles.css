@@ -1189,6 +1189,61 @@ p {
   z-index: 2;
 }
 
+/* --- Card thumbnails: a small taped-in photo on the left of list cards --- */
+.comic-recent-entry,
+.comic-note-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.comic-recent-entry-body,
+.comic-note-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.comic-thumb {
+  flex: none;
+  width: 200px;
+  aspect-ratio: 16 / 9;
+  padding: 5px;
+  background: #fffef9;
+  box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.16);
+  transform: rotate(-1deg);
+}
+
+.comic-note-card .comic-thumb {
+  width: 240px;
+  margin-top: 0.25rem;
+}
+
+.comic-thumb picture,
+.comic-thumb .comic-cover-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.comic-thumb .comic-cover-tag {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .comic-recent-entry,
+  .comic-note-card {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .comic-recent-entry .comic-thumb,
+  .comic-note-card .comic-thumb {
+    width: 100%;
+    margin-top: 0;
+  }
+}
+
 /* --- Pagination --- */
 .comic-pagination {
   display: flex;
