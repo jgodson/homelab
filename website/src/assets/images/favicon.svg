@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Jason Godson</title>
+  <!-- Paper, orange, and offset ink echo the site's comic panels. -->
+  <path fill="#18181b" d="m8 8 51 2-1 50-49-1z"/>
+  <path fill="#eb5e28" stroke="#18181b" stroke-width="3" stroke-linejoin="round" d="m5 5 50 2-1 48-49-1z"/>
+  <!-- A self-contained marker-style J stays sharp without loading a font. -->
+  <path fill="#faf7f0" d="m23 15 25-1-2 9-7 1-4 17c-2 8-6 12-13 11-7-1-11-5-10-12l2-6 9 2-2 6c-1 2 0 3 2 3s3-2 4-5l4-16-10 1z"/>
+</svg>
