@@ -41,7 +41,7 @@ machine:
     stableHostname: true
   install:
     disk: /dev/sda
-    image: ghcr.io/siderolabs/installer:v1.13.4
+    image: ghcr.io/siderolabs/installer:v1.13.11
     wipe: false
   kubelet:
     defaultRuntimeSeccompProfileEnabled: true

@@ -34,7 +34,7 @@ This directory contains Talos Linux machine configuration files, patches, and re
 **Control Plane VIP**: 192.168.1.250:6443 (ens18 interface)
 **CNI**: Cilium (Flannel disabled via `cluster.network.cni.name: none`)
 **Kubernetes**: v1.36.2
-**Talos**: v1.13.4
+**Talos**: v1.13.11
 
 The cluster uses a Virtual IP (VIP) for high-availability control plane access. If one control plane goes down, the VIP automatically moves to another healthy node, ensuring kubectl always works.
 
@@ -92,95 +92,6 @@ talosctl get machineconfig --nodes 192.168.1.31 -o json | jq -r 'select(.metadat
 talosctl get machineconfig --nodes 192.168.1.32 -o json | jq -r 'select(.metadata.id == "v1alpha1") | .spec' > /tmp/cp3.yaml
 talosctl get machineconfig --nodes 192.168.1.33 -o json | jq -r 'select(.metadata.id == "v1alpha1") | .spec' > /tmp/worker.yaml
 ```
-
-## Upgrading Talos
-
-Upgrade one node at a time. Do not start the next node until Kubernetes and stateful workloads have settled.
-
-Prerequisites:
-
-```bash
-brew install kubectl-cnpg
-```
-
-Pre-flight checks:
-
-```bash
-kubectl get nodes -o wide
-kubectl get pods -A | grep -Ev 'Running|Completed'
-kubectl get clusters.postgresql.cnpg.io -A \
-  -o custom-columns=NAMESPACE:.metadata.namespace,NAME:.metadata.name,PHASE:.status.phase,READY:.status.readyInstances,INSTANCES:.spec.instances,PRIMARY:.status.currentPrimary
-talosctl health --nodes 192.168.1.250 --server=false
-```
-
-Treat failed one-off Jobs/CronJobs separately from stuck workloads. For example, an old failed synthetic monitoring Job is not a reason to block a node upgrade, but a degraded controller, StatefulSet, or database cluster is.
-
-If the node hosts a CNPG primary, promote a healthy replica first so the primary PDB does not block drain:
-
-```bash
-kubectl cnpg promote <CLUSTER_NAME> <REPLICA_POD> -n <NAMESPACE>
-```
-
-Wait for the switchover to settle before draining:
-
-```bash
-kubectl get clusters.postgresql.cnpg.io -A \
-  -o custom-columns=NAMESPACE:.metadata.namespace,NAME:.metadata.name,PHASE:.status.phase,READY:.status.readyInstances,INSTANCES:.spec.instances,PRIMARY:.status.currentPrimary
-kubectl cnpg status <CLUSTER_NAME> -n <NAMESPACE>
-```
-
-Cordon and drain the node explicitly:
-
-```bash
-kubectl cordon <NODE_NAME>
-kubectl drain <NODE_NAME> \
-  --ignore-daemonsets \
-  --delete-emptydir-data \
-  --timeout=15m
-```
-
-Upgrade the drained node. Disable Talos-managed drain because Kubernetes drain has already been handled explicitly:
-
-```bash
-talosctl upgrade \
-  --nodes <NODE_IP> \
-  --drain=false \
-  --image ghcr.io/siderolabs/installer:<TALOS_VERSION>
-```
-
-Talos may fall back to the legacy upgrade API and still print a drain phase even with `--drain=false`. That is acceptable if the Kubernetes node was already explicitly drained and the command continues through the upgrade.
-
-After each node:
-
-1. Wait for the node to return `Ready` with the expected Talos version.
-2. If the node is still `SchedulingDisabled`, keep it cordoned until Cilium, kube-proxy, and control-plane static pods on that node are healthy.
-3. Uncordon only after the node network and static pods are stable:
-   ```bash
-   kubectl uncordon <NODE_NAME>
-   ```
-4. Wait for workloads to finish rescheduling and image pulls. A node drain can cause several minutes of churn even when the drain succeeds.
-5. Verify there are no unexpected non-running pods:
-   ```bash
-   kubectl get pods -A | grep -Ev 'Running|Completed'
-   ```
-6. Verify CNPG clusters are healthy and fully replicated before touching another node:
-   ```bash
-   kubectl get clusters.postgresql.cnpg.io -A \
-     -o custom-columns=NAMESPACE:.metadata.namespace,NAME:.metadata.name,PHASE:.status.phase,READY:.status.readyInstances,INSTANCES:.spec.instances,PRIMARY:.status.currentPrimary
-   ```
-7. For CNPG specifically, confirm the primary has a streaming replica:
-   ```bash
-   kubectl exec -n postgresql <PRIMARY_POD> -- \
-     psql -U postgres -d postgres -tAc "select application_name, state, sync_state, replay_lsn from pg_stat_replication;"
-   ```
-8. Run Talos health after the node is uncordoned:
-   ```bash
-   talosctl health --nodes 192.168.1.250 --server=false
-   ```
-
-If a stateful workload is degraded, stop the upgrade and recover it before continuing. A successful `talosctl upgrade` only proves the node upgraded; it does not prove the cluster workloads are safe for the next disruption.
-
-After all nodes are upgraded, run `./sync-configs.sh` and review the generated diff before committing. The sync output can be noisy and may include generated comments or endpoint changes; do not commit it blindly.
 
 ## Refreshing talosconfig
 
