@@ -1,0 +1,92 @@
+# USB-powered two-probe panel heat monitor.
+esphome:
+  name: panel-heat-monitor
+  friendly_name: Panel Heat Monitor
+
+esp32:
+  variant: esp32
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+
+logger:
+
+api:
+  listen_backlog: 10
+  max_connections: 10
+  encryption:
+    key: !secret panel_heat_monitor_api_key
+
+ota:
+  - platform: esphome
+    password: !secret panel_heat_monitor_ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: Panel Heat Monitor Fallback
+    password: !secret panel_heat_monitor_fallback_password
+
+captive_portal:
+
+one_wire:
+  - platform: gpio
+    pin: GPIO4
+
+# Probe 1 aligned to probe 2 while colocated on 2026-10-19 (+0.125 C).
+# Absolute accuracy, including accuracy at 60 C, has not been verified.
+sensor:
+  - platform: dallas_temp
+    id: panel_probe_1
+    name: Panel Probe 1 Temperature
+    address: !secret panel_heat_monitor_probe_1_address
+    update_interval: 5s
+    resolution: 12
+    filters:
+      # Relative alignment to probe 2; no shared temperature correction.
+      - offset: 0.125
+      - timeout: 20s
+
+  - platform: dallas_temp
+    id: panel_probe_2
+    name: Panel Probe 2 Temperature
+    address: !secret panel_heat_monitor_probe_2_address
+    update_interval: 5s
+    resolution: 12
+    filters:
+      - timeout: 20s
+
+binary_sensor:
+  - platform: template
+    id: panel_probe_1_overheat
+    name: Panel Probe 1 Overheat
+    device_class: heat
+    lambda: |-
+      const float temperature = id(panel_probe_1).state;
+      if (isnan(temperature)) return {};
+      if (temperature > 60.0f) return true;
+      if (temperature < 58.0f) return false;
+      return id(panel_probe_1_overheat).state;
+
+  - platform: template
+    id: panel_probe_2_overheat
+    name: Panel Probe 2 Overheat
+    device_class: heat
+    lambda: |-
+      const float temperature = id(panel_probe_2).state;
+      if (isnan(temperature)) return {};
+      if (temperature > 60.0f) return true;
+      if (temperature < 58.0f) return false;
+      return id(panel_probe_2_overheat).state;
+
+  - platform: template
+    name: Panel Probe Fault
+    device_class: problem
+    entity_category: diagnostic
+    lambda: |-
+      return isnan(id(panel_probe_1).state) || isnan(id(panel_probe_2).state);
+    filters:
+      - delayed_on: 10s
+
+# USB powered: no deep sleep, battery ADC, or OTA-mode helper dependency.

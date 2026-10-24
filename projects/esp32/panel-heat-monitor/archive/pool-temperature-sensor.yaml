@@ -81,7 +81,7 @@ sensor:
   - platform: dallas_temp
     id: pool_water_temperature
     name: Pool Water Temperature
-    address: 0xb0000000235efe28
+    address: !secret panel_heat_monitor_probe_1_address
     # Normal operation sleeps before this interval; maintenance mode keeps
     # publishing once per minute so the probes can be compared/calibrated.
     update_interval: 60s
@@ -92,7 +92,7 @@ sensor:
   - platform: dallas_temp
     id: outdoor_temperature
     name: Outdoor Temperature
-    address: 0xae0000002292d128
+    address: !secret panel_heat_monitor_probe_2_address
     update_interval: 60s
     resolution: 12
     filters:

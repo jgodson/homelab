@@ -1,73 +1,77 @@
-- id: "1785980294814"
-  alias: Pool Heater - temperature control with 20/5 cycle
+- id: panel_heat_monitor_alerts
+  alias: Panel Heat Monitor - heat and sensor warnings
   description: >-
-    Maintains 78 F normally or 85 F in Ready Mode, using a 20-minute-on,
-    5-minute-off cycle from 8:00 AM until 10:00 PM.
+    Alerts Home Assistant and the configured phone when either panel probe exceeds
+    60 C, a probe fails, or the monitor is offline for a minute. Heat warnings
+    clear below 58 C in the device firmware.
   initial_state: true
   triggers:
-    - trigger: time_pattern
-      minutes: "/1"
-    - trigger: homeassistant
-      event: start
     - trigger: state
       entity_id:
-        - input_boolean.pool_ready_mode
-        - sensor.pool_water_temperature_last_valid
+        - binary_sensor.panel_heat_monitor_panel_probe_1_overheat
+        - binary_sensor.panel_heat_monitor_panel_probe_2_overheat
+        - binary_sensor.panel_heat_monitor_panel_probe_fault
+      to: "on"
+    - trigger: state
+      entity_id: binary_sensor.panel_heat_monitor_panel_probe_fault
+      to:
+        - unavailable
+        - unknown
+      for: "00:01:00"
+    - trigger: homeassistant
+      event: start
+      id: startup
   conditions: []
   actions:
+    - if:
+        - condition: template
+          value_template: "{{ trigger is defined and trigger.id == 'startup' }}"
+      then:
+        - delay: "00:01:00"
+    - condition: template
+      value_template: >-
+        {{
+          is_state('binary_sensor.panel_heat_monitor_panel_probe_1_overheat', 'on')
+          or is_state('binary_sensor.panel_heat_monitor_panel_probe_2_overheat', 'on')
+          or not is_state('binary_sensor.panel_heat_monitor_panel_probe_fault', 'off')
+        }}
     - variables:
-        pool_temperature_entity: >-
-          sensor.pool_water_temperature_last_valid
-        target_temperature_c: >-
-          {{ 29.444 if is_state('input_boolean.pool_ready_mode', 'on') else 25.556 }}
-        pool_temperature_c: >-
-          {{ states(pool_temperature_entity) | float(999) }}
-        temperature_is_fresh: >-
-          {% set last_valid_update =
-            state_attr(pool_temperature_entity, 'last_valid_update') | float(0) %}
-          {{
-            states(pool_temperature_entity) not in ['unknown', 'unavailable']
-            and (as_timestamp(now()) - last_valid_update) < 1500
-          }}
-        should_be_on: >-
-          {% set minute_of_day = now().hour * 60 + now().minute %}
-          {% set minutes_since_8am = minute_of_day - 480 %}
-          {{
-            0 <= minutes_since_8am < 840
-            and (minutes_since_8am % 25) < 20
-            and (temperature_is_fresh | bool)
-            and (pool_temperature_c | float) < (target_temperature_c | float)
-          }}
-    - choose:
-        - conditions:
-            - condition: template
-              value_template: >-
-                {{
-                  (should_be_on | bool)
-                  and not is_state(
-                    'switch.tp_link_smart_plug_e471_heater_pump',
-                    'on'
-                  )
-                }}
-          sequence:
-            - action: switch.turn_on
-              target:
-                entity_id: switch.tp_link_smart_plug_e471_heater_pump
-        - conditions:
-            - condition: template
-              value_template: >-
-                {{
-                  not (should_be_on | bool)
-                  and not is_state(
-                    'switch.tp_link_smart_plug_e471_heater_pump',
-                    'off'
-                  )
-                }}
-          sequence:
-            - action: switch.turn_off
-              target:
-                entity_id: switch.tp_link_smart_plug_e471_heater_pump
-  mode: single
+        warning_title: >-
+          {% if
+            is_state('binary_sensor.panel_heat_monitor_panel_probe_1_overheat', 'on')
+            or is_state('binary_sensor.panel_heat_monitor_panel_probe_2_overheat', 'on')
+          %}
+            Electrical panel temperature warning
+          {% else %}
+            Electrical panel monitor fault
+          {% endif %}
+        warning_message: >-
+          {% set probe_1 = states('sensor.panel_heat_monitor_panel_probe_1_temperature') %}
+          {% set probe_2 = states('sensor.panel_heat_monitor_panel_probe_2_temperature') %}
+          {% if not has_value('binary_sensor.panel_heat_monitor_panel_probe_fault') %}
+            The panel heat monitor is offline; temperatures cannot be checked.
+          {% elif is_state('binary_sensor.panel_heat_monitor_panel_probe_fault', 'on') %}
+            A panel temperature probe has failed; temperature monitoring is incomplete.
+          {% else %}
+            A panel probe exceeded 60 C. The heat warning clears below 58 C.
+          {% endif %}
+          Probe 1: {{ probe_1 | float | round(1) if is_number(probe_1) else probe_1 }}
+          {{ state_attr('sensor.panel_heat_monitor_panel_probe_1_temperature', 'unit_of_measurement') or '' }}.
+          Probe 2: {{ probe_2 | float | round(1) if is_number(probe_2) else probe_2 }}
+          {{ state_attr('sensor.panel_heat_monitor_panel_probe_2_temperature', 'unit_of_measurement') or '' }}.
+    - action: persistent_notification.create
+      data:
+        title: "{{ warning_title | trim }}"
+        message: "{{ warning_message | trim }}"
+        notification_id: panel_heat_monitor_warning
+    - action: !secret panel_heat_monitor_notify_service
+      data:
+        title: "{{ warning_title | trim }}"
+        message: "{{ warning_message | trim }}"
+        data:
+          tag: panel_heat_monitor_warning
+  mode: queued
+  max: 5
 
 - id: pool_pump_daily_schedule
   alias: Pool Pump - Daily schedule
