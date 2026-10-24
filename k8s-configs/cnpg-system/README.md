@@ -97,33 +97,31 @@ kubectl get podmonitor -n postgresql
 
 ## Backup Configuration
 
-Backup is already configured in `cluster.yaml` (continuous WAL archiving + barmanObjectStore) and `scheduled-backup.yaml` (daily base backups at 3 AM). Backups are stored in MinIO and replicated offsite via rclone.
+Backup is already configured in `cluster.yaml` (continuous WAL archiving + barmanObjectStore) and `scheduled-backup.yaml` (daily base backups at 3 AM). Backups are stored in Garage (S3-compatible, on the `minio` VM) and replicated offsite via rclone.
 
 ### What's Backed Up
 
-- **Continuous WAL archiving**: Every WAL segment is compressed (gzip) and uploaded to MinIO as it's produced. Enables point-in-time recovery.
+- **Continuous WAL archiving**: Every WAL segment is compressed (gzip) and uploaded to Garage as it's produced. Enables point-in-time recovery.
 - **Daily base backups**: Full base backup at 3:00 AM daily, compressed with gzip, 7-day retention.
 - **Offsite replication**: rclone syncs the `cnpg-backups` bucket every 6 hours.
-- **Storage**: MinIO bucket `cnpg-backups` at `http://192.168.1.252:9000`
+- **Storage**: Garage bucket `cnpg-backups` at `http://192.168.1.252:9000`
+- **Credentials**: Garage key `cnpg-backup-homelab` in the `cnpg-minio-credentials` secret (the secret keeps its pre-Garage name)
 
 ### Prerequisites
 
-The backup config in `cluster.yaml` expects a MinIO bucket and K8s secret to already exist. If deploying from scratch (or after a full disaster recovery), create them first:
+The backup config in `cluster.yaml` expects a Garage bucket, key and K8s secret to already exist. If deploying from scratch (or after a full disaster recovery), create them first:
 
-1. Create the `cnpg-backups` bucket and a dedicated MinIO user:
+1. Create the Garage key on the `minio` VM (the secret is printed once):
    ```bash
-   # Inside the MinIO container
-   mc alias set local http://localhost:9000 <root-user> <root-password>
-   mc mb local/cnpg-backups
-   mc admin user add local cnpg-backup-homelab <password>
-   mc admin policy attach local readwrite --user cnpg-backup-homelab
+   sudo docker exec garage /garage key create cnpg-backup-homelab
    ```
+   The `cnpg-backups` bucket and the key's read/write grant are managed in `homelab-automation` (`tofu/garage-buckets.tf`); add the key ID there and apply.
 
 2. Create the Kubernetes secret:
    ```bash
    kubectl create secret generic cnpg-minio-credentials \
-     --from-literal=ACCESS_KEY_ID=cnpg-backup-homelab \
-     --from-literal=ACCESS_SECRET_KEY=<password> \
+     --from-literal=ACCESS_KEY_ID=<GK key ID> \
+     --from-literal=ACCESS_SECRET_KEY=<secret> \
      -n postgresql
    ```
 
@@ -145,15 +143,17 @@ kubectl get backups -n postgresql
 # Check WAL archiving in cluster status
 kubectl describe cluster postgresql-pg -n postgresql | grep -A5 "Last Successful Archival"
 
-# Check MinIO bucket contents (on minio host)
-sudo docker exec -it minio mc ls local/cnpg-backups/postgresql-pg/ --recursive
+# List base backups stored in Garage (from a CNPG instance pod)
+kubectl exec -n postgresql postgresql-pg-1 -c postgres -- env \
+  AWS_ACCESS_KEY_ID=<GK key ID> AWS_SECRET_ACCESS_KEY=<secret> AWS_DEFAULT_REGION=us-east-1 \
+  barman-cloud-backup-list --endpoint-url http://192.168.1.252:9000 s3://cnpg-backups/ postgresql-pg
 ```
 
 ### Disaster Recovery
 
-#### Scenario 1: Restore from MinIO (MinIO is healthy)
+#### Scenario 1: Restore from Garage (Garage is healthy)
 
-If the CNPG cluster is lost but MinIO still has the backups, create a recovery cluster:
+If the CNPG cluster is lost but Garage still has the backups, create a recovery cluster:
 
 ```yaml
 # recovery-cluster.yaml
@@ -192,7 +192,7 @@ spec:
 # 1. Delete the broken cluster (if it still exists)
 kubectl delete cluster postgresql-pg -n postgresql
 
-# 2. Ensure the MinIO credentials secret exists
+# 2. Ensure the Garage credentials secret exists
 kubectl get secret cnpg-minio-credentials -n postgresql
 
 # 3. Apply the recovery cluster
@@ -206,41 +206,32 @@ kubectl logs -f -n postgresql -l cnpg.io/cluster=postgresql-pg
 kubectl apply -f scheduled-backup.yaml
 ```
 
-#### Scenario 2: Full disaster recovery (MinIO is also lost)
+#### Scenario 2: Full disaster recovery (Garage is also lost)
 
-If both CNPG and MinIO are gone, restore from the offsite copy.
+If both CNPG and Garage are gone, restore from the offsite copy.
 
 ```bash
-# 1. Get MinIO running again (redeploy VM/container, fresh install is fine)
+# 1. Get Garage running again (see docker/garage/README.md; a fresh install is fine)
 
-# 2. Recreate the cnpg-backups bucket
-sudo docker exec -it minio mc alias set local http://localhost:9000 <root-user> <root-password>
-sudo docker exec -it minio mc mb local/cnpg-backups
+# 2. Recreate the buckets and grants from homelab-automation (tofu apply),
+#    after creating a new cnpg-backup-homelab key and adding its ID to garage-buckets.tf
+sudo docker exec garage /garage key create cnpg-backup-homelab
 
-# 3. Recreate the backup user
-sudo docker exec -it minio mc admin user add local cnpg-backup-homelab <password>
-sudo docker exec -it minio mc admin policy attach local readwrite --user cnpg-backup-homelab
+# 3. Pull backups from offsite back to Garage, from the minio VM
+#    (the rclone-sync config has "gdrive" and "garage" remotes; the garage
+#    remote's key is read-only, so use a key with write access to cnpg-backups)
+rclone sync gdrive:homelab-backups/cnpg-backups garage:cnpg-backups
 
-# 4. Pull backups from offsite back to MinIO
-#    Option A: Use rclone from the MinIO host
-rclone sync gdrive:homelab-backups/cnpg-backups minio:cnpg-backups
-
-#    Option B: Use the Docker rclone-sync service (reverse direction)
-#    Edit the rclone command temporarily to sync FROM offsite TO minio
-
-# 5. Verify backup files are present
-sudo docker exec -it minio mc ls local/cnpg-backups/postgresql-pg/ --recursive
-
-# 6. Recreate the K8s secret
+# 4. Recreate the K8s secret
 kubectl create secret generic cnpg-minio-credentials \
-  --from-literal=ACCESS_KEY_ID=cnpg-backup-homelab \
-  --from-literal=ACCESS_SECRET_KEY=<password> \
+  --from-literal=ACCESS_KEY_ID=<GK key ID> \
+  --from-literal=ACCESS_SECRET_KEY=<secret> \
   -n postgresql
 
-# 7. Apply the recovery cluster (same YAML as Scenario 1 above)
+# 5. Apply the recovery cluster (same YAML as Scenario 1 above)
 kubectl apply -f recovery-cluster.yaml
 
-# 8. Watch recovery, then re-apply scheduled backup
+# 6. Watch recovery, then re-apply scheduled backup
 kubectl get cluster -n postgresql -w
 kubectl apply -f scheduled-backup.yaml
 ```
@@ -363,7 +354,7 @@ kubectl exec -i postgresql-pg-1 -n postgresql -- \
 ### Automated Backups
 
 Automated backups are configured - see [Backup Configuration](#backup-configuration) above for details.
-Continuous WAL archiving + daily base backups to MinIO with 7-day retention.
+Continuous WAL archiving + daily base backups to Garage with 7-day retention.
 
 ## Troubleshooting
 

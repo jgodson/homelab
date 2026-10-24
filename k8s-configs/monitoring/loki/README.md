@@ -1,16 +1,10 @@
 ### Loki Setup Steps
 
-1. **Create MinIO buckets for Loki**
-   
-   Loki requires three separate buckets: `chunks`, `ruler`, and `admin`. You can create these in the MinIO UI:
-   - Open the MinIO Console at http://minio.local or your configured URL
-   - Navigate to "Buckets" in the sidebar
-   - Click "Create Bucket" and create each of the following buckets:
-     - `chunks` (for storing log chunks)
-     - `ruler` (for storing ruler configurations)
-     - `admin` (for administrative data)
+1. **Garage buckets for Loki**
 
-2. **Create MinIO credentials secret**
+   Loki uses three buckets in Garage: `chunks` (log chunks and TSDB index), `ruler`, and `admin`. They and the `observability` key's grants are managed in `homelab-automation` (`tofu/garage-buckets.tf`). Loki and Tempo share the `observability` key.
+
+2. **Create the credentials secret** (it keeps its pre-Garage name)
    ```bash
    kubectl create secret generic loki-minio-credentials \
      --from-literal=MINIO_ACCESS_KEY=your-access-key \

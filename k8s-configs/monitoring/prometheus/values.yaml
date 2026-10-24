@@ -29,6 +29,10 @@ server:
       secretName: uptime-kuma-api-key
       mountPath: /etc/secrets/uptime-kuma
       readOnly: true
+    - name: garage-metrics-token
+      secretName: garage-metrics-token
+      mountPath: /etc/secrets/garage
+      readOnly: true
 
 configmapReload:
   prometheus:
@@ -104,49 +108,19 @@ extraScrapeConfigs: |
         regex: '.*'
         replacement: 'cloudflared'
 
-  - job_name: minio-cluster
+  - job_name: garage
     scheme: http
     static_configs:
-      - targets: ['192.168.1.252:9000']
-    metrics_path: /minio/v2/metrics/cluster
+      - targets: ['192.168.1.252:3903']
+    metrics_path: /metrics
+    authorization:
+      type: Bearer
+      credentials_file: /etc/secrets/garage/token
     relabel_configs:
       - source_labels: [__address__]
         target_label: instance
         regex: '.*'
-        replacement: 'minio'
-  
-  - job_name: minio-node
-    scheme: http
-    static_configs:
-      - targets: ['192.168.1.252:9000']
-    metrics_path: /minio/v2/metrics/node
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: instance
-        regex: '.*'
-        replacement: 'minio'
-  
-  - job_name: minio-bucket
-    scheme: http
-    static_configs:
-      - targets: ['192.168.1.252:9000']
-    metrics_path: /minio/v2/metrics/bucket
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: instance
-        regex: '.*'
-        replacement: 'minio'
-  
-  - job_name: minio-resource
-    scheme: http
-    static_configs:
-      - targets: ['192.168.1.252:9000']
-    metrics_path: /minio/v2/metrics/resource
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: instance
-        regex: '.*'
-        replacement: 'minio'
+        replacement: 'garage'
 
   - job_name: ceph-cluster
     honor_labels: true

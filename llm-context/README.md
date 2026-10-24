@@ -7,8 +7,8 @@
 **Core Platform:**
 - **Hypervisor:** Proxmox VE cluster with HA and Ceph storage; everything else runs as VMs on it
 - **Kubernetes:** Talos Linux VMs, 3 control plane nodes behind a VIP (`192.168.1.250:6443`) + 1 worker. See `talos-configs/README.md` for current versions
-- **Docker:** Standalone Docker Compose hosts, one VM per use case (Home Assistant, Frigate, ingress, MinIO, media, AI tools)
-- **Storage:** Ceph RBD (via Ceph CSI) for Kubernetes persistent volumes; MinIO for S3 backups and Loki
+- **Docker:** Standalone Docker Compose hosts, one VM per use case (Home Assistant, Frigate, ingress, Garage object storage, media, AI tools)
+- **Storage:** Ceph RBD (via Ceph CSI) for Kubernetes persistent volumes; Garage for S3 backups, Loki, and Tempo
 - **Networking:** Cilium CNI (Flannel disabled), MetalLB load balancer, Traefik ingress
 - **DNS:** AdGuard Home; local domain `*.home.jasongodson.com`
 
@@ -31,7 +31,7 @@ homelab/
 │   ├── ingress-local+adguard/ # Caddy (LAN) + AdGuard Home
 │   ├── ingress-public/  # Caddy + Cloudflare Tunnel + CrowdSec
 │   ├── media-cloud/     # Jellyfin + Immich
-│   └── minio/           # S3-compatible object storage
+│   └── garage/          # S3-compatible object storage
 ├── docs/                # General how-to notes (Proxmox API, guest agent, DNS)
 ├── k8s-configs/         # Kubernetes deployments
 │   ├── ceph-csi-rbd/    # Persistent volume provisioner
@@ -69,7 +69,7 @@ Not every service has all of these; match whatever the neighbouring files in tha
 ## 🔧 Current Active Services
 
 **Kubernetes:**
-- **Gitea:** https://gitea.home.jasongodson.com (Git + Actions, 2 runner replicas, backups to MinIO)
+- **Gitea:** https://gitea.home.jasongodson.com (Git + Actions, 2 runner replicas, backups to Garage)
 - **Monitoring:** Grafana dashboards + alerting over the stack listed above
 - **PostgreSQL:** CloudNativePG shared cluster
 - **Traefik:** Ingress, exposed via MetalLB LoadBalancer IP
@@ -79,7 +79,7 @@ Not every service has all of these; match whatever the neighbouring files in tha
 - **Home Assistant + ESPHome:** Home automation, including ESP32 sensors from `projects/esp32/`
 - **Frigate:** NVR with object detection (local cameras, MyQ bridge, remote RV camera over Tailscale)
 - **Ingress:** Caddy for LAN access; Cloudflare Tunnel + Caddy + CrowdSec for public access
-- **MinIO, Media Cloud, AI Tools**
+- **Garage (minio VM), Media Cloud, AI Tools**
 
 ## 🎯 Deployment Pattern
 

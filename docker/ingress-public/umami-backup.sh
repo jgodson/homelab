@@ -1,6 +1,6 @@
 #!/bin/sh
-# Nightly Umami database backup -> MinIO (k8s-app-backups/umami), 7 day retention.
-# MinIO is replicated to Google Drive by the rclone-sync job on the MinIO host.
+# Nightly Umami database backup -> Garage (k8s-app-backups/umami), 7 day retention.
+# Garage is replicated to Google Drive by the rclone-sync job on the minio VM.
 # Cron: 15 4 * * * /home/manager/umami-backup.sh >> /home/manager/umami-backup.log 2>&1
 # Needs /home/manager/umami-backup.env (chmod 600) with RCLONE_CONFIG_BACKUP_* settings.
 set -eu

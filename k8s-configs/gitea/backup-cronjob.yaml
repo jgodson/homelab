@@ -66,7 +66,7 @@ spec:
                   mountPath: /backup
           containers:
             - name: upload
-              image: minio/mc:latest
+              image: rclone/rclone:latest
               imagePullPolicy: IfNotPresent
               command:
                 - /bin/sh
@@ -74,18 +74,26 @@ spec:
               args:
                 - |
                   timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
-                  mc alias set backup "${MINIO_ENDPOINT}" "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}"
-                  mc cp /backup/gitea-data.zip "backup/gitea-backups/gitea-data-${timestamp}.zip"
-                  mc rm --recursive --force --older-than 7d backup/gitea-backups/
+                  rclone copyto /backup/gitea-data.zip "backup:gitea-backups/gitea-data-${timestamp}.zip"
+                  rclone delete --min-age 7d "backup:gitea-backups"
               env:
-                - name: MINIO_ENDPOINT
+                - name: RCLONE_CONFIG_BACKUP_TYPE
+                  value: s3
+                - name: RCLONE_CONFIG_BACKUP_PROVIDER
+                  value: Other
+                - name: RCLONE_CONFIG_BACKUP_ENDPOINT
                   value: http://192.168.1.252:9000
-                - name: MINIO_ACCESS_KEY
+                - name: RCLONE_CONFIG_BACKUP_REGION
+                  value: us-east-1
+                # The credentials can't create buckets
+                - name: RCLONE_CONFIG_BACKUP_NO_CHECK_BUCKET
+                  value: "true"
+                - name: RCLONE_CONFIG_BACKUP_ACCESS_KEY_ID
                   valueFrom:
                     secretKeyRef:
                       name: gitea-minio-credentials
                       key: MINIO_ACCESS_KEY
-                - name: MINIO_SECRET_KEY
+                - name: RCLONE_CONFIG_BACKUP_SECRET_ACCESS_KEY
                   valueFrom:
                     secretKeyRef:
                       name: gitea-minio-credentials
