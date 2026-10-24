@@ -2,14 +2,16 @@
 # Chart: https://artifacthub.io/packages/helm/influxdata/telegraf
 
 # Install openssh-client before Telegraf starts so the collection
-# script doesn't need to install it at runtime on every restart
+# script doesn't need to install it at runtime on every restart.
+# Fail if ssh can't be installed (e.g. network not up after a cluster
+# restart) so Kubernetes retries instead of starting Telegraf without ssh.
 initContainers:
   - name: install-ssh
     image: docker.io/library/telegraf:1.36-alpine
     securityContext:
       runAsUser: 0
       runAsGroup: 0
-    command: ['sh', '-c', 'apk add --no-cache openssh-client && cp /usr/bin/ssh /ssh-bin/ssh && cp /usr/bin/scp /ssh-bin/scp 2>/dev/null; cp /etc/ssh/ssh_config /ssh-bin/ssh_config 2>/dev/null; true']
+    command: ['sh', '-c', 'apk add --no-cache openssh-client && cp /usr/bin/ssh /ssh-bin/ssh && { cp /usr/bin/scp /ssh-bin/scp 2>/dev/null; cp /etc/ssh/ssh_config /ssh-bin/ssh_config 2>/dev/null; true; }']
     volumeMounts:
       - name: ssh-bin
         mountPath: /ssh-bin
