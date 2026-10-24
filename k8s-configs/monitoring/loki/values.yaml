@@ -19,6 +19,15 @@ loki:
       chunks: chunks
       ruler: ruler
       admin: admin
+    # Rendered into the common and ruler storage configs. Without it the ruler
+    # has no endpoint or credentials and fails to list rules every minute.
+    s3:
+      endpoint: 192.168.1.252:9000
+      region: us-east-1
+      accessKeyId: ${MINIO_ACCESS_KEY}
+      secretAccessKey: ${MINIO_SECRET_KEY}
+      s3ForcePathStyle: true
+      insecure: true
   storage_config:
     tsdb_shipper:
       active_index_directory: var/loki/index
@@ -46,8 +55,11 @@ test:
 lokiCanary:
   enabled: false
 
+# In SimpleScalable mode the ruler always runs inside the backend pods. This
+# flag only controls whether the chart renders its storage config (the
+# `ruler` bucket); no separate ruler pods are created.
 ruler:
-  enabled: false
+  enabled: true
 
 write:
   persistence:
