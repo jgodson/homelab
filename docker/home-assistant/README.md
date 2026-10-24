@@ -93,19 +93,14 @@ the ESP board is connected to another computer, compile/download the firmware
 from Device Builder and flash it using ESPHome Web on that computer. Later
 firmware updates can be installed over Wi-Fi.
 
-The battery-powered pool temperature sensor normally wakes for 45 seconds,
-publishes one reading, and then deep-sleeps for 10 minutes. Before updating it
-over Wi-Fi, turn on **Pool Temperature Sensor OTA Mode** in Home Assistant and
-wait for the sensor's next wake cycle. Keep the helper on until the update and
-reboot complete, then turn it off to let the sensor resume deep sleep.
-
-Pool heating has two temperature modes. With **Pool Ready Mode** off, the
-automation maintains 78 F; with it on, the target is 85 F. In both modes the
-heater pump retains its 8:00 AM to 10:00 PM operating window and 20-minute-on,
-5-minute-off duty cycle. It also shuts the heater pump off when the last pool
-temperature report is more than 25 minutes old. The Ready Mode helper can be
-placed directly on a Home Assistant dashboard and can later be toggled by an
-ESPHome physical button.
+**Panel Heat Monitor** runs continuously on USB power. Both probes update every
+five seconds, with heat warnings
+above 60 C that clear below 58 C. Home Assistant sends persistent and iPhone push
+notifications for heat, probe faults, and a monitor that is offline for one
+minute. See the [sensor project](../../projects/esp32/panel-heat-monitor/README.md)
+for firmware and deployment details. Set `panel_heat_monitor_notify_service` in
+the ignored Home Assistant `secrets.yaml` to your phone notification service;
+see `secrets.example.yaml`.
 
 ## Maintenance
 
