@@ -64,13 +64,13 @@ homelab/
 - **Local Ingress + AdGuard**: Caddy reverse proxy with AdGuard Home for local DNS and ad blocking
 - **Public Ingress**: Caddy behind a Cloudflare Tunnel with CrowdSec
 - **Media Cloud**: Jellyfin for video and Immich for photo backup
-- **MinIO**: S3-compatible object storage for backups and Loki
+- **Garage**: S3-compatible object storage for backups, Loki, and Tempo
 
 ### Kubernetes Applications
 
 - **Networking**: Cilium, MetalLB, Traefik
 - **Storage & Data**: Ceph CSI RBD, CloudNativePG
-- **Gitea**: Git hosting, Actions runners, and scheduled backups to MinIO
+- **Gitea**: Git hosting, Actions runners, and scheduled backups to Garage
 - **Monitoring Stack**: Prometheus, Grafana (with alerting), Loki, Tempo, Alloy, Promtail, Telegraf, InfluxDB2, Uptime Kuma, and metrics-server
 
 ### Virtual Machines

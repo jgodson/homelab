@@ -26,6 +26,8 @@ loki:
       cache_ttl: 24h
     aws:
       s3: http://192.168.1.252:9000
+      # Must match s3_region in Garage's garage.toml
+      region: us-east-1
       s3forcepathstyle: true
       insecure: true
       access_key_id: ${MINIO_ACCESS_KEY}

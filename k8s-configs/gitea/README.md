@@ -199,7 +199,7 @@ jobs:
 
 The `postgresql-pg` CloudNativePG cluster backs up the Gitea database separately. The Gitea data CronJob preserves repositories, LFS objects, attachments, custom data, and configuration. Package blobs, logs, search indexes, and the database are excluded because they are rebuildable or backed up elsewhere.
 
-Create a dedicated MinIO user with read/write access limited to the `gitea-backups` bucket. Store the generated credentials in your normal secret manager, then create the Kubernetes secret:
+Create a dedicated Garage key on the `minio` VM (`sudo docker exec garage /garage key create gitea-backups`). Its read/write grant on the `gitea-backups` bucket is managed in `homelab-automation` (`tofu/garage-buckets.tf`). Store the key in your normal secret manager, then create the Kubernetes secret (it keeps its pre-Garage name):
 
 ```bash
 kubectl create secret generic gitea-minio-credentials \
@@ -210,7 +210,7 @@ kubectl create secret generic gitea-minio-credentials \
 kubectl apply -f backup-cronjob.yaml
 ```
 
-The CronJob runs daily at `04:00` and retains 7 days in the `gitea-backups` bucket. MinIO's existing rclone service then copies that bucket to offsite storage.
+The CronJob runs daily at `04:00` and retains 7 days in the `gitea-backups` bucket. The rclone-sync service on the `minio` VM then copies that bucket to offsite storage.
 
 Run and verify an immediate backup:
 

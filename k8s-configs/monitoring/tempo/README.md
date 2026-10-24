@@ -1,14 +1,10 @@
 ### Tempo Distributed Setup
 
-1. **Create MinIO bucket for Tempo**
-   
-   Tempo requires a single bucket to store trace data:
-   - Open the MinIO Console at http://192.168.1.252:9001 or your configured URL
-   - Navigate to "Buckets" in the sidebar
-   - Click "Create Bucket" and create a bucket named `tempo`
-   - No special bucket policies are needed for basic functionality
+1. **Garage bucket for Tempo**
 
-2. **Create MinIO credentials secret**
+   Tempo stores traces in the `tempo` bucket in Garage. The bucket and the `observability` key's grant are managed in `homelab-automation` (`tofu/garage-buckets.tf`). Loki and Tempo share the `observability` key.
+
+2. **Create the credentials secret** (it keeps its pre-Garage name)
    ```bash
    kubectl create secret generic tempo-minio-credentials \
      --from-literal=MINIO_ACCESS_KEY=your-access-key \

@@ -71,9 +71,11 @@ spec:
                 - name: RCLONE_CONFIG_BACKUP_TYPE
                   value: s3
                 - name: RCLONE_CONFIG_BACKUP_PROVIDER
-                  value: Minio
+                  value: Other
                 - name: RCLONE_CONFIG_BACKUP_ENDPOINT
                   value: http://192.168.1.252:9000
+                - name: RCLONE_CONFIG_BACKUP_REGION
+                  value: us-east-1
                 # The credentials can't create buckets
                 - name: RCLONE_CONFIG_BACKUP_NO_CHECK_BUCKET
                   value: "true"
@@ -178,9 +180,11 @@ spec:
                 - name: RCLONE_CONFIG_BACKUP_TYPE
                   value: s3
                 - name: RCLONE_CONFIG_BACKUP_PROVIDER
-                  value: Minio
+                  value: Other
                 - name: RCLONE_CONFIG_BACKUP_ENDPOINT
                   value: http://192.168.1.252:9000
+                - name: RCLONE_CONFIG_BACKUP_REGION
+                  value: us-east-1
                 # The credentials can't create buckets
                 - name: RCLONE_CONFIG_BACKUP_NO_CHECK_BUCKET
                   value: "true"

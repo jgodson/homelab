@@ -42,7 +42,7 @@ spec:
   monitoring:
     enablePodMonitor: false
   
-  # Backup configuration - continuous WAL archiving + scheduled base backups to MinIO
+  # Backup configuration - continuous WAL archiving + scheduled base backups to Garage
   backup:
     barmanObjectStore:
       destinationPath: "s3://cnpg-backups/"

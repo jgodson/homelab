@@ -1,0 +1,73 @@
+services:
+  garage:
+    image: dxflrs/garage:v2.4.1
+    container_name: garage
+    ports:
+      # S3 API stays on 9000, where clients pointed at MinIO before
+      - "9000:3900"
+      # Admin API: /health (no auth) and /metrics (metrics token)
+      - "3903:3903"
+    volumes:
+      - ./garage.toml:/etc/garage.toml:ro
+      - ./meta:/var/lib/garage/meta
+      - ./data:/var/lib/garage/data
+    secrets:
+      - rpc_secret
+      - admin_token
+      - metrics_token
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/garage", "status"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    logging:
+      driver: loki
+      options:
+        loki-url: "https://loki.home.jasongodson.com/loki/api/v1/push"
+        loki-retries: 2
+        loki-max-backoff: 800ms
+        loki-timeout: 1s
+        keep-file: "true"
+        mode: "non-blocking"
+        max-size: "10m"
+        max-file: "3"
+
+  # Offsite backup replication: Garage -> Google Drive
+  # Triggered via root cron: 0 */6 * * * cd /home/manager/garage && docker compose --profile backup run --rm rclone-sync
+  #
+  # ./rclone/rclone.conf holds two remotes:
+  #   - "garage": type=s3, provider=Other, endpoint=http://garage:3900, region=us-east-1,
+  #     using the read-only rclone-sync key
+  #   - "gdrive": type=drive (OAuth2 flow via `rclone config`)
+  rclone-sync:
+    image: rclone/rclone:latest
+    container_name: rclone-sync
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        echo "Starting rclone sync to Google Drive at $$(date)"
+        for bucket in cnpg-backups docker-backups etcd-backups gitea-backups tofu-state k8s-app-backups; do
+          echo "Syncing $$bucket..."
+          rclone sync garage:$$bucket gdrive:homelab-backups/$$bucket \
+            --transfers 4 \
+            --checkers 8 \
+            --drive-use-trash=false \
+            --log-level INFO \
+            --stats 30s \
+            2>&1 || echo "Warning: sync failed for $$bucket"
+        done
+        echo "Rclone sync complete at $$(date)"
+    volumes:
+      - ./rclone:/config/rclone
+    profiles:
+      - backup
+
+secrets:
+  rpc_secret:
+    file: ./secrets/rpc_secret
+  admin_token:
+    file: ./secrets/admin_token
+  metrics_token:
+    file: ./secrets/metrics_token

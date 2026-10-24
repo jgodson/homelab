@@ -97,11 +97,11 @@
       "record": null
     },
     {
-      "uid": "homelab-minio-down",
+      "uid": "homelab-garage-down",
       "orgID": 1,
       "folderUID": "afdvo8ju8txq8e",
       "ruleGroup": "Infrastructure",
-      "title": "Minio Down",
+      "title": "Garage Down",
       "condition": "B",
       "data": [
         {
@@ -114,7 +114,7 @@
           "datasourceUid": "PBFA97CFB590B2093",
           "model": {
             "editorMode": "code",
-            "expr": "max(monitor_status{job=\"uptime-kuma\",monitor_name=\"Minio\"}) or vector(0)",
+            "expr": "max(monitor_status{job=\"uptime-kuma\",monitor_name=\"Garage\"}) or vector(0)",
             "instant": true,
             "intervalMs": 1000,
             "maxDataPoints": 43200,
@@ -171,12 +171,12 @@
       "for": "5m",
       "keep_firing_for": "0s",
       "annotations": {
-        "summary": "Minio is down.",
-        "description": "Uptime Kuma reports the Minio monitor as down."
+        "summary": "Garage is down.",
+        "description": "Uptime Kuma reports the Garage monitor as down."
       },
       "labels": {
         "service": "homelab",
-        "component": "minio",
+        "component": "garage",
         "severity": "critical"
       },
       "isPaused": false,

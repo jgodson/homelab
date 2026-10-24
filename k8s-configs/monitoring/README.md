@@ -16,7 +16,7 @@ A `Makefile` is provided to simplify deployment updates and prevent configuratio
 1. Create kubernetes namespace `kubectl create namespace monitoring`
 1. Deploy and setup InfluxDB2 with Helm. [See readme](./influxdb2/README.md)
 1. Deploy Prometheus with Helm. [See readme](./prometheus/README.md)
-1. Ensure Minio is running with Docker (for Loki). [See readme](../../docker/minio/README.md)
+1. Ensure Garage is running with Docker (for Loki and Tempo). [See readme](../../docker/garage/README.md)
 1. Deploy Loki with Helm. [See readme](./loki/README.md)
     - See [observability config readme](../../observability-config/README.md) for how to start sending logs to Loki.
 1. Deploy Tempo with Helm for distributed tracing. [See readme](./tempo/README.md)
