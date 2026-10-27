@@ -25,7 +25,7 @@
 homelab/
 ├── .githooks/           # Versioned hooks (strips image metadata before commit)
 ├── docker/              # Docker Compose services, one folder per host
-│   ├── ai-tools/        # Ollama, Open WebUI, n8n, Flowise
+│   ├── ai-tools/        # Ollama, Open WebUI, n8n
 │   ├── frigate/         # NVR + MyQ camera bridge
 │   ├── home-assistant/  # Home Assistant + ESPHome (see its AGENTS.md)
 │   ├── ingress-local+adguard/ # Caddy (LAN) + AdGuard Home
