@@ -58,7 +58,7 @@ homelab/
 
 ### Docker Services
 
-- **AI Tools**: Ollama, Open WebUI, n8n, Flowise, and supporting services
+- **AI Tools**: Ollama, Open WebUI, n8n, and supporting services
 - **Frigate**: NVR with object detection, including a MyQ camera bridge and a remote RV camera
 - **Home Assistant**: Home automation platform with ESPHome
 - **Local Ingress + AdGuard**: Caddy reverse proxy with AdGuard Home for local DNS and ad blocking
