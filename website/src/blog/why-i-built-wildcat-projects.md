@@ -16,12 +16,6 @@ That overlaps quite a bit with what I've always written about here, so I wanted 
 
 {% image "./src/assets/images/wildcat-projects-sketchbook-cover.jpg", "The Wildcat Projects logo on a sketchbook surrounded by illustrated game, software, electronics, and audio project notes", "(min-width: 768px) 900px, 100vw" %}
 
-## Why Wildcat?
-
-The name comes from **wildcatting in oil drilling**: [drilling an exploratory well in a new area](https://www.slb.com/resource-library/oilfield-review/defining-series/defining-exploration), looking for oil or gas without knowing whether you'll find it.
-
-That felt like a good fit for how I approach these projects. I start with something I'm curious about, build enough to test the idea, and see where it leads. Some experiments turn into something I keep using. Others don't go much further, but I still learn something from trying. Wildcat Projects gives me a place to keep that record, whatever the outcome.
-
 ## A Home for the Whole Project
 
 A blog post is a useful way to tell one part of a story. I run into a problem, work through it, and write about what happened. That might be getting logs into Grafana, fixing an awkward deployment, or trying a different way to extract data with a local model.
@@ -42,7 +36,7 @@ The game prototypes are a good example. [Tall Tales and Duskbound](https://wildc
 
 The site also gives the [Wildcat Projects YouTube channel](https://www.youtube.com/@wildcatprojects) somewhere to connect back to. A video can show a build or a test much better than a paragraph sometimes can. The project page is where the background, related experiments, and useful links can stay together afterward.
 
-The line on the site is **“Build it. Test it. See what happens.”** That's the attitude I want to keep. A project can be worth recording even if it changes direction, stalls, or only ever solves a problem for me.
+The name comes from **wildcatting in oil drilling**: [drilling an exploratory well in a new area](https://www.slb.com/resource-library/oilfield-review/defining-series/defining-exploration), looking for oil or gas without knowing whether you'll find it. That felt like a good fit for these experiments, and for the line on the site: **“Build it. Test it. See what happens.”**
 
 ## What I'll Post Where
 
@@ -56,11 +50,7 @@ Someone who wants to see what SpendSeer became can start with the project page. 
 
 There will be overlap. I've always written about projects here, and I still will. I don't want a strict rule that makes me second-guess where every paragraph belongs. Having a place for the project as a whole should make the individual posts easier to write and easier to find later.
 
-## Keeping the Unfinished Bits
-
-One thing I like about keeping a project archive is that it leaves room for the result I actually got. SpendSeer doesn't have to become a successful business to have been worth building. A game prototype can teach me something even if I move on to another idea. An experiment can produce something promising and still need a lot more work before I'd use it.
-
-I want those outcomes to have a place alongside the things that work well.
+I want a record of what I actually tried and learned, even when a project stops there.
 
 If you want to follow the builds and videos, have a look around [Wildcat Projects](https://wildcatprojects.com/). If you're here for the longer write-ups and the details of how I got something working, those will keep appearing here too.
 
