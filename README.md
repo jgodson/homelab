@@ -59,7 +59,7 @@ homelab/
 ### Docker Services
 
 - **AI Tools**: Ollama, Open WebUI, n8n, and supporting services
-- **Frigate**: NVR with object detection, including a MyQ camera bridge and a remote RV camera
+- **Frigate**: NVR with object detection, including a MyQ camera bridge
 - **Home Assistant**: Home automation platform with ESPHome
 - **Local Ingress + AdGuard**: Caddy reverse proxy with AdGuard Home for local DNS and ad blocking
 - **Public Ingress**: Caddy behind a Cloudflare Tunnel with CrowdSec
@@ -81,7 +81,6 @@ homelab/
 ### Hardware Projects
 
 - **ESP32**: Version-controlled ESPHome configurations and project notes (such as the pool temperature sensor), with local secrets excluded from Git
-- **RV Gateway**: Raspberry Pi camera and Jellyfin proxies over Tailscale
 
 ## Purpose
 

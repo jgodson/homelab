@@ -13,6 +13,10 @@ go2rtc:
       - "rtsp://{FRIGATE_TAPO_LOCAL_USER}:{FRIGATE_TAPO_LOCAL_PASSWORD}@{FRIGATE_TAPO_LOCAL_HOST}/stream1#backchannel=0"
     backyard_sub:
       - "rtsp://{FRIGATE_TAPO_LOCAL_USER}:{FRIGATE_TAPO_LOCAL_PASSWORD}@{FRIGATE_TAPO_LOCAL_HOST}/stream2#backchannel=0"
+    doorbell:
+      - "rtsp://{FRIGATE_TAPO_LOCAL_USER}:{FRIGATE_TAPO_LOCAL_PASSWORD}@{FRIGATE_TAPO_DOORBELL_HOST}/stream1#backchannel=0"
+    doorbell_sub:
+      - "rtsp://{FRIGATE_TAPO_LOCAL_USER}:{FRIGATE_TAPO_LOCAL_PASSWORD}@{FRIGATE_TAPO_DOORBELL_HOST}/stream2#backchannel=0"
     wyze_cam2:
       - "rtsp://{FRIGATE_WYZE_CAM2_USER}:{FRIGATE_WYZE_CAM2_PASSWORD}@192.168.1.226/live#backchannel=0"
 
@@ -97,6 +101,28 @@ cameras:
         Main: backyard
         Sub: backyard_sub
 
+  doorbell:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/doorbell_sub
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+        - path: rtsp://127.0.0.1:8554/doorbell
+          input_args: preset-rtsp-restream
+          roles:
+            - record
+    detect:
+      enabled: true
+      width: 640
+      height: 480
+      fps: 5
+    live:
+      streams:
+        Main: doorbell
+        Sub: doorbell_sub
+
 record:
   enabled: true
   alerts:
@@ -176,7 +202,7 @@ model:
   path: /openvino-model/ssdlite_mobilenet_v2.xml
   labelmap_path: /openvino-model/coco_91cl_bkgr.txt
 
-version: 0.17-0
+version: 0.18-0
 
 detect:
   enabled: true

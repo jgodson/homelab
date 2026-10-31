@@ -7,6 +7,7 @@ This directory backs up the working Frigate configuration for the host at `192.1
 - `myq_opener`: 1280x720 H.264, detection at 10 FPS
 - `myq_keypad`: 1152x864 H.264, detection at 10 FPS
 - `backyard`: local Tapo C120; main stream records and the substream detects at 5 FPS
+- `doorbell`: local Tapo D130; 2560x1920 main stream records and the 1280x960 substream detects at 640x480/5 FPS
 - `wyze_cam2`: 1920x1080 H.264 at `192.168.1.226`; recording at source quality and detecting at 960x540/5 FPS
 - `person` creates an alert review item
 - `dog` and `cat` create detection review items
@@ -18,9 +19,9 @@ This directory backs up the working Frigate configuration for the host at `192.1
 Camera credentials are supplied through the untracked `frigate.env` file. Copy
 `frigate.env.example` to `frigate.env` and replace the placeholder values before
 starting Frigate. The `set-tapo-credentials.sh` helper securely prompts for and
-URL-encodes the Tapo values. The local camera endpoint is supplied through
-`FRIGATE_TAPO_LOCAL_HOST` in that same private file. The RV camera has been
-removed from Frigate; its gateway configuration remains available separately.
+URL-encodes the Tapo values. Both Tapo cameras share one Camera Account; their
+endpoints are supplied through `FRIGATE_TAPO_LOCAL_HOST` and
+`FRIGATE_TAPO_DOORBELL_HOST` in that same private file.
 
 Frigate uses eleven OpenVINO CPU detector processes and the bundled SSD MobileNet v2 model. Multiple workers consume a shared detection queue across all cameras.
 
@@ -141,12 +142,6 @@ mount change by recreating the Android container, preserving its bind-mounted
 If all cameras are slow, check `free -m`, `vmstat 1 3`, and the memory use of
 Frigate/go2rtc as well as the MyQ bridge logs. A healthy container alone does
 not establish that frames and recordings are advancing.
-
-The remote RV camera gateway is documented separately in
-[`projects/rv-gateway`](../../projects/rv-gateway/README.md). Its RTSP proxy is
-tailnet-only; never advertise the RV subnet because it overlaps the home subnet.
-The Frigate host and `rv-pi` gateway join the same tailnet, while their
-deployment-specific addresses remain in the untracked environment file.
 
 ## References
 
