@@ -30,8 +30,9 @@ cameras:
   #         roles:
   #           - detect
 
+  # Disabled because its capture process exhausted host memory.
   wyze_cam2:
-    enabled: true
+    enabled: false
     ffmpeg:
       inputs:
         - path: rtsp://127.0.0.1:8554/wyze_cam2

@@ -8,7 +8,7 @@ This directory backs up the working Frigate configuration for the host at `192.1
 - `myq_keypad`: 1152x864 H.264, detection at 10 FPS
 - `backyard`: local Tapo C120; main stream records and the substream detects at 5 FPS
 - `doorbell`: local Tapo D130; 2560x1920 main stream records and the 1280x960 substream detects at 640x480/5 FPS
-- `wyze_cam2`: 1920x1080 H.264 at `192.168.1.226`; recording at source quality and detecting at 960x540/5 FPS
+- `wyze_cam2`: 1920x1080 H.264 at `192.168.1.226`; recording at source quality and detecting at 960x540/5 FPS. Disabled because its capture process grew until host memory ran out
 - `person` creates an alert review item
 - `dog` and `cat` create detection review items
 - Alert and detection recordings are retained for 10 days
