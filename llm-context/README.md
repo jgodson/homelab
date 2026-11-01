@@ -77,7 +77,7 @@ Not every service has all of these; match whatever the neighbouring files in tha
 
 **Docker hosts:**
 - **Home Assistant + ESPHome:** Home automation, including ESP32 sensors from `projects/esp32/`
-- **Frigate:** NVR with object detection (local cameras, MyQ bridge, remote RV camera over Tailscale)
+- **Frigate:** NVR with object detection (local cameras and MyQ bridge)
 - **Ingress:** Caddy for LAN access; Cloudflare Tunnel + Caddy + CrowdSec for public access
 - **Garage (minio VM), Media Cloud, AI Tools**
 
