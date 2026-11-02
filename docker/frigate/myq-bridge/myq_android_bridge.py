@@ -39,6 +39,13 @@ CAMERAS = {
     KEYPAD_DEVICE_ID: "myq-keypad.h264.pipe",
 }
 APP_UID = int(os.environ.get("MYQ_ANDROID_APP_UID", "10116"))
+# Restart the whole Android container after this many app restarts in a row
+# that each failed within HEALTHY_CYCLE_SECONDS. App restarts alone stop
+# helping once the container has been up for days.
+APP_RESTARTS_BEFORE_ANDROID_RESTART = int(
+    os.environ.get("MYQ_APP_RESTARTS_BEFORE_ANDROID_RESTART", "3")
+)
+HEALTHY_CYCLE_SECONDS = 600
 
 logging.basicConfig(
     level=logging.INFO,
@@ -48,14 +55,14 @@ LOG = logging.getLogger("myq-android-bridge")
 STOP = False
 
 
-def docker(*args: str, check: bool = True) -> str:
+def docker(*args: str, check: bool = True, timeout: int = 30) -> str:
     result = subprocess.run(
         ["docker", *args],
         check=check,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        timeout=30,
+        timeout=timeout,
     )
     return result.stdout.strip()
 
@@ -167,6 +174,52 @@ function dismissCompatibilityDialog() {{
   }});
 }}
 
+// SDK errors such as ErrorResponse have no useful toString(), so list their
+// instance fields (names may be obfuscated, but the values are what matter).
+// SDK objects and collections inside them (ErrorResponse holds a list of
+// com.seedonk.mobilesdk.Error) are described the same way, a few levels deep.
+var MAX_ERROR_DEPTH=3;
+
+function describeValue(value,depth) {{
+  if(value===null||value===undefined)return 'null';
+  try {{
+    if(depth<MAX_ERROR_DEPTH) {{
+      if(String(value.getClass().getName()).indexOf('com.seedonk.')===0)return describeObject(value,depth+1);
+      var Collection=Java.use('java.util.Collection');
+      if(Collection.class.isInstance(value)) {{
+        var items=Java.cast(value,Collection).toArray();
+        var described=[];
+        for(var i=0;i<items.length;i++)described.push(describeValue(items[i],depth+1));
+        return '['+described.join(', ')+']';
+      }}
+    }}
+  }} catch(err) {{}}
+  return String(value).substring(0,200);
+}}
+
+function describeObject(obj,depth) {{
+  var Modifier=Java.use('java.lang.reflect.Modifier');
+  var cls=obj.getClass();
+  var parts=[];
+  while(cls!==null && String(cls.getName())!=='java.lang.Object') {{
+    var fields=cls.getDeclaredFields();
+    for(var i=0;i<fields.length;i++) {{
+      var field=fields[i];
+      if(Modifier.isStatic(field.getModifiers()))continue;
+      field.setAccessible(true);
+      parts.push(String(field.getName())+'='+describeValue(field.get(obj),depth));
+    }}
+    cls=cls.getSuperclass();
+  }}
+  return String(obj.getClass().getSimpleName())+'{{'+parts.join(',')+'}}';
+}}
+
+function describeError(e) {{
+  if(e===null||e===undefined)return '';
+  try {{ return describeObject(e,0); }}
+  catch(err) {{ return String(e); }}
+}}
+
 function closeOutput(id) {{
   try {{ if(outputs[id])outputs[id].close(); }} catch(e) {{}}
   outputs[id]=null;
@@ -204,16 +257,16 @@ function startCamera(id,index,VI,AI,CI,SDK) {{
         }} catch(e) {{ s.error=String(e);closeOutput(id); }}
       }},
       onFirstVideoDataReceived:function(){{}},
-      onVideoConnectFailed:function(e){{stats[id].error=String(e);}},
+      onVideoConnectFailed:function(e){{stats[id].error=describeError(e);}},
       onVideoConnected:function(){{stats[id].connected=true;}},
-      onVideoDisconnected:function(e){{stats[id].connected=false;}},
+      onVideoDisconnected:function(e){{stats[id].connected=false;if(e!==null)stats[id].error=describeError(e);}},
       onVideoSizeUpdated:function(w,h){{stats[id].width=w;stats[id].height=h;}}
     }}
   }});
   var Completion=Java.registerClass({{
     name:'com.openai.MyQConnectCompletion_{suffix}_'+index,
     implements:[CI],
-    methods:{{completed:function(e){{if(e!==null)stats[id].error=String(e);}}}}
+    methods:{{completed:function(e){{if(e!==null)stats[id].error=describeError(e);}}}}
   }});
   // The SDK calls audio callbacks during disconnect even for a video-only feed.
   var AudioListener=Java.registerClass({{
@@ -434,11 +487,21 @@ def restart_android_app() -> None:
     time.sleep(5)
 
 
+def restart_android_container(app_restarts: int) -> None:
+    LOG.warning(
+        "Restarting the Android container after %d app restarts did not recover the cameras",
+        app_restarts,
+    )
+    docker("restart", "-t", "20", CONTAINER, check=False, timeout=90)
+
+
 def main() -> int:
     signal.signal(signal.SIGTERM, handle_signal)
     signal.signal(signal.SIGINT, handle_signal)
     ensure_fifos()
+    failed_app_restarts = 0
     while not STOP:
+        cycle_started = time.monotonic()
         try:
             address = ensure_android_and_frida()
             run_agent(address)
@@ -446,6 +509,8 @@ def main() -> int:
             break
         except Exception as error:
             LOG.error("Bridge cycle failed: %s", error)
+            if time.monotonic() - cycle_started >= HEALTHY_CYCLE_SECONDS:
+                failed_app_restarts = 0
             if not STOP:
                 error_text = str(error).lower()
                 restart_markers = (
@@ -459,9 +524,14 @@ def main() -> int:
                 )
                 if any(marker in error_text for marker in restart_markers):
                     try:
-                        restart_android_app()
+                        if failed_app_restarts >= APP_RESTARTS_BEFORE_ANDROID_RESTART:
+                            restart_android_container(failed_app_restarts)
+                            failed_app_restarts = 0
+                        else:
+                            restart_android_app()
+                            failed_app_restarts += 1
                     except Exception as restart_error:
-                        LOG.error("MyQ app restart failed: %s", restart_error)
+                        LOG.error("MyQ recovery failed: %s", restart_error)
                 time.sleep(5)
     return 0
 
