@@ -40,8 +40,13 @@ Each bridge cycle disconnects its SDK managers and detaches its Frida session,
 including error paths. If one camera stops advancing for four consecutive
 15-second checks, the bridge retries that camera without interrupting the other.
 After three failed retries, or if both cameras stop advancing, the bridge
-force-restarts the MyQ app before requesting fresh sessions. The Android process
-destroying or detaching the injected script also starts a fresh bridge cycle.
+force-restarts the MyQ app before requesting fresh sessions. If three app
+restarts in a row each fail within 10 minutes, it restarts the whole
+`myq-android` container instead (`MYQ_APP_RESTARTS_BEFORE_ANDROID_RESTART` in
+the bridge environment file changes the count). Camera errors in the status log
+list the SDK error fields, for example `error=ErrorResponse{...}`. The Android
+process destroying or detaching the injected script also starts a fresh bridge
+cycle.
 The systemd service starts after Docker but stays active through Docker restarts,
 so it can reconnect when the Android container returns.
 The tested app's Places card renderer crashes when Firebase remote configuration
